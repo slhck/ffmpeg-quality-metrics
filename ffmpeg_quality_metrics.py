@@ -17,6 +17,7 @@ from pprint import pprint
 import pandas as pd
 from platform import system as _current_os
 
+ALLOWED_SCALERS = ["fast_bilinear", "bilinear", "bicubic", "experimental", "neighbor", "area", "bicublin", "gauss", "sinc", "lanczos", "spline"]
 CUR_OS = _current_os()
 IS_WIN = CUR_OS in ['Windows', 'cli']
 IS_NIX = (not IS_WIN) and any(
@@ -53,6 +54,9 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic"):
     psnr_data = []
     ssim_data = []
 
+    if scaling_algorithm not in ALLOWED_SCALERS:
+        print_stderr(f"Allowed scaling algorithms: {ALLOWED_SCALERS}")
+
     try:
         temp_dir = tempfile.gettempdir()
 
@@ -64,7 +68,7 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic"):
         )
 
         filter_chains = [
-            "[1][0]scale2ref[dist][ref]",
+            f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
             "[dist]split[dist1][dist2]",
             "[ref]split[ref1][ref2]",
             f"[dist1][ref1]psnr={temp_file_name_psnr}",
@@ -135,16 +139,23 @@ def main():
     parser.add_argument("dist", help="input file, distorted")
     parser.add_argument("ref", help="input file, reference")
 
+    # parser.add_argument(
+    #     "-ds", "--disable-ssim", action="store_true"
+    # )
+    # parser.add_argument(
+    #     "-dp", "--disable-psnr", action="store_true"
+    # )
+    # parser.add_argument(
+    #     "-ev", "--enable-vmaf", action="store_true"
+    # )
+
     parser.add_argument(
-        "-ds", "--disable-ssim", action="store_true"
+        "-s",
+        "--scaling-algorithm",
+        default="bicubic",
+        choices=ALLOWED_SCALERS,
+        help="Scaling algorithm for ffmpeg"
     )
-    parser.add_argument(
-        "-dp", "--disable-psnr", action="store_true"
-    )
-    parser.add_argument(
-        "-ev", "--enable-vmaf", action="store_true"
-    )
-    parser.add_argument("-s", "--scaling-algorithm", choices=["bicubic", "bilinear", "lanczos"])
     parser.add_argument(
         "-of",
         "--output-format",
