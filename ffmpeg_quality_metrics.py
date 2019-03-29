@@ -30,13 +30,13 @@ def print_stderr(msg):
     print(msg, file=sys.stderr)
 
 
-def run_command(cmd, dry=False, verbose=False):
+def run_command(cmd, dry_run=False, verbose=False):
     """
     Run a command directly
     """
-    if dry or verbose:
+    if dry_run or verbose:
         print_stderr("[cmd] " + " ".join(cmd))
-        if dry:
+        if dry_run:
             return
 
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -50,7 +50,7 @@ def run_command(cmd, dry=False, verbose=False):
         sys.exit(1)
 
 
-def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic"):
+def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbose=False):
     psnr_data = []
     ssim_data = []
 
@@ -66,6 +66,10 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic"):
         temp_file_name_psnr = os.path.join(
             temp_dir, next(tempfile._get_candidate_names()) + "-psnr.txt"
         )
+
+        if verbose:
+            print_stderr(f"Writing temporary SSIM information to: {temp_file_name_ssim}")
+            print_stderr(f"Writing temporary PSNR information to: {temp_file_name_psnr}")
 
         filter_chains = [
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
@@ -86,35 +90,36 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic"):
             "-f", "null", NUL
         ]
 
-        ret = run_command(cmd)
+        ret = run_command(cmd, dry_run, verbose)
 
-        with open(temp_file_name_psnr, "r") as in_psnr:
-            # n:1 mse_avg:529.52 mse_y:887.00 mse_u:233.33 mse_v:468.25 psnr_avg:20.89 psnr_y:18.65 psnr_u:24.45 psnr_v:21.43
-            lines = in_psnr.readlines()
-            for line in lines:
-                line = line.strip()
-                fields = line.split(" ")
-                frame_data = {}
-                for field in fields:
-                    k, v = field.split(":")
-                    frame_data[k] = round(float(v), 3) if k != "n" else int(v)
-                psnr_data.append(frame_data)
+        if not dry_run:
+            with open(temp_file_name_psnr, "r") as in_psnr:
+                # n:1 mse_avg:529.52 mse_y:887.00 mse_u:233.33 mse_v:468.25 psnr_avg:20.89 psnr_y:18.65 psnr_u:24.45 psnr_v:21.43
+                lines = in_psnr.readlines()
+                for line in lines:
+                    line = line.strip()
+                    fields = line.split(" ")
+                    frame_data = {}
+                    for field in fields:
+                        k, v = field.split(":")
+                        frame_data[k] = round(float(v), 3) if k != "n" else int(v)
+                    psnr_data.append(frame_data)
 
-        with open(temp_file_name_ssim, "r") as in_ssim:
-            # n:1 Y:0.937213 U:0.961733 V:0.945788 All:0.948245 (12.860441)\n
-            lines = in_ssim.readlines()
-            for line in lines:
-                line = line.strip().split(" (")[0]  # remove excess
-                fields = line.split(" ")
-                frame_data = {}
-                for field in fields:
-                    k, v = field.split(":")
-                    if k != "n":
-                        # make psnr and ssim keys the same
-                        k = "ssim_" + k.lower()
-                        k = k.replace("all", "avg")
-                    frame_data[k] = round(float(v), 3) if k != "n" else int(v)
-                ssim_data.append(frame_data)
+            with open(temp_file_name_ssim, "r") as in_ssim:
+                # n:1 Y:0.937213 U:0.961733 V:0.945788 All:0.948245 (12.860441)\n
+                lines = in_ssim.readlines()
+                for line in lines:
+                    line = line.strip().split(" (")[0]  # remove excess
+                    fields = line.split(" ")
+                    frame_data = {}
+                    for field in fields:
+                        k, v = field.split(":")
+                        if k != "n":
+                            # make psnr and ssim keys the same
+                            k = "ssim_" + k.lower()
+                            k = k.replace("all", "avg")
+                        frame_data[k] = round(float(v), 3) if k != "n" else int(v)
+                    ssim_data.append(frame_data)
 
     except Exception as e:
         raise e
@@ -138,6 +143,16 @@ def main():
     )
     parser.add_argument("dist", help="input file, distorted")
     parser.add_argument("ref", help="input file, reference")
+
+    parser.add_argument(
+        "-n", "--dry-run", action="store_true",
+        help="Do not run command, just show what would be done"
+    )
+
+    parser.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="Show verbose output"
+    )
 
     # parser.add_argument(
     #     "-ds", "--disable-ssim", action="store_true"
@@ -167,7 +182,7 @@ def main():
 
     cli_args = parser.parse_args()
 
-    ret = calc_ssim_psnr(cli_args.ref, cli_args.dist, cli_args.scaling_algorithm)
+    ret = calc_ssim_psnr(cli_args.ref, cli_args.dist, cli_args.scaling_algorithm, cli_args.dry_run, cli_args.verbose)
 
     if cli_args.output_format == "json":
         print(json.dumps(ret, indent=4))
