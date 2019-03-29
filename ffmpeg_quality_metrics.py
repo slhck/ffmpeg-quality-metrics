@@ -189,11 +189,15 @@ def main():
     elif cli_args.output_format == "csv":
         data_psnr = pd.DataFrame(ret["psnr"])
         data_ssim = pd.DataFrame(ret["ssim"])
-        df = pd.merge(data_psnr, data_ssim)
-        cols = df.columns.tolist()
-        cols.insert(0, cols.pop(cols.index("n")))
-        df = df.reindex(columns=cols)
-        print(df.to_csv(index=False))
+        try:
+            df = pd.merge(data_psnr, data_ssim)
+            cols = df.columns.tolist()
+            cols.insert(0, cols.pop(cols.index("n")))
+            df = df.reindex(columns=cols)
+            print(df.to_csv(index=False))
+        except Exception as e:
+            print_stderr(f"Error merging data to CSV: {e}")
+            sys.exit(1)
     else:
         print_stderr("Wrong output format chosen, use 'json' or 'csv'")
         sys.exit(1)
