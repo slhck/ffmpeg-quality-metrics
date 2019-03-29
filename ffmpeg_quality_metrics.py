@@ -43,7 +43,7 @@ def run_command(cmd, dry_run=False, verbose=False):
     stdout, stderr = process.communicate()
 
     if process.returncode == 0:
-        return stdout.decode("utf-8") + stderr.decode("utf-8")
+        return stdout.decode("utf-8"), stderr.decode("utf-8")
     else:
         print_stderr("[error] running command: {}".format(" ".join(cmd)))
         print_stderr(stderr.decode("utf-8"))
@@ -90,7 +90,7 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbos
             "-f", "null", NUL
         ]
 
-        ret = run_command(cmd, dry_run, verbose)
+        run_command(cmd, dry_run, verbose)
 
         if not dry_run:
             with open(temp_file_name_psnr, "r") as in_psnr:
