@@ -6,13 +6,26 @@ Currently supports PSNR and SSIM. VMAF to follow.
 
 Author: Werner Robitza <werner.robitza@gmail.com>
 
+Contents:
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Running with Docker](#running-with-docker)
+- [Output](#output)
+- [License](#license)
+
+------
+
 ## Requirements
 
 - Python 3.6
 - FFmpeg:
     - download a static build from [their website](http://ffmpeg.org/download.html))
     - put the `ffmpeg` executable in your `$PATH`
-- `pip3 install pandas`
+- `pip3 install -r requirements.txt`
+
+Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation.
 
 ## Installation
 
@@ -21,6 +34,20 @@ Clone this repo and run `ffmpeg_quality_metrics.py`.
 ## Usage
 
 See `ffmpeg_quality_metrics.py -h`.
+
+## Running with Docker
+
+If you don't want to deal with dependencies, build the image with Docker:
+
+```
+docker build -t ffmpeg_quality_metrics .
+```
+
+This installs `ffmpeg` with all dependencies. You can then run the container, which basically calls the Python script. To help you with mounting the volumes (since your videos are not stored in the container), you can run a helper script:
+
+```
+./docker_run.sh
+```
 
 ## Output
 
@@ -102,7 +129,7 @@ n,mse_avg,mse_u,mse_v,mse_y,psnr_avg,psnr_u,psnr_v,psnr_y,ssim_avg,ssim_u,ssim_v
 3,527.87,245.13,456.35,882.13,20.91,24.24,21.54,18.68,0.947,0.96,0.947,0.936
 ```
 
-# License
+## License
 
 ffmpeg_quality_metrics, Copyright (c) 2019 Werner Robitza
 
