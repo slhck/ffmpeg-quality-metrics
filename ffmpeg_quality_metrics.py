@@ -139,7 +139,7 @@ def main():
     version = "0.1"
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description="scenecut_extractor v" + version,
+        description="ffmpeg_quality_metrics v" + version,
     )
     parser.add_argument("dist", help="input file, distorted")
     parser.add_argument("ref", help="input file, reference")
