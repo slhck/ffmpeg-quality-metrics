@@ -25,7 +25,7 @@ Contents:
     - put the `ffmpeg` executable in your `$PATH`
 - `pip3 install -r requirements.txt`
 
-Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation.
+Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation. Currently this is only supported when installing FFmpeg with Homebrew using [this tap](https://github.com/varenc/homebrew-ffmpeg/) and then running `brew install ffmpeg --with-libvmaf`.
 
 ## Installation
 
@@ -56,77 +56,119 @@ JSON or CSV, including individual fields for Y, U, V, and averages, as well as f
 JSON example:
 
 ```
-➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv -o json
+➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf
 {
-    "ssim": [
+    "vmaf": [
         {
-            "n": 1,
-            "ssim_y": 0.936,
-            "ssim_u": 0.961,
-            "ssim_v": 0.946,
-            "ssim_avg": 0.947
+            "adm2": 0.70704,
+            "motion2": 0.0,
+            "ms_ssim": 0.89698,
+            "psnr": 18.58731,
+            "ssim": 0.92415,
+            "vif_scale0": 0.53962,
+            "vif_scale1": 0.71805,
+            "vif_scale2": 0.75205,
+            "vif_scale3": 0.77367,
+            "vmaf": 15.44212,
+            "n": 1
         },
         {
-            "n": 2,
-            "ssim_y": 0.936,
-            "ssim_u": 0.961,
-            "ssim_v": 0.946,
-            "ssim_avg": 0.948
+            "adm2": 0.7064,
+            "motion2": 0.35975,
+            "ms_ssim": 0.89806,
+            "psnr": 18.60299,
+            "ssim": 0.9247,
+            "vif_scale0": 0.54025,
+            "vif_scale1": 0.71961,
+            "vif_scale2": 0.75369,
+            "vif_scale3": 0.77607,
+            "vmaf": 15.85038,
+            "n": 2
         },
         {
-            "n": 3,
-            "ssim_y": 0.936,
-            "ssim_u": 0.96,
-            "ssim_v": 0.947,
-            "ssim_avg": 0.947
+            "adm2": 0.70505,
+            "motion2": 0.35975,
+            "ms_ssim": 0.89879,
+            "psnr": 18.6131,
+            "ssim": 0.92466,
+            "vif_scale0": 0.5391,
+            "vif_scale1": 0.71869,
+            "vif_scale2": 0.75344,
+            "vif_scale3": 0.77616,
+            "vmaf": 15.63546,
+            "n": 3
         }
     ],
     "psnr": [
         {
             "n": 1,
-            "mse_avg": 529.56,
-            "mse_y": 887.35,
-            "mse_u": 233.89,
-            "mse_v": 467.43,
-            "psnr_avg": 20.89,
-            "psnr_y": 18.65,
-            "psnr_u": 24.44,
-            "psnr_v": 21.43
+            "mse_avg": 536.71,
+            "mse_y": 900.22,
+            "mse_u": 234.48,
+            "mse_v": 475.43,
+            "psnr_avg": 20.83,
+            "psnr_y": 18.59,
+            "psnr_u": 24.43,
+            "psnr_v": 21.36
         },
         {
             "n": 2,
-            "mse_avg": 528.16,
-            "mse_y": 884.16,
-            "mse_u": 238.83,
-            "mse_v": 461.49,
-            "psnr_avg": 20.9,
-            "psnr_y": 18.67,
-            "psnr_u": 24.35,
-            "psnr_v": 21.49
+            "mse_avg": 535.29,
+            "mse_y": 896.98,
+            "mse_u": 239.4,
+            "mse_v": 469.49,
+            "psnr_avg": 20.84,
+            "psnr_y": 18.6,
+            "psnr_u": 24.34,
+            "psnr_v": 21.41
         },
         {
             "n": 3,
-            "mse_avg": 527.87,
-            "mse_y": 882.13,
-            "mse_u": 245.13,
-            "mse_v": 456.35,
-            "psnr_avg": 20.91,
-            "psnr_y": 18.68,
-            "psnr_u": 24.24,
-            "psnr_v": 21.54
+            "mse_avg": 535.04,
+            "mse_y": 894.89,
+            "mse_u": 245.8,
+            "mse_v": 464.43,
+            "psnr_avg": 20.85,
+            "psnr_y": 18.61,
+            "psnr_u": 24.22,
+            "psnr_v": 21.46
+        }
+    ],
+    "ssim": [
+        {
+            "n": 1,
+            "ssim_y": 0.934,
+            "ssim_u": 0.96,
+            "ssim_v": 0.942,
+            "ssim_avg": 0.945
+        },
+        {
+            "n": 2,
+            "ssim_y": 0.934,
+            "ssim_u": 0.96,
+            "ssim_v": 0.943,
+            "ssim_avg": 0.946
+        },
+        {
+            "n": 3,
+            "ssim_y": 0.934,
+            "ssim_u": 0.959,
+            "ssim_v": 0.943,
+            "ssim_avg": 0.945
         }
     ]
 }
+
 ```
 
 CSV example:
 
 ```
-➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv -o csv
-n,mse_avg,mse_u,mse_v,mse_y,psnr_avg,psnr_u,psnr_v,psnr_y,ssim_avg,ssim_u,ssim_v,ssim_y
-1,529.56,233.89,467.43,887.35,20.89,24.44,21.43,18.65,0.947,0.961,0.946,0.936
-2,528.16,238.83,461.49,884.16,20.9,24.35,21.49,18.67,0.948,0.961,0.946,0.936
-3,527.87,245.13,456.35,882.13,20.91,24.24,21.54,18.68,0.947,0.96,0.947,0.936
+➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf -o csv
+n,adm2,motion2,ms_ssim,psnr,ssim,vif_scale0,vif_scale1,vif_scale2,vif_scale3,vmaf,mse_avg,mse_u,mse_v,mse_y,psnr_avg,psnr_u,psnr_v,psnr_y,ssim_avg,ssim_u,ssim_v,ssim_y
+1,0.70704,0.0,0.89698,18.58731,0.92415,0.53962,0.71805,0.75205,0.77367,15.44212,536.71,234.48,475.43,900.22,20.83,24.43,21.36,18.59,0.945,0.96,0.942,0.934
+2,0.7064,0.35975,0.89806,18.60299,0.9247,0.54025,0.71961,0.75369,0.77607,15.85038,535.29,239.4,469.49,896.98,20.84,24.34,21.41,18.6,0.946,0.96,0.943,0.934
+3,0.70505,0.35975,0.89879,18.6131,0.92466,0.5391,0.71869,0.75344,0.77616,15.63546,535.04,245.8,464.43,894.89,20.85,24.22,21.46,18.61,0.945,0.959,0.943,0.934
 ```
 
 ## License
