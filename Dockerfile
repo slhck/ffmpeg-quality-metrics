@@ -29,4 +29,4 @@ RUN pip3 install -r requirements.txt
 
 COPY ffmpeg_quality_metrics.py .
 
-ENTRYPOINT ["python3", "./ffmpeg_quality_metrics.py"]
+CMD ["python3", "./ffmpeg_quality_metrics.py"]
