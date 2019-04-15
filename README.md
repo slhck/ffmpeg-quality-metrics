@@ -2,7 +2,7 @@
 
 Simple script for calculating quality metrics with FFmpeg.
 
-Currently supports PSNR and SSIM. VMAF to follow.
+Currently supports PSNR, SSIM and VMAF.
 
 Author: Werner Robitza <werner.robitza@gmail.com>
 
@@ -25,7 +25,11 @@ Contents:
     - put the `ffmpeg` executable in your `$PATH`
 - `pip3 install -r requirements.txt`
 
-Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation. Currently this is only supported when installing FFmpeg with Homebrew using [this tap](https://github.com/varenc/homebrew-ffmpeg/) and then running `brew install ffmpeg --with-libvmaf`.
+Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation:
+
+- Install [Homebrew](https://brew.sh/)
+- Install [this tap](https://github.com/varenc/homebrew-ffmpeg/)
+- Run `brew install ffmpeg --with-libvmaf`.
 
 ## Installation
 
@@ -164,7 +168,7 @@ JSON example:
 CSV example:
 
 ```
-➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf -o csv
+➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf -of csv
 n,adm2,motion2,ms_ssim,psnr,ssim,vif_scale0,vif_scale1,vif_scale2,vif_scale3,vmaf,mse_avg,mse_u,mse_v,mse_y,psnr_avg,psnr_u,psnr_v,psnr_y,ssim_avg,ssim_u,ssim_v,ssim_y
 1,0.70704,0.0,0.89698,18.58731,0.92415,0.53962,0.71805,0.75205,0.77367,15.44212,536.71,234.48,475.43,900.22,20.83,24.43,21.36,18.59,0.945,0.96,0.942,0.934
 2,0.7064,0.35975,0.89806,18.60299,0.9247,0.54025,0.71961,0.75369,0.77607,15.85038,535.29,239.4,469.49,896.98,20.84,24.34,21.41,18.6,0.946,0.96,0.943,0.934
