@@ -215,7 +215,7 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbos
 
 
 def main():
-    version = "0.1"
+    version = "0.1.0"
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description="ffmpeg_quality_metrics v" + version,
