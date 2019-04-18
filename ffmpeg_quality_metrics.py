@@ -31,13 +31,10 @@ def get_brewed_model_path():
     """
     Hack to get path for VMAF model from Linuxbrew
     """
-    stdout, _ = run_command(["brew", "list", "--versions", "libvmaf"])
-    latest_version = stdout.strip().split(" ")[1]
-
-    stdout, _ = run_command(["brew", "--cellar", "libvmaf"])
+    stdout, _ = run_command(["brew", "--prefix", "libvmaf"])
     cellar_path = stdout.strip()
 
-    model_path = os.path.join(cellar_path, latest_version, "share", "model")
+    model_path = os.path.join(cellar_path, "share", "model")
 
     return model_path
 
