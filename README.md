@@ -37,7 +37,38 @@ Clone this repo and run `ffmpeg_quality_metrics.py`.
 
 ## Usage
 
-See `ffmpeg_quality_metrics.py -h`.
+See `ffmpeg_quality_metrics.py -h`:
+
+```
+usage: ffmpeg_quality_metrics.py [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p]
+                                 [-dps]
+                                 [-of {json,csv}]
+                                 dist ref
+
+ffmpeg_quality_metrics v0.1.2
+
+positional arguments:
+  dist                  input file, distorted
+  ref                   input file, reference
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n, --dry-run         Do not run command, just show what would be done
+                        (default: False)
+  -v, --verbose         Show verbose output (default: False)
+  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as
+                        SSIM and PSNR (default: False)
+  -m MODEL_PATH, --model-path MODEL_PATH
+                        Set path to VMAF model file (.pkl) (default: None)
+  -p, --phone-model     Enable VMAF phone model (default: False)
+  -dp, --disable-psnr-ssim
+                        Disable PSNR/SSIM computation. Use VMAF to get YUV
+                        estimate. (default: False)
+  -s, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
+                        Scaling algorithm for ffmpeg (default: bicubic)
+  -of {json,csv}, --output-format {json,csv}
+                        output in which format (default: json)
+```
 
 ## Running with Docker
 
