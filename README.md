@@ -37,6 +37,14 @@ Clone this repo and run `ffmpeg_quality_metrics.py`.
 
 ## Usage
 
+In the simplest case, if you have a distorted (encoded, maybe scaled) version and the reference:
+
+```
+./ffmpeg_quality_metrics.py distorted.mp4 reference.avi
+```
+
+The distorted file will be automatically scaled to the resolution of the reference.
+
 See `ffmpeg_quality_metrics.py -h`:
 
 ```
