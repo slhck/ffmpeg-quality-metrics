@@ -1,4 +1,4 @@
-# ffmpeg_quality_metrics
+# FFmpeg Quality Metrics
 
 Simple script for calculating quality metrics with FFmpeg.
 
