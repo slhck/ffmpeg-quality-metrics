@@ -299,6 +299,8 @@ def main():
         ret["ssim"] = ret_tmp["ssim"]
 
     if cli_args.output_format == "json":
+        ret["input_file_dist"] = cli_args.dist
+        ret["input_file_ref"] = cli_args.ref
         print(json.dumps(ret, indent=4))
     elif cli_args.output_format == "csv":
         all_dfs = []
@@ -316,6 +318,10 @@ def main():
 
         try:
             df = reduce(lambda x, y: pd.merge(x, y, on='n'), all_dfs)
+
+            df["input_file_dist"] = cli_args.dist
+            df["input_file_ref"] = cli_args.ref
+
             cols = df.columns.tolist()
             cols.insert(0, cols.pop(cols.index("n")))
             df = df.reindex(columns=cols)
