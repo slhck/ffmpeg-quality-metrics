@@ -1,5 +1,7 @@
 # FFmpeg Quality Metrics
 
+[![PyPI version](https://badge.fury.io/py/ffmpeg_quality_metrics.svg)](https://badge.fury.io/py/ffmpeg_quality_metrics)
+
 Simple script for calculating quality metrics with FFmpeg.
 
 Currently supports PSNR, SSIM and VMAF.
