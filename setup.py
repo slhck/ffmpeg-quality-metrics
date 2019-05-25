@@ -23,9 +23,9 @@ except ImportError:
 setup(
     name='ffmpeg_quality_metrics',
     version=version,
-    description='Get scenecuts from a video file using ffmpeg',
+    description='Calculate quality metrics with FFmpeg (SSIM, PSNR, VMAF)',
     long_description=long_description,
-    url='https://github.com/slhck/bufferer',
+    url='https://github.com/slhck/ffmpeg-quality-metrics',
     author='Werner Robitza',
     author_email='werner.robitza@gmail.com',
     license='MIT',
