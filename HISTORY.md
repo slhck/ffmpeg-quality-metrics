@@ -1,3 +1,8 @@
+Version 0.3.3:
+
+- add missing pandas dependency
+- fix dockerfile entry point, fixes #4
+
 Version 0.3.2:
 
 - fix python compatibility
