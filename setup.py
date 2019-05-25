@@ -29,6 +29,7 @@ setup(
     author='Werner Robitza',
     author_email='werner.robitza@gmail.com',
     license='MIT',
+    install_requires=['pandas'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
