@@ -1,3 +1,7 @@
+Version 0.3:
+
+- make a package
+
 Version 0.2:
 
 - add input file paths to output
