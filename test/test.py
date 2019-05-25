@@ -9,7 +9,7 @@ import subprocess
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../'))
 
-from ffmpeg_quality_metrics import calc_ssim_psnr
+from ffmpeg_quality_metrics.__main__ import calc_ssim_psnr
 
 DIST = os.path.join(os.path.dirname(__file__), "dist-854x480.mkv")
 REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")

@@ -16,7 +16,7 @@
 # a file called HISTORY.md (under the title of the new version
 # number) and create a GIT tag.
 
-SRC_VERSION_FILE="ffmpeg_quality_metrics.py"
+SRC_VERSION_FILE="ffmpeg_quality_metrics/__init__.py"
 
 BASE_STRING=`cat VERSION`
 BASE_LIST=(`echo $BASE_STRING | tr '.' ' '`)

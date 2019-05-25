@@ -23,7 +23,6 @@ Contents:
 - FFmpeg:
     - download a static build from [their website](http://ffmpeg.org/download.html))
     - put the `ffmpeg` executable in your `$PATH`
-- `pip3 install -r requirements.txt`
 
 Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation:
 
@@ -33,27 +32,27 @@ Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calc
 
 ## Installation
 
-Clone this repo and run `ffmpeg_quality_metrics.py`.
+    pip install ffmpeg_quality_metrics
+
+Or clone this repository, then run the tool with `python -m ffmpeg_quality_metrics`
 
 ## Usage
 
 In the simplest case, if you have a distorted (encoded, maybe scaled) version and the reference:
 
 ```
-./ffmpeg_quality_metrics.py distorted.mp4 reference.avi
+ffmpeg_quality_metrics distorted.mp4 reference.avi
 ```
 
 The distorted file will be automatically scaled to the resolution of the reference.
 
-See `ffmpeg_quality_metrics.py -h`:
+See `ffmpeg_quality_metrics -h`:
 
 ```
-usage: ffmpeg_quality_metrics.py [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p]
+usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p]
                                  [-dps]
                                  [-of {json,csv}]
                                  dist ref
-
-ffmpeg_quality_metrics v0.1.2
 
 positional arguments:
   dist                  input file, distorted
@@ -99,7 +98,7 @@ JSON or CSV, including individual fields for Y, U, V, and averages, as well as f
 JSON example:
 
 ```
-➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf
+➜ ffmpeg_quality_metrics test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf
 {
     "vmaf": [
         {
@@ -209,7 +208,7 @@ JSON example:
 CSV example:
 
 ```
-➜ ./ffmpeg_quality_metrics.py test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf -of csv
+➜ ffmpeg_quality_metrics test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf -of csv
 n,adm2,motion2,ms_ssim,psnr,ssim,vif_scale0,vif_scale1,vif_scale2,vif_scale3,vmaf,mse_avg,mse_u,mse_v,mse_y,psnr_avg,psnr_u,psnr_v,psnr_y,ssim_avg,ssim_u,ssim_v,ssim_y,input_file_dist,input_file_ref
 1,0.70704,0.0,0.89698,18.58731,0.92415,0.53962,0.71805,0.75205,0.77367,15.44212,536.71,234.48,475.43,900.22,20.83,24.43,21.36,18.59,0.945,0.96,0.942,0.934,test/dist-854x480.mkv,test/ref-1280x720.mkv
 2,0.7064,0.35975,0.89806,18.60299,0.9247,0.54025,0.71961,0.75369,0.77607,15.85038,535.29,239.4,469.49,896.98,20.84,24.34,21.41,18.6,0.946,0.96,0.943,0.934,test/dist-854x480.mkv,test/ref-1280x720.mkv
