@@ -1,3 +1,10 @@
+Version 0.3.2:
+
+- fix python compatibility
+- remove old python script
+- update gitignore
+- add PyPI badge
+
 Version 0.3.1:
 
 - fix URL and description in setup file
