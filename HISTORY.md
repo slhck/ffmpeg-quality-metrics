@@ -1,3 +1,7 @@
+Version 0.3.1:
+
+- fix URL and description in setup file
+
 Version 0.3:
 
 - make a package
