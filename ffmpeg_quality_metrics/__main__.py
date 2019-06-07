@@ -282,7 +282,7 @@ def main():
         else:
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
-            print_stderr(f"Could not find model at {model_path}")
+            print_stderr(f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl file.")
             sys.exit(1)
 
         ret["vmaf"] = calc_vmaf(
