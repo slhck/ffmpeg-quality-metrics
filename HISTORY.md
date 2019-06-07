@@ -1,3 +1,9 @@
+Version 0.3.4:
+
+- clarify instructions
+- Merge pull request #7 from cdgriffith/development
+- Fixing windows path issue for ffmpeg Fixing VMAF model automatic finding via brew broken for windows
+
 Version 0.3.3:
 
 - add missing pandas dependency
