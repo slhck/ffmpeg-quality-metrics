@@ -29,6 +29,12 @@ IS_NIX = (not IS_WIN) and any(
 NUL = 'NUL' if IS_WIN else '/dev/null'
 
 
+def win_path_check(path):
+    if IS_WIN:
+        return path.replace("\\", "/").replace(":", "\\\\:")
+    return path
+
+
 def get_brewed_model_path():
     """
     Hack to get path for VMAF model from Linuxbrew
@@ -84,7 +90,7 @@ def calc_vmaf(ref, dist, model_path, scaling_algorithm="bicubic", phone_model=Fa
         vmaf_opts = {
             "model_path": model_path,
             "phone_model": "1" if phone_model else "0",
-            "log_path": temp_file_name_vmaf,
+            "log_path": win_path_check(temp_file_name_vmaf),
             "log_fmt": "json",
             "psnr": "1",
             "ssim": "1",
@@ -153,8 +159,8 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbos
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
             "[dist]split[dist1][dist2]",
             "[ref]split[ref1][ref2]",
-            f"[dist1][ref1]psnr={temp_file_name_psnr}",
-            f"[dist2][ref2]ssim={temp_file_name_ssim}"
+            f"[dist1][ref1]psnr={win_path_check(temp_file_name_psnr)}",
+            f"[dist2][ref2]ssim={win_path_check(temp_file_name_ssim)}"
         ]
 
         cmd = [
@@ -268,17 +274,17 @@ def main():
 
     cli_args = parser.parse_args()
 
-    if not cli_args.model_path:
-        model_path = os.path.join(get_brewed_model_path(), "vmaf_v0.6.1.pkl")
-    else:
-        model_path = cli_args.model_path
-    if not os.path.isfile(model_path):
-        print_stderr(f"Could not find model at {model_path}")
-        sys.exit(1)
-
     ret = {}
 
     if cli_args.enable_vmaf:
+        if not cli_args.model_path and not IS_WIN:
+            model_path = os.path.join(get_brewed_model_path(), "vmaf_v0.6.1.pkl")
+        else:
+            model_path = cli_args.model_path
+        if not os.path.isfile(model_path):
+            print_stderr(f"Could not find model at {model_path}")
+            sys.exit(1)
+
         ret["vmaf"] = calc_vmaf(
             cli_args.ref,
             cli_args.dist,
@@ -288,6 +294,7 @@ def main():
             cli_args.dry_run,
             cli_args.verbose
         )
+
     if not cli_args.disable_psnr_ssim:
         ret_tmp = calc_ssim_psnr(
                 cli_args.ref,
