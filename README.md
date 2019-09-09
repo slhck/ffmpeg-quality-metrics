@@ -93,6 +93,8 @@ This installs `ffmpeg` with all dependencies. You can then run the container, wh
 ./docker_run.sh
 ```
 
+Check the output of the above command for more help.
+
 ## Output
 
 JSON or CSV, including individual fields for Y, U, V, and averages, as well as frame numbers.

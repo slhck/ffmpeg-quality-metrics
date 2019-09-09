@@ -24,7 +24,8 @@ RUN git clone https://github.com/Linuxbrew/brew.git /home/linuxbrew/.linuxbrew/H
 RUN brew tap varenc/ffmpeg \
     && brew install varenc/ffmpeg/ffmpeg --with-libvmaf
 
-COPY requirements.txt ffmpeg_quality_metrics .
+COPY requirements.txt .
+COPY ffmpeg_quality_metrics ffmpeg_quality_metrics
 RUN pip3 install -r requirements.txt
 
 CMD ["python3", "-m", "ffmpeg_quality_metrics"]
