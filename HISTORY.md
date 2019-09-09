@@ -1,3 +1,8 @@
+Version 0.3.5:
+
+- switch Homebrew tap
+- fix Dockerfile
+
 Version 0.3.4:
 
 - clarify instructions
