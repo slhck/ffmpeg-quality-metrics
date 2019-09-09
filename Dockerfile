@@ -21,8 +21,8 @@ RUN git clone https://github.com/Linuxbrew/brew.git /home/linuxbrew/.linuxbrew/H
     && ln -s ../Homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/ \
     && brew config
 
-RUN brew tap varenc/ffmpeg \
-    && brew install varenc/ffmpeg/ffmpeg --with-libvmaf
+RUN brew tap homebrew-ffmpeg/ffmpeg \
+    && brew install homebrew-ffmpeg/ffmpeg/ffmpeg --with-libvmaf
 
 COPY requirements.txt .
 COPY ffmpeg_quality_metrics ffmpeg_quality_metrics
