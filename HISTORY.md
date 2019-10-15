@@ -1,3 +1,7 @@
+Version 0.3.6:
+
+- fix string
+
 Version 0.3.5:
 
 - switch Homebrew tap
