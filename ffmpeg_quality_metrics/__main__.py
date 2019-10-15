@@ -85,7 +85,7 @@ def calc_vmaf(ref, dist, model_path, scaling_algorithm="bicubic", phone_model=Fa
         )
 
         if verbose:
-            print_stderr(f"Writing temporary SSIM information to: {temp_file_name_vmaf}")
+            print_stderr(f"Writing temporary VMAF information to: {temp_file_name_vmaf}")
 
         vmaf_opts = {
             "model_path": model_path,
