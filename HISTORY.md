@@ -1,3 +1,8 @@
+Version 0.3.7:
+
+- change image to official homebrew/brew
+- pin pandas
+
 Version 0.3.6:
 
 - fix string
