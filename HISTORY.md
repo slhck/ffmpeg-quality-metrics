@@ -1,3 +1,7 @@
+Version 0.3.8:
+
+- compatibility with python 3.8
+
 Version 0.3.7:
 
 - change image to official homebrew/brew
