@@ -48,3 +48,6 @@ git add HISTORY.md VERSION "$SRC_VERSION_FILE"
 git commit -m "Version bump to $INPUT_STRING"
 git tag -a -m "Tagging version $INPUT_STRING" "v$INPUT_STRING"
 git push && git push origin --tags
+
+python3 setup.py sdist bdist_wheel
+python3 -m twine upload dist/*
