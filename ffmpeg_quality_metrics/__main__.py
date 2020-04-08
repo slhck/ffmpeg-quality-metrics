@@ -17,6 +17,7 @@ import tempfile
 from pprint import pprint
 import pandas as pd
 from platform import system as _current_os
+from shutil import which
 
 from .__init__ import __version__ as version
 
@@ -33,6 +34,13 @@ def win_path_check(path):
     if IS_WIN:
         return path.replace("\\", "/").replace(":", "\\\\:")
     return path
+
+
+def has_brew():
+    """
+    Check if the user has Homebrew installed
+    """
+    return which("brew") is not None
 
 
 def get_brewed_model_path():
@@ -278,7 +286,14 @@ def main():
 
     if cli_args.enable_vmaf:
         if not cli_args.model_path and not IS_WIN:
-            model_path = os.path.join(get_brewed_model_path(), "vmaf_v0.6.1.pkl")
+            if has_brew():
+                model_path = os.path.join(get_brewed_model_path(), "vmaf_v0.6.1.pkl")
+            else:
+                print_stderr(
+                    "Could not automatically determine VMAF model path, since it was not installed using Homebrew. "
+                    "Please specify the --model-path manually or install ffmpeg with Homebrew."
+                )
+                sys.exit(1)
         else:
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
