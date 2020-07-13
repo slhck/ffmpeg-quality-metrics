@@ -14,7 +14,6 @@ import os
 import json
 import sys
 import tempfile
-from pprint import pprint
 import pandas as pd
 from platform import system as _current_os
 from shutil import which
