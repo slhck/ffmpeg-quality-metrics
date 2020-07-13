@@ -1,4 +1,4 @@
-FROM homebrew/brew:2.2.2
+FROM homebrew/brew:2.4.5
 LABEL maintainer="Werner Robitza <werner.robitza@gmail.com>"
 LABEL name="ffmpeg_quality_metrics"
 
