@@ -284,15 +284,21 @@ def main():
     ret = {}
 
     if cli_args.enable_vmaf:
-        if not cli_args.model_path and not IS_WIN:
-            if has_brew():
-                model_path = os.path.join(get_brewed_model_path(), "vmaf_v0.6.1.pkl")
-            else:
+        if not cli_args.model_path:
+            if IS_WIN:
                 print_stderr(
-                    "Could not automatically determine VMAF model path, since it was not installed using Homebrew. "
-                    "Please specify the --model-path manually or install ffmpeg with Homebrew."
+                    "Cannot not automatically determine VMAF model path under Windows."
+                    "Please specify the --model-path manually."
                 )
-                sys.exit(1)
+            else:
+                if has_brew():
+                    model_path = os.path.join(get_brewed_model_path(), "vmaf_v0.6.1.pkl")
+                else:
+                    print_stderr(
+                        "Could not automatically determine VMAF model path, since it was not installed using Homebrew. "
+                        "Please specify the --model-path manually or install ffmpeg with Homebrew."
+                    )
+                    sys.exit(1)
         else:
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
