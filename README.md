@@ -21,22 +21,24 @@ Contents:
 
 ## Requirements
 
-- Python 3.6
+- Python 3.6 or higher
 - FFmpeg:
     - download a static build from [their website](http://ffmpeg.org/download.html))
     - put the `ffmpeg` executable in your `$PATH`
 
-Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation:
+Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation. Under Linux and macOS, this can be done with the following steps:
 
 - Install [Homebrew](https://brew.sh/)
 - Install [this tap](https://github.com/homebrew-ffmpeg/homebrew-ffmpeg/)
 - Run `brew install ffmpeg --with-libvmaf`.
 
+Under Windows, you have to install ffmpeg and VMAF manually, or using [helper scripts](https://github.com/rdp/ffmpeg-windows-build-helpers).
+
 ## Installation
 
-    pip install ffmpeg_quality_metrics
+    pip3 install ffmpeg_quality_metrics
 
-Or clone this repository, then run the tool with `python -m ffmpeg_quality_metrics`
+Or clone this repository, then run the tool with `python3 -m ffmpeg_quality_metrics`
 
 ## Usage
 
