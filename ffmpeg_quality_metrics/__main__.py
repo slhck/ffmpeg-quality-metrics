@@ -95,7 +95,7 @@ def calc_vmaf(ref, dist, model_path, scaling_algorithm="bicubic", phone_model=Fa
             print_stderr(f"Writing temporary VMAF information to: {temp_file_name_vmaf}")
 
         vmaf_opts = {
-            "model_path": model_path,
+            "model_path": win_path_check(model_path),
             "phone_model": "1" if phone_model else "0",
             "log_path": win_path_check(temp_file_name_vmaf),
             "log_fmt": "json",
