@@ -108,7 +108,7 @@ JSON example:
 {
     "vmaf": [
         {
-            "adm2": 0.70704,
+            "adm2": 0.69908,
             "motion2": 0.0,
             "ms_ssim": 0.89698,
             "psnr": 18.58731,
@@ -117,11 +117,11 @@ JSON example:
             "vif_scale1": 0.71805,
             "vif_scale2": 0.75205,
             "vif_scale3": 0.77367,
-            "vmaf": 15.44212,
+            "vmaf": 14.07074,
             "n": 1
         },
         {
-            "adm2": 0.7064,
+            "adm2": 0.69846,
             "motion2": 0.35975,
             "ms_ssim": 0.89806,
             "psnr": 18.60299,
@@ -130,11 +130,11 @@ JSON example:
             "vif_scale1": 0.71961,
             "vif_scale2": 0.75369,
             "vif_scale3": 0.77607,
-            "vmaf": 15.85038,
+            "vmaf": 14.48034,
             "n": 2
         },
         {
-            "adm2": 0.70505,
+            "adm2": 0.69715,
             "motion2": 0.35975,
             "ms_ssim": 0.89879,
             "psnr": 18.6131,
@@ -143,7 +143,7 @@ JSON example:
             "vif_scale1": 0.71869,
             "vif_scale2": 0.75344,
             "vif_scale3": 0.77616,
-            "vmaf": 15.63546,
+            "vmaf": 14.27326,
             "n": 3
         }
     ],
@@ -205,10 +205,29 @@ JSON example:
             "ssim_avg": 0.945
         }
     ],
+    "global": {
+        "ssim": {
+            "average": 0.9453333333333332,
+            "stdev": 0.00047140452079103207,
+            "min": 0.945,
+            "max": 0.946
+        },
+        "psnr": {
+            "average": 20.84,
+            "stdev": 0.008164965809278536,
+            "min": 20.83,
+            "max": 20.85
+        },
+        "vmaf": {
+            "average": 14.27478,
+            "stdev": 0.16722195390159322,
+            "min": 14.07074,
+            "max": 14.48034
+        }
+    },
     "input_file_dist": "test/dist-854x480.mkv",
     "input_file_ref": "test/ref-1280x720.mkv"
 }
-
 ```
 
 CSV example:

@@ -15,6 +15,7 @@ import json
 import sys
 import tempfile
 import pandas as pd
+import numpy as np
 from platform import system as _current_os
 from shutil import which
 
@@ -226,6 +227,24 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbos
     }
 
 
+def calculate_global_stats(ret):
+    global_stats = {}
+    for key in ['ssim', 'psnr', 'vmaf']:
+        if key not in ret:
+            continue
+
+        value_key = key if key == "vmaf" else key + "_avg"
+        values = [float(entry[value_key]) for entry in ret[key]]
+        global_stats[key] = {
+            "average": np.average(values),
+            "stdev": np.std(values),
+            "min": np.min(values),
+            "max": np.max(values),
+        }
+
+    return global_stats
+
+
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -327,9 +346,11 @@ def main():
         ret["ssim"] = ret_tmp["ssim"]
 
     if cli_args.output_format == "json":
+        ret["global"] = calculate_global_stats(ret)
         ret["input_file_dist"] = cli_args.dist
         ret["input_file_ref"] = cli_args.ref
         print(json.dumps(ret, indent=4))
+
     elif cli_args.output_format == "csv":
         all_dfs = []
 

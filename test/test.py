@@ -8,7 +8,7 @@ import unittest
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../'))
 
-from ffmpeg_quality_metrics.__main__ import calc_ssim_psnr
+from ffmpeg_quality_metrics.__main__ import calc_ssim_psnr, calculate_global_stats
 
 DIST = os.path.join(os.path.dirname(__file__), "dist-854x480.mkv")
 REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
@@ -29,6 +29,10 @@ class TestMetrics(unittest.TestCase):
             for key in ['mse_avg', 'mse_y', 'mse_u', 'mse_v', 'psnr_avg', 'psnr_y', 'psnr_u', 'psnr_v']:
                 self.assertAlmostEqual(expected_frame[key], actual_frame[key], places=2)
 
+    def test_global(self):
+        run_ret = calculate_global_stats(calc_ssim_psnr(DIST, REF))
+        expected = {"ssim": {"average": 0.952, "stdev": 0.0, "min": 0.952, "max": 0.952}, "psnr": {"average": 20.916666666666668, "stdev": 0.004714045207911053, "min": 20.91, "max": 20.92}}
+        self.assertEqual(run_ret, expected)
 
 if __name__ == '__main__':
     unittest.main()
