@@ -21,13 +21,26 @@ from shutil import which
 
 from .__init__ import __version__ as version
 
-ALLOWED_SCALERS = ["fast_bilinear", "bilinear", "bicubic", "experimental", "neighbor", "area", "bicublin", "gauss", "sinc", "lanczos", "spline"]
+ALLOWED_SCALERS = [
+    "fast_bilinear",
+    "bilinear",
+    "bicubic",
+    "experimental",
+    "neighbor",
+    "area",
+    "bicublin",
+    "gauss",
+    "sinc",
+    "lanczos",
+    "spline",
+]
 CUR_OS = _current_os()
-IS_WIN = CUR_OS in ['Windows', 'cli']
+IS_WIN = CUR_OS in ["Windows", "cli"]
 IS_NIX = (not IS_WIN) and any(
-    CUR_OS.startswith(i) for i in
-    ['CYGWIN', 'MSYS', 'Linux', 'Darwin', 'SunOS', 'FreeBSD', 'NetBSD'])
-NUL = 'NUL' if IS_WIN else '/dev/null'
+    CUR_OS.startswith(i)
+    for i in ["CYGWIN", "MSYS", "Linux", "Darwin", "SunOS", "FreeBSD", "NetBSD"]
+)
+NUL = "NUL" if IS_WIN else "/dev/null"
 
 
 def win_path_check(path):
@@ -79,7 +92,15 @@ def run_command(cmd, dry_run=False, verbose=False):
         sys.exit(1)
 
 
-def calc_vmaf(ref, dist, model_path, scaling_algorithm="bicubic", phone_model=False, dry_run=False, verbose=False):
+def calc_vmaf(
+    ref,
+    dist,
+    model_path,
+    scaling_algorithm="bicubic",
+    phone_model=False,
+    dry_run=False,
+    verbose=False,
+):
     vmaf_data = []
 
     if scaling_algorithm not in ALLOWED_SCALERS:
@@ -93,7 +114,9 @@ def calc_vmaf(ref, dist, model_path, scaling_algorithm="bicubic", phone_model=Fa
         )
 
         if verbose:
-            print_stderr(f"Writing temporary VMAF information to: {temp_file_name_vmaf}")
+            print_stderr(
+                f"Writing temporary VMAF information to: {temp_file_name_vmaf}"
+            )
 
         vmaf_opts = {
             "model_path": win_path_check(model_path),
@@ -102,25 +125,32 @@ def calc_vmaf(ref, dist, model_path, scaling_algorithm="bicubic", phone_model=Fa
             "log_fmt": "json",
             "psnr": "1",
             "ssim": "1",
-            "ms_ssim": "1"
+            "ms_ssim": "1",
         }
 
         vmaf_opts_string = ":".join(f"{k}={v}" for k, v in vmaf_opts.items())
 
         filter_chains = [
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
-            f"[dist][ref]libvmaf={vmaf_opts_string}"
+            f"[dist][ref]libvmaf={vmaf_opts_string}",
         ]
 
         cmd = [
-            "ffmpeg", "-nostdin", "-y",
-            "-threads", "1",
-            "-i", ref,
-            "-i", dist,
+            "ffmpeg",
+            "-nostdin",
+            "-y",
+            "-threads",
+            "1",
+            "-i",
+            ref,
+            "-i",
+            dist,
             "-filter_complex",
             ";".join(filter_chains),
             "-an",
-            "-f", "null", NUL
+            "-f",
+            "null",
+            NUL,
         ]
 
         run_command(cmd, dry_run, verbose)
@@ -142,7 +172,9 @@ def calc_vmaf(ref, dist, model_path, scaling_algorithm="bicubic", phone_model=Fa
     return vmaf_data
 
 
-def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbose=False):
+def calc_ssim_psnr(
+    ref, dist, scaling_algorithm="bicubic", dry_run=False, verbose=False
+):
     psnr_data = []
     ssim_data = []
 
@@ -160,26 +192,37 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbos
         )
 
         if verbose:
-            print_stderr(f"Writing temporary SSIM information to: {temp_file_name_ssim}")
-            print_stderr(f"Writing temporary PSNR information to: {temp_file_name_psnr}")
+            print_stderr(
+                f"Writing temporary SSIM information to: {temp_file_name_ssim}"
+            )
+            print_stderr(
+                f"Writing temporary PSNR information to: {temp_file_name_psnr}"
+            )
 
         filter_chains = [
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
             "[dist]split[dist1][dist2]",
             "[ref]split[ref1][ref2]",
             f"[dist1][ref1]psnr={win_path_check(temp_file_name_psnr)}",
-            f"[dist2][ref2]ssim={win_path_check(temp_file_name_ssim)}"
+            f"[dist2][ref2]ssim={win_path_check(temp_file_name_ssim)}",
         ]
 
         cmd = [
-            "ffmpeg", "-nostdin", "-y",
-            "-threads", "1",
-            "-i", ref,
-            "-i", dist,
+            "ffmpeg",
+            "-nostdin",
+            "-y",
+            "-threads",
+            "1",
+            "-i",
+            ref,
+            "-i",
+            dist,
             "-filter_complex",
             ";".join(filter_chains),
             "-an",
-            "-f", "null", NUL
+            "-f",
+            "null",
+            NUL,
         ]
 
         run_command(cmd, dry_run, verbose)
@@ -221,15 +264,12 @@ def calc_ssim_psnr(ref, dist, scaling_algorithm="bicubic", dry_run=False, verbos
         if os.path.isfile(temp_file_name_ssim):
             os.remove(temp_file_name_ssim)
 
-    return {
-        'ssim': ssim_data,
-        'psnr': psnr_data
-    }
+    return {"ssim": ssim_data, "psnr": psnr_data}
 
 
 def calculate_global_stats(ret):
     global_stats = {}
-    for key in ['ssim', 'psnr', 'vmaf']:
+    for key in ["ssim", "psnr", "vmaf"]:
         if key not in ret:
             continue
 
@@ -254,32 +294,32 @@ def main():
     parser.add_argument("ref", help="input file, reference")
 
     parser.add_argument(
-        "-n", "--dry-run", action="store_true",
-        help="Do not run command, just show what would be done"
+        "-n",
+        "--dry-run",
+        action="store_true",
+        help="Do not run command, just show what would be done",
     )
 
     parser.add_argument(
-        "-v", "--verbose", action="store_true",
-        help="Show verbose output"
+        "-v", "--verbose", action="store_true", help="Show verbose output"
     )
 
     parser.add_argument(
-        "-ev", "--enable-vmaf", action="store_true",
-        help="Enable VMAF computation; calculates VMAF as well as SSIM and PSNR"
+        "-ev",
+        "--enable-vmaf",
+        action="store_true",
+        help="Enable VMAF computation; calculates VMAF as well as SSIM and PSNR",
     )
+    parser.add_argument("-m", "--model-path", help="Set path to VMAF model file (.pkl)")
     parser.add_argument(
-        "-m",
-        "--model-path",
-        help="Set path to VMAF model file (.pkl)"
-    )
-    parser.add_argument(
-        "-p", "--phone-model", action="store_true",
-        help="Enable VMAF phone model"
+        "-p", "--phone-model", action="store_true", help="Enable VMAF phone model"
     )
 
     parser.add_argument(
-        "-dp", "--disable-psnr-ssim", action="store_true",
-        help="Disable PSNR/SSIM computation. Use VMAF to get YUV estimate."
+        "-dp",
+        "--disable-psnr-ssim",
+        action="store_true",
+        help="Disable PSNR/SSIM computation. Use VMAF to get YUV estimate.",
     )
 
     parser.add_argument(
@@ -287,7 +327,7 @@ def main():
         "--scaling-algorithm",
         default="bicubic",
         choices=ALLOWED_SCALERS,
-        help="Scaling algorithm for ffmpeg"
+        help="Scaling algorithm for ffmpeg",
     )
     parser.add_argument(
         "-of",
@@ -311,7 +351,9 @@ def main():
                 )
             else:
                 if has_brew():
-                    model_path = os.path.join(get_brewed_model_path(), "vmaf_v0.6.1.pkl")
+                    model_path = os.path.join(
+                        get_brewed_model_path(), "vmaf_v0.6.1.pkl"
+                    )
                 else:
                     print_stderr(
                         "Could not automatically determine VMAF model path, since it was not installed using Homebrew. "
@@ -321,7 +363,9 @@ def main():
         else:
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
-            print_stderr(f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl file.")
+            print_stderr(
+                f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl file."
+            )
             sys.exit(1)
 
         ret["vmaf"] = calc_vmaf(
@@ -331,17 +375,17 @@ def main():
             cli_args.scaling_algorithm,
             cli_args.phone_model,
             cli_args.dry_run,
-            cli_args.verbose
+            cli_args.verbose,
         )
 
     if not cli_args.disable_psnr_ssim:
         ret_tmp = calc_ssim_psnr(
-                cli_args.ref,
-                cli_args.dist,
-                cli_args.scaling_algorithm,
-                cli_args.dry_run,
-                cli_args.verbose
-            )
+            cli_args.ref,
+            cli_args.dist,
+            cli_args.scaling_algorithm,
+            cli_args.dry_run,
+            cli_args.verbose,
+        )
         ret["psnr"] = ret_tmp["psnr"]
         ret["ssim"] = ret_tmp["ssim"]
 
@@ -366,7 +410,7 @@ def main():
             sys.exit(1)
 
         try:
-            df = reduce(lambda x, y: pd.merge(x, y, on='n'), all_dfs)
+            df = reduce(lambda x, y: pd.merge(x, y, on="n"), all_dfs)
 
             df["input_file_dist"] = cli_args.dist
             df["input_file_ref"] = cli_args.ref
