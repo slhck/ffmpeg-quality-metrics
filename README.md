@@ -4,7 +4,11 @@
 
 Simple script for calculating quality metrics with FFmpeg.
 
-Currently supports PSNR, SSIM and VMAF.
+Currently supports PSNR, SSIM and VMAF. It will output:
+
+- the per-frame metrics
+- metrics for each component (Y, U, V)
+- global statistics (min/max/average/standard deviation)
 
 Author: Werner Robitza <werner.robitza@gmail.com>
 
@@ -50,13 +54,14 @@ ffmpeg_quality_metrics distorted.mp4 reference.avi
 
 The distorted file will be automatically scaled to the resolution of the reference.
 
+### Extended Options
+
 See `ffmpeg_quality_metrics -h`:
 
 ```
-usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p]
-                                 [-dps]
-                                 [-of {json,csv}]
-                                 dist ref
+usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp] [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
+                   [-of {json,csv}] [-r FRAMERATE]
+                   dist ref
 
 positional arguments:
   dist                  input file, distorted
@@ -64,21 +69,39 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -n, --dry-run         Do not run command, just show what would be done
-                        (default: False)
+  -n, --dry-run         Do not run command, just show what would be done (default: False)
   -v, --verbose         Show verbose output (default: False)
-  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as
-                        SSIM and PSNR (default: False)
+  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as SSIM and PSNR (default: False)
   -m MODEL_PATH, --model-path MODEL_PATH
                         Set path to VMAF model file (.pkl) (default: None)
   -p, --phone-model     Enable VMAF phone model (default: False)
   -dp, --disable-psnr-ssim
-                        Disable PSNR/SSIM computation. Use VMAF to get YUV
-                        estimate. (default: False)
-  -s, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
+                        Disable PSNR/SSIM computation. Use VMAF to get YUV estimate. (default: False)
+  -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                         Scaling algorithm for ffmpeg (default: bicubic)
   -of {json,csv}, --output-format {json,csv}
                         output in which format (default: json)
+  -r FRAMERATE, --framerate FRAMERATE
+                        force an input framerate (default: None)
+```
+
+### Specifying VMAF Model
+
+If you are running Windows, or if you want to specify a different VMAF model file than the default, you need both a `.pkl` and a `.pkl.model` file in the same path for VMAF to be able to load the model.
+
+Use the `-m/--model-path` option to set the path to the model file, by pointing it to the `.pkl` file (not the `.pkl.model` file!).
+
+For example, if you have the model files saved at:
+
+```
+/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.pkl
+/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.pkl.model
+```
+
+Run the command with:
+
+```
+ffmpeg_quality_metrics dist.mkv ref.mkv -m /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.pkl
 ```
 
 ## Running with Docker
