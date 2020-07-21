@@ -69,8 +69,16 @@ def get_brewed_model_path():
     return model_path
 
 
-def print_stderr(msg):
-    print(msg, file=sys.stderr)
+def print_error(msg):
+    print("\033[1;31mERROR:\033[1;0m %s" % msg, file=sys.stderr)
+
+
+def print_warning(msg):
+    print("\033[1;33mWARNING:\033[1;0m %s" % msg, file=sys.stderr)
+
+
+def print_info(msg):
+    print("\033[1;34mINFO:\033[1;0m %s" % msg, file=sys.stderr)
 
 
 def run_command(cmd, dry_run=False, verbose=False):
@@ -78,7 +86,7 @@ def run_command(cmd, dry_run=False, verbose=False):
     Run a command directly
     """
     if dry_run or verbose:
-        print_stderr("[cmd] " + " ".join(cmd))
+        print_info("[cmd] " + " ".join(cmd))
         if dry_run:
             return
 
@@ -88,8 +96,8 @@ def run_command(cmd, dry_run=False, verbose=False):
     if process.returncode == 0:
         return stdout.decode("utf-8"), stderr.decode("utf-8")
     else:
-        print_stderr("[error] running command: {}".format(" ".join(cmd)))
-        print_stderr(stderr.decode("utf-8"))
+        print_error("error running command: {}".format(" ".join(cmd)))
+        print_error(stderr.decode("utf-8"))
         sys.exit(1)
 
 
@@ -102,7 +110,7 @@ def get_framerate(input_file):
         match = pattern.search(str(output)).groups()[0]
         return float(match)
     except Exception as e:
-        print_stderr(f"[error] could not parse FPS from file {input_file}!")
+        print_error(f"could not parse FPS from file {input_file}!")
         sys.exit(1)
 
 
@@ -111,8 +119,9 @@ def get_framerates(ref, dist):
     dist_framerate = get_framerate(dist)
 
     if ref_framerate != dist_framerate:
-        print_stderr(
-            f"[warning] ref, dist framerates differ: {ref_framerate}, {dist_framerate}"
+        print_warning(
+            f"ref, dist framerates differ: {ref_framerate}, {dist_framerate}. "
+            "This may result in inaccurate quality metrics. Force an input framerate via the -r option."
         )
 
     return ref_framerate, dist_framerate
@@ -124,13 +133,15 @@ def calc_vmaf(
     model_path,
     scaling_algorithm="bicubic",
     phone_model=False,
+    framerate=None,
     dry_run=False,
     verbose=False,
 ):
     vmaf_data = []
 
     if scaling_algorithm not in ALLOWED_SCALERS:
-        print_stderr(f"Allowed scaling algorithms: {ALLOWED_SCALERS}")
+        print_error(f"Allowed scaling algorithms: {ALLOWED_SCALERS}")
+        sys.exit(1)
 
     try:
         temp_dir = tempfile.gettempdir()
@@ -140,7 +151,7 @@ def calc_vmaf(
         )
 
         if verbose:
-            print_stderr(
+            print_info(
                 f"Writing temporary VMAF information to: {temp_file_name_vmaf}"
             )
 
@@ -163,7 +174,7 @@ def calc_vmaf(
             f"[dist1][ref1]libvmaf={vmaf_opts_string}",
         ]
 
-        cmd = get_ffmpeg_command(ref, dist, filter_chains)
+        cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate)
 
         run_command(cmd, dry_run, verbose)
 
@@ -184,8 +195,12 @@ def calc_vmaf(
     return vmaf_data
 
 
-def get_ffmpeg_command(ref, dist, filter_chains):
-    ref_framerate, dist_framerate = get_framerates(ref, dist)
+def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None):
+    if not framerate:
+        ref_framerate, dist_framerate = get_framerates(ref, dist)
+    else:
+        ref_framerate = framerate
+        dist_framerate = framerate
 
     cmd = [
         "ffmpeg",
@@ -213,13 +228,14 @@ def get_ffmpeg_command(ref, dist, filter_chains):
 
 
 def calc_ssim_psnr(
-    ref, dist, scaling_algorithm="bicubic", dry_run=False, verbose=False
+    ref, dist, scaling_algorithm="bicubic", framerate=None, dry_run=False, verbose=False
 ):
     psnr_data = []
     ssim_data = []
 
     if scaling_algorithm not in ALLOWED_SCALERS:
-        print_stderr(f"Allowed scaling algorithms: {ALLOWED_SCALERS}")
+        print_error(f"Allowed scaling algorithms: {ALLOWED_SCALERS}")
+        sys.exit(1)
 
     try:
         temp_dir = tempfile.gettempdir()
@@ -232,10 +248,10 @@ def calc_ssim_psnr(
         )
 
         if verbose:
-            print_stderr(
+            print_info(
                 f"Writing temporary SSIM information to: {temp_file_name_ssim}"
             )
-            print_stderr(
+            print_info(
                 f"Writing temporary PSNR information to: {temp_file_name_psnr}"
             )
 
@@ -249,7 +265,7 @@ def calc_ssim_psnr(
             f"[dist2][ref2]ssim={win_path_check(temp_file_name_ssim)}",
         ]
 
-        cmd = get_ffmpeg_command(ref, dist, filter_chains)
+        cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate)
 
         run_command(cmd, dry_run, verbose)
 
@@ -363,6 +379,9 @@ def main():
         choices=["json", "csv"],
         help="output in which format",
     )
+    parser.add_argument(
+        "-r", "--framerate", type=float, help="force an input framerate",
+    )
 
     cli_args = parser.parse_args()
 
@@ -387,7 +406,7 @@ def main():
                         "Please specify the --model-path manually or install ffmpeg with Homebrew."
                     )
                     sys.exit(1)
-        else: # The model path was specified manually.
+        else:  # The model path was specified manually.
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
             print_stderr(
@@ -401,6 +420,7 @@ def main():
             model_path,
             cli_args.scaling_algorithm,
             cli_args.phone_model,
+            cli_args.framerate,
             cli_args.dry_run,
             cli_args.verbose,
         )
@@ -410,6 +430,7 @@ def main():
             cli_args.ref,
             cli_args.dist,
             cli_args.scaling_algorithm,
+            cli_args.framerate,
             cli_args.dry_run,
             cli_args.verbose,
         )
