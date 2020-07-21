@@ -6,7 +6,7 @@ import os
 import sys
 import unittest
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__) + '/../'))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../'))
 
 from ffmpeg_quality_metrics.__main__ import calc_ssim_psnr, calculate_global_stats
 

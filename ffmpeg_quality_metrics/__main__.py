@@ -18,6 +18,7 @@ import pandas as pd
 import numpy as np
 from platform import system as _current_os
 from shutil import which
+import re
 
 from .__init__ import __version__ as version
 
@@ -92,6 +93,31 @@ def run_command(cmd, dry_run=False, verbose=False):
         sys.exit(1)
 
 
+def get_framerate(input_file):
+    cmd = ["ffmpeg", "-nostdin", "-y", "-i", input_file, "-f", "null", NUL]
+
+    output = run_command(cmd)
+    pattern = re.compile(r"(\d+(\.\d+)?) fps")
+    try:
+        match = pattern.search(str(output)).groups()[0]
+        return float(match)
+    except Exception as e:
+        print_stderr(f"[error] could not parse FPS from file {input_file}!")
+        sys.exit(1)
+
+
+def get_framerates(ref, dist):
+    ref_framerate = get_framerate(ref)
+    dist_framerate = get_framerate(dist)
+
+    if ref_framerate != dist_framerate:
+        print_stderr(
+            f"[warning] ref, dist framerates differ: {ref_framerate}, {dist_framerate}"
+        )
+
+    return ref_framerate, dist_framerate
+
+
 def calc_vmaf(
     ref,
     dist,
@@ -132,26 +158,12 @@ def calc_vmaf(
 
         filter_chains = [
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
-            f"[dist][ref]libvmaf={vmaf_opts_string}",
+            "[dist]setpts=PTS-STARTPTS[dist1]",
+            "[ref]setpts=PTS-STARTPTS[ref1]",
+            f"[dist1][ref1]libvmaf={vmaf_opts_string}",
         ]
 
-        cmd = [
-            "ffmpeg",
-            "-nostdin",
-            "-y",
-            "-threads",
-            "1",
-            "-i",
-            ref,
-            "-i",
-            dist,
-            "-filter_complex",
-            ";".join(filter_chains),
-            "-an",
-            "-f",
-            "null",
-            NUL,
-        ]
+        cmd = get_ffmpeg_command(ref, dist, filter_chains)
 
         run_command(cmd, dry_run, verbose)
 
@@ -170,6 +182,34 @@ def calc_vmaf(
             os.remove(temp_file_name_vmaf)
 
     return vmaf_data
+
+
+def get_ffmpeg_command(ref, dist, filter_chains):
+    ref_framerate, dist_framerate = get_framerates(ref, dist)
+
+    cmd = [
+        "ffmpeg",
+        "-nostdin",
+        "-y",
+        "-threads",
+        "1",
+        "-r",
+        str(ref_framerate),
+        "-i",
+        ref,
+        "-r",
+        str(dist_framerate),
+        "-i",
+        dist,
+        "-filter_complex",
+        ";".join(filter_chains),
+        "-an",
+        "-f",
+        "null",
+        NUL,
+    ]
+
+    return cmd
 
 
 def calc_ssim_psnr(
@@ -201,29 +241,15 @@ def calc_ssim_psnr(
 
         filter_chains = [
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
-            "[dist]split[dist1][dist2]",
-            "[ref]split[ref1][ref2]",
+            "[dist]setpts=PTS-STARTPTS[distpts]",
+            "[ref]setpts=PTS-STARTPTS[refpts]",
+            "[distpts]split[dist1][dist2]",
+            "[refpts]split[ref1][ref2]",
             f"[dist1][ref1]psnr={win_path_check(temp_file_name_psnr)}",
             f"[dist2][ref2]ssim={win_path_check(temp_file_name_ssim)}",
         ]
 
-        cmd = [
-            "ffmpeg",
-            "-nostdin",
-            "-y",
-            "-threads",
-            "1",
-            "-i",
-            ref,
-            "-i",
-            dist,
-            "-filter_complex",
-            ";".join(filter_chains),
-            "-an",
-            "-f",
-            "null",
-            NUL,
-        ]
+        cmd = get_ffmpeg_command(ref, dist, filter_chains)
 
         run_command(cmd, dry_run, verbose)
 
