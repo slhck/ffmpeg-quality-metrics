@@ -372,9 +372,10 @@ def main():
         if not cli_args.model_path:
             if IS_WIN:
                 print_stderr(
-                    "Cannot not automatically determine VMAF model path under Windows."
+                    "Cannot not automatically determine VMAF model path under Windows. "
                     "Please specify the --model-path manually."
                 )
+                sys.exit(1)
             else:
                 if has_brew():
                     model_path = os.path.join(
@@ -386,7 +387,7 @@ def main():
                         "Please specify the --model-path manually or install ffmpeg with Homebrew."
                     )
                     sys.exit(1)
-        else:
+        else: # The model path was specified manually.
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
             print_stderr(
