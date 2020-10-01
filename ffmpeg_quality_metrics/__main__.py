@@ -390,7 +390,7 @@ def main():
     if cli_args.enable_vmaf:
         if not cli_args.model_path:
             if IS_WIN:
-                print_stderr(
+                print_error(
                     "Cannot not automatically determine VMAF model path under Windows. "
                     "Please specify the --model-path manually."
                 )
@@ -401,7 +401,7 @@ def main():
                         get_brewed_model_path(), "vmaf_v0.6.1.pkl"
                     )
                 else:
-                    print_stderr(
+                    print_error(
                         "Could not automatically determine VMAF model path, since it was not installed using Homebrew. "
                         "Please specify the --model-path manually or install ffmpeg with Homebrew."
                     )
@@ -409,7 +409,7 @@ def main():
         else:  # The model path was specified manually.
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
-            print_stderr(
+            print_error(
                 f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl file."
             )
             sys.exit(1)
@@ -454,7 +454,7 @@ def main():
             all_dfs.append(pd.DataFrame(ret["ssim"]))
 
         if not all_dfs:
-            print_stderr("No data calculated!")
+            print_error("No data calculated!")
             sys.exit(1)
 
         try:
@@ -468,10 +468,10 @@ def main():
             df = df.reindex(columns=cols)
             print(df.to_csv(index=False))
         except Exception as e:
-            print_stderr(f"Error merging data to CSV: {e}")
+            print_error(f"Error merging data to CSV: {e}")
             sys.exit(1)
     else:
-        print_stderr("Wrong output format chosen, use 'json' or 'csv'")
+        print_error("Wrong output format chosen, use 'json' or 'csv'")
         sys.exit(1)
 
 
