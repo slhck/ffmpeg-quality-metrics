@@ -32,9 +32,13 @@ Contents:
 
 Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation. Under Linux and macOS, this can be done with the following steps:
 
-- Install [Homebrew](https://brew.sh/)
-- Install [this tap](https://github.com/homebrew-ffmpeg/homebrew-ffmpeg/)
-- Run `brew install ffmpeg --with-libvmaf`.
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+brew tap homebrew-ffmpeg/ffmpeg
+brew install homebrew-ffmpeg/ffmpeg/ffmpeg --with-libvmaf
+```
+
+This may take a while.
 
 Under Windows, you have to install ffmpeg and VMAF manually, or using [helper scripts](https://github.com/rdp/ffmpeg-windows-build-helpers).
 
