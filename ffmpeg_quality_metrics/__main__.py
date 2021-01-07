@@ -19,8 +19,11 @@ import numpy as np
 from platform import system as _current_os
 from shutil import which
 import re
+import colorama
 
 from .__init__ import __version__ as version
+
+colorama.init()
 
 ALLOWED_SCALERS = [
     "fast_bilinear",

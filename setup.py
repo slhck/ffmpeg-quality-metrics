@@ -29,7 +29,7 @@ setup(
     author='Werner Robitza',
     author_email='werner.robitza@gmail.com',
     license='MIT',
-    install_requires=['pandas'],
+    install_requires=['pandas', 'colorama'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
