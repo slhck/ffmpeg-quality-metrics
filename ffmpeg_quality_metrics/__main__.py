@@ -437,6 +437,10 @@ def main():
         ret["psnr"] = ret_tmp["psnr"]
         ret["ssim"] = ret_tmp["ssim"]
 
+    if cli_args.dry_run:
+        print_warning("Dry run specified, exiting without computing stats")
+        return
+
     if cli_args.output_format == "json":
         ret["global"] = calculate_global_stats(ret)
         ret["input_file_dist"] = cli_args.dist
