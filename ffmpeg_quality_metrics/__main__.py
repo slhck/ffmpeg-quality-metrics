@@ -84,7 +84,7 @@ def print_info(msg):
     print("\033[1;34mINFO:\033[1;0m %s" % msg, file=sys.stderr)
 
 
-def run_command(cmd, dry_run=False, verbose=False):
+def run_command(cmd, dry_run=False, verbose=False, allow_error=False):
     """
     Run a command directly
     """
@@ -96,7 +96,7 @@ def run_command(cmd, dry_run=False, verbose=False):
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
-    if process.returncode == 0:
+    if allow_error or process.returncode == 0:
         return stdout.decode("utf-8"), stderr.decode("utf-8")
     else:
         print_error("error running command: {}".format(" ".join(cmd)))
@@ -105,9 +105,9 @@ def run_command(cmd, dry_run=False, verbose=False):
 
 
 def get_framerate(input_file):
-    cmd = ["ffmpeg", "-nostdin", "-y", "-i", input_file, "-f", "null", NUL]
+    cmd = ["ffmpeg", "-nostdin", "-y", "-i", input_file]
 
-    output = run_command(cmd)
+    output = run_command(cmd, allow_error=True)
     pattern = re.compile(r"(\d+(\.\d+)?) fps")
     try:
         match = pattern.search(str(output)).groups()[0]
