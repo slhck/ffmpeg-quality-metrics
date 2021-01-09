@@ -19,11 +19,8 @@ import numpy as np
 from platform import system as _current_os
 from shutil import which
 import re
-import colorama
 
 from .__init__ import __version__ as version
-
-colorama.init()
 
 ALLOWED_SCALERS = [
     "fast_bilinear",
@@ -73,15 +70,15 @@ def get_brewed_model_path():
 
 
 def print_error(msg):
-    print("\033[1;31mERROR:\033[1;0m %s" % msg, file=sys.stderr)
+    print("ERROR: %s" % msg, file=sys.stderr)
 
 
 def print_warning(msg):
-    print("\033[1;33mWARNING:\033[1;0m %s" % msg, file=sys.stderr)
+    print("WARNING: %s" % msg, file=sys.stderr)
 
 
 def print_info(msg):
-    print("\033[1;34mINFO:\033[1;0m %s" % msg, file=sys.stderr)
+    print("INFO: %s" % msg, file=sys.stderr)
 
 
 def run_command(cmd, dry_run=False, verbose=False, allow_error=False):
