@@ -49,7 +49,7 @@ NUL = "NUL" if IS_WIN else "/dev/null"
 
 def win_path_check(path):
     if IS_WIN:
-        return path.replace("\\", "/").replace(":", "\\\\:")
+        return path.replace("\\", "/").replace(":", "\\:")
     return path
 
 
@@ -174,7 +174,7 @@ def calc_vmaf(
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
             "[dist]setpts=PTS-STARTPTS[dist1]",
             "[ref]setpts=PTS-STARTPTS[ref1]",
-            f"[dist1][ref1]libvmaf={vmaf_opts_string}",
+            f"[dist1][ref1]libvmaf='{vmaf_opts_string}'",
         ]
 
         cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate)
@@ -264,8 +264,8 @@ def calc_ssim_psnr(
             "[ref]setpts=PTS-STARTPTS[refpts]",
             "[distpts]split[dist1][dist2]",
             "[refpts]split[ref1][ref2]",
-            f"[dist1][ref1]psnr={win_path_check(temp_file_name_psnr)}",
-            f"[dist2][ref2]ssim={win_path_check(temp_file_name_ssim)}",
+            f"[dist1][ref1]psnr='{win_path_check(temp_file_name_psnr)}'",
+            f"[dist2][ref2]ssim='{win_path_check(temp_file_name_ssim)}'",
         ]
 
         cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate)
