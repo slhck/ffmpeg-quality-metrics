@@ -63,9 +63,10 @@ The distorted file will be automatically scaled to the resolution of the referen
 See `ffmpeg_quality_metrics -h`:
 
 ```
-usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp] [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
-                   [-of {json,csv}] [-r FRAMERATE]
-                   dist ref
+usage:  [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp]
+        [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
+        [-of {json,csv}] [-r FRAMERATE] [-t THREADS]
+        dist ref
 
 positional arguments:
   dist                  input file, distorted
@@ -73,20 +74,26 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -n, --dry-run         Do not run command, just show what would be done (default: False)
+  -n, --dry-run         Do not run command, just show what would be done
+                        (default: False)
   -v, --verbose         Show verbose output (default: False)
-  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as SSIM and PSNR (default: False)
+  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as
+                        SSIM and PSNR (default: False)
   -m MODEL_PATH, --model-path MODEL_PATH
                         Set path to VMAF model file (.pkl) (default: None)
   -p, --phone-model     Enable VMAF phone model (default: False)
   -dp, --disable-psnr-ssim
-                        Disable PSNR/SSIM computation. Use VMAF to get YUV estimate. (default: False)
+                        Disable PSNR/SSIM computation. Use VMAF to get YUV
+                        estimate. (default: False)
   -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                         Scaling algorithm for ffmpeg (default: bicubic)
   -of {json,csv}, --output-format {json,csv}
                         output in which format (default: json)
   -r FRAMERATE, --framerate FRAMERATE
                         force an input framerate (default: None)
+  -t THREADS, --threads THREADS
+                        Number of threads to do the calculations (default: 0)
+
 ```
 
 ### Specifying VMAF Model
