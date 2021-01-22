@@ -388,7 +388,7 @@ def main():
         "-t",
         "--threads",
         type=int,
-        default="1",
+        default=1,
         help="Number of threads to do the calculations",
     )
    
