@@ -136,7 +136,7 @@ def calc_vmaf(
     framerate=None,
     dry_run=False,
     verbose=False,
-    threads=1,
+    threads=0,
 ):
     vmaf_data = []
 
@@ -196,7 +196,7 @@ def calc_vmaf(
     return vmaf_data
 
 
-def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None, threads=1):
+def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None, threads=0):
     if not framerate:
         ref_framerate, dist_framerate = get_framerates(ref, dist)
     else:
@@ -229,7 +229,7 @@ def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None, threads=1):
 
 
 def calc_ssim_psnr(
-    ref, dist, scaling_algorithm="bicubic", framerate=None, dry_run=False, verbose=False, threads=1
+    ref, dist, scaling_algorithm="bicubic", framerate=None, dry_run=False, verbose=False, threads=0
 ):
     psnr_data = []
     ssim_data = []
@@ -388,7 +388,7 @@ def main():
         "-t",
         "--threads",
         type=int,
-        default=1,
+        default=0,
         help="Number of threads to do the calculations",
     )
    
