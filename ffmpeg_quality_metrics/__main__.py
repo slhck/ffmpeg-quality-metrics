@@ -136,6 +136,7 @@ def calc_vmaf(
     framerate=None,
     dry_run=False,
     verbose=False,
+    threads=1,
 ):
     vmaf_data = []
 
@@ -174,7 +175,7 @@ def calc_vmaf(
             f"[dist1][ref1]libvmaf='{vmaf_opts_string}'",
         ]
 
-        cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate)
+        cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate, threads)
 
         run_command(cmd, dry_run, verbose)
 
@@ -195,7 +196,7 @@ def calc_vmaf(
     return vmaf_data
 
 
-def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None):
+def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None, threads=1):
     if not framerate:
         ref_framerate, dist_framerate = get_framerates(ref, dist)
     else:
@@ -207,7 +208,7 @@ def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None):
         "-nostdin",
         "-y",
         "-threads",
-        "1",
+        str(threads),
         "-r",
         str(ref_framerate),
         "-i",
@@ -228,7 +229,7 @@ def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None):
 
 
 def calc_ssim_psnr(
-    ref, dist, scaling_algorithm="bicubic", framerate=None, dry_run=False, verbose=False
+    ref, dist, scaling_algorithm="bicubic", framerate=None, dry_run=False, verbose=False, threads=1
 ):
     psnr_data = []
     ssim_data = []
@@ -265,7 +266,7 @@ def calc_ssim_psnr(
             f"[dist2][ref2]ssim='{win_path_check(temp_file_name_ssim)}'",
         ]
 
-        cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate)
+        cmd = get_ffmpeg_command(ref, dist, filter_chains, framerate, threads)
 
         run_command(cmd, dry_run, verbose)
 
@@ -383,6 +384,15 @@ def main():
         "-r", "--framerate", type=float, help="force an input framerate",
     )
 
+    parser.add_argument(
+        "-t",
+        "--threads",
+        type=int,
+        default=1,
+        help="Number of threads to do the calculations",
+    )
+   
+
     cli_args = parser.parse_args()
 
     ret = {}
@@ -423,6 +433,7 @@ def main():
             cli_args.framerate,
             cli_args.dry_run,
             cli_args.verbose,
+            cli_args.threads,
         )
 
     if not cli_args.disable_psnr_ssim:
@@ -433,6 +444,8 @@ def main():
             cli_args.framerate,
             cli_args.dry_run,
             cli_args.verbose,
+            cli_args.threads,
+
         )
         ret["psnr"] = ret_tmp["psnr"]
         ret["ssim"] = ret_tmp["ssim"]
