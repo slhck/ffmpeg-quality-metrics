@@ -208,7 +208,7 @@ def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None, threads=1):
         "-nostdin",
         "-y",
         "-threads",
-        threads,
+        str(threads),
         "-r",
         str(ref_framerate),
         "-i",
