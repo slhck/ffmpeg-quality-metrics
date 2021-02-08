@@ -27,20 +27,11 @@ Contents:
 
 - Python 3.6 or higher
 - FFmpeg:
-    - download a static build from [their website](http://ffmpeg.org/download.html))
-    - put the `ffmpeg` executable in your `$PATH`
+    - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/).
+    - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/).
+    - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice. 
 
-Optionally, you may install FFmpeg with `libvmaf` support to run VMAF score calculation. Under Linux and macOS, this can be done with the following steps:
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-brew tap homebrew-ffmpeg/ffmpeg
-brew install homebrew-ffmpeg/ffmpeg/ffmpeg --with-libvmaf
-```
-
-This may take a while.
-
-Under Windows, you have to install ffmpeg and VMAF manually, or using [helper scripts](https://github.com/rdp/ffmpeg-windows-build-helpers).
+Put the `ffmpeg` executable in your `$PATH`.
 
 ## Installation
 
@@ -63,10 +54,12 @@ The distorted file will be automatically scaled to the resolution of the referen
 See `ffmpeg_quality_metrics -h`:
 
 ```
-usage:  [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp]
-        [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
-        [-of {json,csv}] [-r FRAMERATE] [-t THREADS]
-        dist ref
+usage: __main__.py [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp]
+                   [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
+                   [-of {json,csv}] [-r FRAMERATE] [-t THREADS] [-nt N_THREADS]
+                   dist ref
+
+ffmpeg_quality_metrics v0.8.0
 
 positional arguments:
   dist                  input file, distorted
@@ -74,45 +67,41 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -n, --dry-run         Do not run command, just show what would be done
-                        (default: False)
+  -n, --dry-run         Do not run command, just show what would be done (default: False)
   -v, --verbose         Show verbose output (default: False)
-  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as
-                        SSIM and PSNR (default: False)
+  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as SSIM and PSNR (default: False)
   -m MODEL_PATH, --model-path MODEL_PATH
-                        Set path to VMAF model file (.pkl) (default: None)
+                        Specify the path of the VMAF model file (default: None)
   -p, --phone-model     Enable VMAF phone model (default: False)
   -dp, --disable-psnr-ssim
-                        Disable PSNR/SSIM computation. Use VMAF to get YUV
-                        estimate. (default: False)
+                        Disable PSNR/SSIM computation. Use VMAF to get YUV estimate. (default: False)
   -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                         Scaling algorithm for ffmpeg (default: bicubic)
   -of {json,csv}, --output-format {json,csv}
-                        output in which format (default: json)
+                        Output format for the metrics (default: json)
   -r FRAMERATE, --framerate FRAMERATE
-                        force an input framerate (default: None)
+                        Force an input framerate (default: None)
   -t THREADS, --threads THREADS
                         Number of threads to do the calculations (default: 0)
-
+  -nt N_THREADS, --n-threads N_THREADS
+                        Set the value of libvmaf's n_threads option. This determines the number of threads that are used for VMAF calculation
 ```
 
 ### Specifying VMAF Model
 
-If you are running Windows, or if you want to specify a different VMAF model file than the default, you need both a `.pkl` and a `.pkl.model` file in the same path for VMAF to be able to load the model.
-
-Use the `-m/--model-path` option to set the path to the model file, by pointing it to the `.pkl` file (not the `.pkl.model` file!).
+Use the `-m/--model-path` option to set the path to the model file.
 
 For example, if you have the model files saved at:
 
 ```
-/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.pkl
-/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.pkl.model
+/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.json
+/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.json
 ```
 
 Run the command with:
 
 ```
-ffmpeg_quality_metrics dist.mkv ref.mkv -m /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.pkl
+ffmpeg_quality_metrics dist.mkv ref.mkv -m /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.json
 ```
 
 ## Running with Docker

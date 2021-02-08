@@ -137,6 +137,7 @@ def calc_vmaf(
     dry_run=False,
     verbose=False,
     threads=0,
+    n_threads=str(os.cpu_count())
 ):
     vmaf_data = []
 
@@ -164,6 +165,7 @@ def calc_vmaf(
             "psnr": "1",
             "ssim": "1",
             "ms_ssim": "1",
+            "n_threads": n_threads
         }
 
         vmaf_opts_string = ":".join(f"{k}={v}" for k, v in vmaf_opts.items())
@@ -353,7 +355,7 @@ def main():
         action="store_true",
         help="Enable VMAF computation; calculates VMAF as well as SSIM and PSNR",
     )
-    parser.add_argument("-m", "--model-path", help="Set path to VMAF model file (.pkl)")
+    parser.add_argument("-m", "--model-path", help="Set path to VMAF model file")
     parser.add_argument(
         "-p", "--phone-model", action="store_true", help="Enable VMAF phone model"
     )
@@ -378,10 +380,10 @@ def main():
         type=str,
         default="json",
         choices=["json", "csv"],
-        help="output in which format",
+        help="Output format for the metrics (default: json)",
     )
     parser.add_argument(
-        "-r", "--framerate", type=float, help="force an input framerate",
+        "-r", "--framerate", type=float, help="Force an input framerate",
     )
 
     parser.add_argument(
@@ -391,7 +393,15 @@ def main():
         default=0,
         help="Number of threads to do the calculations",
     )
-   
+
+    parser.add_argument(
+        "-nt",
+        "--n-threads",
+        type=str,
+        default=os.cpu_count(),
+        help="Set the value of libvmaf\'s n_threads option. "
+             "This determines the number of threads that are used for VMAF calculation"
+    )
 
     cli_args = parser.parse_args()
 
@@ -434,6 +444,7 @@ def main():
             cli_args.dry_run,
             cli_args.verbose,
             cli_args.threads,
+            cli_args.n_threads
         )
 
     if not cli_args.disable_psnr_ssim:
