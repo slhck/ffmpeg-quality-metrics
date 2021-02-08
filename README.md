@@ -91,10 +91,9 @@ optional arguments:
 
 Use the `-m/--model-path` option to set the path to the model file.
 
-For example, if you have the model files saved at:
+For example, if you have the model file saved at:
 
 ```
-/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.json
 /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.json
 ```
 
