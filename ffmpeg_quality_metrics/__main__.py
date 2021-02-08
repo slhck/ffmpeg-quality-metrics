@@ -380,7 +380,7 @@ def main():
         type=str,
         default="json",
         choices=["json", "csv"],
-        help="Output format for the metrics (default: json)",
+        help="Output format for the metrics",
     )
     parser.add_argument(
         "-r", "--framerate", type=float, help="Force an input framerate",
