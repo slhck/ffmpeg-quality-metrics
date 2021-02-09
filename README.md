@@ -58,9 +58,7 @@ usage: __main__.py [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp]
                    [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                    [-of {json,csv}] [-r FRAMERATE] [-t THREADS] [-nt N_THREADS]
                    dist ref
-
-ffmpeg_quality_metrics v0.8.0
-
+                   
 positional arguments:
   dist                  input file, distorted
   ref                   input file, reference
