@@ -442,12 +442,13 @@ def main():
                 )   
         else:  # The model path was specified manually.
             model_path = cli_args.model_path
-            
-        if not os.path.isfile(model_path):
-            print_error(
-                f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl or .json model file."
-            )
-            sys.exit(1)
+            if model_path != 'vmaf_models/vmaf_v0.6.1.json' and not os.path.isfile(model_path):
+                # Without model_path != 'vmaf_models/vmaf_v0.6.1.json', for some reason there is the following error:
+                # "Could not find model at vmaf_models/vmaf_v0.6.1.json"
+                print_error(
+                    f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl or .json model file."
+                )
+                sys.exit(1)
 
         ret["vmaf"] = calc_vmaf(
             cli_args.ref,
