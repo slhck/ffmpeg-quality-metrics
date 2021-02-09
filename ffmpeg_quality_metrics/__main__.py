@@ -68,6 +68,25 @@ def ffmpeg_is_from_brew():
     return os.path.islink(ffmpeg_path) and "Cellar/ffmpeg" in os.readlink(ffmpeg_path)
 
 
+def get_default_model_path():
+    """
+    Return the default model path depending on whether the user is running Homebrew
+    or has a static build
+    """
+    if has_brew() and ffmpeg_is_from_brew():
+        # If the user installed ffmpeg using homebrew
+        return os.path.join(
+            # FIXME: change this once VMAF 2.0 is bundled with homebrew!
+            get_brewed_model_path(),
+            "vmaf_v0.6.1.pkl",
+        )
+    else:
+        # return the bundled file as a fallback
+        return os.path.join(
+            os.path.dirname(__file__), "vmaf_models", "vmaf_v0.6.1.json"
+        )
+
+
 def get_brewed_model_path():
     """
     Hack to get path for VMAF model from Linuxbrew
@@ -141,14 +160,14 @@ def get_framerates(ref, dist):
 def calc_vmaf(
     ref,
     dist,
-    model_path,
+    model_path=get_default_model_path(),
     scaling_algorithm="bicubic",
     phone_model=False,
     framerate=None,
     dry_run=False,
     verbose=False,
     threads=0,
-    n_threads=os.cpu_count()
+    n_threads=os.cpu_count(),
 ):
     vmaf_data = []
 
@@ -164,9 +183,7 @@ def calc_vmaf(
         )
 
         if verbose:
-            print_info(
-                f"Writing temporary VMAF information to: {temp_file_name_vmaf}"
-            )
+            print_info(f"Writing temporary VMAF information to: {temp_file_name_vmaf}")
 
         vmaf_opts = {
             "model_path": win_path_check(model_path),
@@ -176,7 +193,7 @@ def calc_vmaf(
             "psnr": "1",
             "ssim": "1",
             "ms_ssim": "1",
-            "n_threads": str(n_threads)
+            "n_threads": str(n_threads),
         }
 
         vmaf_opts_string = ":".join(f"{k}={v}" for k, v in vmaf_opts.items())
@@ -242,7 +259,13 @@ def get_ffmpeg_command(ref, dist, filter_chains=[], framerate=None, threads=0):
 
 
 def calc_ssim_psnr(
-    ref, dist, scaling_algorithm="bicubic", framerate=None, dry_run=False, verbose=False, threads=0
+    ref,
+    dist,
+    scaling_algorithm="bicubic",
+    framerate=None,
+    dry_run=False,
+    verbose=False,
+    threads=0,
 ):
     psnr_data = []
     ssim_data = []
@@ -262,12 +285,8 @@ def calc_ssim_psnr(
         )
 
         if verbose:
-            print_info(
-                f"Writing temporary SSIM information to: {temp_file_name_ssim}"
-            )
-            print_info(
-                f"Writing temporary PSNR information to: {temp_file_name_psnr}"
-            )
+            print_info(f"Writing temporary SSIM information to: {temp_file_name_ssim}")
+            print_info(f"Writing temporary PSNR information to: {temp_file_name_psnr}")
 
         filter_chains = [
             f"[1][0]scale2ref=flags={scaling_algorithm}[dist][ref]",
@@ -357,9 +376,7 @@ def main():
     )
 
     parser.add_argument(
-        "-v", "--verbose", 
-        action="store_true", 
-        help="Show verbose output"
+        "-v", "--verbose", action="store_true", help="Show verbose output"
     )
 
     parser.add_argument(
@@ -370,16 +387,15 @@ def main():
     )
 
     parser.add_argument(
-        "-m", "--model-path",
+        "-m",
+        "--model-path",
         type=str,
-        default='vmaf_models/vmaf_v0.6.1.json',
-        help="Use a specific model file. You must specify the path"
+        default=get_default_model_path(),
+        help="Use a specific VMAF model file.",
     )
 
     parser.add_argument(
-        "-p", "--phone-model", 
-        action="store_true", 
-        help="Enable VMAF phone model"
+        "-p", "--phone-model", action="store_true", help="Enable VMAF phone model"
     )
 
     parser.add_argument(
@@ -405,8 +421,9 @@ def main():
         help="Output format for the metrics",
     )
     parser.add_argument(
-        "-r", "--framerate", 
-        type=float, 
+        "-r",
+        "--framerate",
+        type=float,
         help="Force an input framerate",
     )
 
@@ -423,8 +440,8 @@ def main():
         "--n-threads",
         type=int,
         default=os.cpu_count(),
-        help="Set the value of libvmaf\'s n_threads option. "
-             "This determines the number of threads that are used for VMAF calculation"
+        help="Set the value of libvmaf's n_threads option. "
+        "This determines the number of threads that are used for VMAF calculation",
     )
 
     cli_args = parser.parse_args()
@@ -432,34 +449,23 @@ def main():
     ret = {}
 
     if cli_args.enable_vmaf:
-        if not cli_args.model_path:
-            model_path = 'vmaf_models/vmaf_v0.6.1.json'
-            # If the user installed ffmpeg using homebrew 
-            if has_brew() and ffmpeg_is_from_brew():
-                model_path = os.path.join(
-                    # FIXME: change this once VMAF 2.0 is bundled with homebrew!
-                    get_brewed_model_path(), "vmaf_v0.6.1.pkl"
-                )   
-        else:  # The model path was specified manually.
-            model_path = cli_args.model_path
-            
-        if not os.path.isfile(model_path):
+        if not os.path.isfile(cli_args.model_path):
             print_error(
-                f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl or .json model file."
+                f"Could not find model at {cli_args.model_path}. Please set --model-path to a valid VMAF .pkl or .json model file."
             )
             sys.exit(1)
 
         ret["vmaf"] = calc_vmaf(
             cli_args.ref,
             cli_args.dist,
-            model_path,
+            cli_args.model_path,
             cli_args.scaling_algorithm,
             cli_args.phone_model,
             cli_args.framerate,
             cli_args.dry_run,
             cli_args.verbose,
             cli_args.threads,
-            cli_args.n_threads
+            cli_args.n_threads,
         )
 
     if not cli_args.disable_psnr_ssim:
@@ -471,7 +477,6 @@ def main():
             cli_args.dry_run,
             cli_args.verbose,
             cli_args.threads,
-
         )
         ret["psnr"] = ret_tmp["psnr"]
         ret["ssim"] = ret_tmp["ssim"]
