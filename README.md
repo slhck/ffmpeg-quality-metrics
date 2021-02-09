@@ -33,6 +33,8 @@ Contents:
 
 Put the `ffmpeg` executable in your `$PATH`.
 
+*FFmpeg can be installed using Homebrew, but it is recommended that you use one of the FFmpeg builds linked above, otherwise libvmaf <v2.0.0 will be used, which is ~2x slower ([source](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30)).*
+
 ## Installation
 
     pip3 install ffmpeg_quality_metrics
