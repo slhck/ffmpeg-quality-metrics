@@ -41,9 +41,13 @@ setup(
         'Programming Language :: Python :: 3.8'
     ],
     packages=['ffmpeg_quality_metrics'],
+    include_package_data=True,
+    package_data={
+        'ffmpeg_quality_metrics': ['vmaf_models/*.json']
+    },
     entry_points={
         'console_scripts': [
             'ffmpeg_quality_metrics=ffmpeg_quality_metrics.__main__:main',
         ],
-    },
+    }
 )
