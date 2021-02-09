@@ -139,7 +139,7 @@ def get_framerate(input_file):
     try:
         match = pattern.search(str(output)).groups()[0]
         return float(match)
-    except Exception as e:
+    except Exception:
         print_error(f"could not parse FPS from file {input_file}!")
         sys.exit(1)
 
