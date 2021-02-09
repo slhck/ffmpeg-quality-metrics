@@ -357,7 +357,9 @@ def main():
     )
 
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Show verbose output"
+        "-v", "--verbose", 
+        action="store_true", 
+        help="Show verbose output"
     )
 
     parser.add_argument(
@@ -366,9 +368,18 @@ def main():
         action="store_true",
         help="Enable VMAF computation; calculates VMAF as well as SSIM and PSNR",
     )
-    parser.add_argument("-m", "--model-path", help="Set path to VMAF model file")
+
     parser.add_argument(
-        "-p", "--phone-model", action="store_true", help="Enable VMAF phone model"
+        "-m", "--model-path",
+        type=str,
+        default='vmaf_models/vmaf_v0.6.1.json',
+        help="Use a specific model file. You must specify the path"
+    )
+
+    parser.add_argument(
+        "-p", "--phone-model", 
+        action="store_true", 
+        help="Enable VMAF phone model"
     )
 
     parser.add_argument(
@@ -394,7 +405,9 @@ def main():
         help="Output format for the metrics",
     )
     parser.add_argument(
-        "-r", "--framerate", type=float, help="Force an input framerate",
+        "-r", "--framerate", 
+        type=float, 
+        help="Force an input framerate",
     )
 
     parser.add_argument(
@@ -420,30 +433,16 @@ def main():
 
     if cli_args.enable_vmaf:
         if not cli_args.model_path:
-            if IS_WIN:
-                print_error(
-                    "Cannot not automatically determine VMAF model path under Windows. "
-                    "Please specify the --model-path manually."
-                )
-                sys.exit(1)
-            else:
-                if has_brew() and ffmpeg_is_from_brew():
-                    model_path = os.path.join(
-                        # FIXME: change this once VMAF 2.0 is bundled with homebrew!
-                        get_brewed_model_path(), "vmaf_v0.6.1.pkl"
-                    )
-                else:
-                    print_error(
-                        "Could not automatically determine VMAF model path, since libvmaf was not installed using Homebrew.\n"
-                        "Please do one of the following:\n"
-                        " a) Download the model files from https://github.com/Netflix/vmaf/tree/master/model and\n"
-                        "    specify the --model-path manually, or\n"
-                        " b) Install ffmpeg and libvmaf with Homebrew.\n"
-                        "    See https://github.com/homebrew-ffmpeg/homebrew-ffmpeg/ for instructions. "
-                    )
-                    sys.exit(1)
+            model_path = 'vmaf_models/vmaf_v0.6.1.json'
+            # If the user installed ffmpeg using homebrew 
+            if has_brew() and ffmpeg_is_from_brew():
+                model_path = os.path.join(
+                    # FIXME: change this once VMAF 2.0 is bundled with homebrew!
+                    get_brewed_model_path(), "vmaf_v0.6.1.pkl"
+                )   
         else:  # The model path was specified manually.
             model_path = cli_args.model_path
+            
         if not os.path.isfile(model_path):
             print_error(
                 f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl or .json model file."
