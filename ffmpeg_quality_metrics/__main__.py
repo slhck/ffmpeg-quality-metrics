@@ -57,6 +57,15 @@ def has_brew():
     return which("brew") is not None
 
 
+def ffmpeg_is_from_brew():
+    """
+    Is the used ffmpeg from Homebrew?
+    """
+    ffmpeg_path = which("ffmpeg")
+    # TODO check if symlink to Homebrew!
+    return True
+
+
 def get_brewed_model_path():
     """
     Hack to get path for VMAF model from Linuxbrew
@@ -416,14 +425,18 @@ def main():
                 )
                 sys.exit(1)
             else:
-                if has_brew():
+                if has_brew() and ffmpeg_is_from_brew():
                     model_path = os.path.join(
                         get_brewed_model_path(), "vmaf_v0.6.1.pkl"
                     )
                 else:
                     print_error(
-                        "Could not automatically determine VMAF model path, since it was not installed using Homebrew. "
-                        "Please specify the --model-path manually or install ffmpeg with Homebrew."
+                        "Could not automatically determine VMAF model path, since libvmaf was not installed using Homebrew.\n"
+                        "Please do one of the following:\n"
+                        " a) Download the model files from https://github.com/Netflix/vmaf/tree/master/model and\n"
+                        "    specify the --model-path manually, or\n"
+                        " b) Install ffmpeg and libvmaf with Homebrew.\n"
+                        "    See https://github.com/homebrew-ffmpeg/homebrew-ffmpeg/ for instructions. "
                     )
                     sys.exit(1)
         else:  # The model path was specified manually.
