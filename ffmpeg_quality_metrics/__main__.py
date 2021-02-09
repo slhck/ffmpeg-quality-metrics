@@ -137,7 +137,7 @@ def calc_vmaf(
     dry_run=False,
     verbose=False,
     threads=0,
-    n_threads=str(os.cpu_count())
+    n_threads=os.cpu_count()
 ):
     vmaf_data = []
 
@@ -165,7 +165,7 @@ def calc_vmaf(
             "psnr": "1",
             "ssim": "1",
             "ms_ssim": "1",
-            "n_threads": n_threads
+            "n_threads": str(n_threads)
         }
 
         vmaf_opts_string = ":".join(f"{k}={v}" for k, v in vmaf_opts.items())
@@ -397,7 +397,7 @@ def main():
     parser.add_argument(
         "-nt",
         "--n-threads",
-        type=str,
+        type=int,
         default=os.cpu_count(),
         help="Set the value of libvmaf\'s n_threads option. "
              "This determines the number of threads that are used for VMAF calculation"
@@ -430,7 +430,7 @@ def main():
             model_path = cli_args.model_path
         if not os.path.isfile(model_path):
             print_error(
-                f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl file."
+                f"Could not find model at {model_path}. Please set --model-path to a valid VMAF .pkl or .json model file."
             )
             sys.exit(1)
 

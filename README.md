@@ -54,10 +54,10 @@ The distorted file will be automatically scaled to the resolution of the referen
 See `ffmpeg_quality_metrics -h`:
 
 ```
-usage: __main__.py [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp]
-                   [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
-                   [-of {json,csv}] [-r FRAMERATE] [-t THREADS] [-nt N_THREADS]
-                   dist ref
+usage: [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp]
+       [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc lanczos,spline}]
+       [-of {json,csv}] [-r FRAMERATE] [-t THREADS] [-nt N_THREADS]
+       dist ref
                    
 positional arguments:
   dist                  input file, distorted
