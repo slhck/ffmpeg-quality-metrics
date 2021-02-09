@@ -62,8 +62,10 @@ def ffmpeg_is_from_brew():
     Is the used ffmpeg from Homebrew?
     """
     ffmpeg_path = which("ffmpeg")
-    # TODO check if symlink to Homebrew!
-    return True
+    if ffmpeg_path is None:
+        return False
+
+    return os.path.islink(ffmpeg_path) and "Cellar/ffmpeg" in os.readlink(ffmpeg_path)
 
 
 def get_brewed_model_path():
@@ -427,6 +429,7 @@ def main():
             else:
                 if has_brew() and ffmpeg_is_from_brew():
                     model_path = os.path.join(
+                        # FIXME: change this once VMAF 2.0 is bundled with homebrew!
                         get_brewed_model_path(), "vmaf_v0.6.1.pkl"
                     )
                 else:
