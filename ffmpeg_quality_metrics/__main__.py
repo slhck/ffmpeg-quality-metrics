@@ -175,13 +175,13 @@ def calc_vmaf(
         print_error(f"Allowed scaling algorithms: {ALLOWED_SCALERS}")
         sys.exit(1)
 
+    temp_dir = tempfile.gettempdir()
+
+    temp_file_name_vmaf = os.path.join(
+        temp_dir, next(tempfile._get_candidate_names()) + "-vmaf.txt"
+    )
+
     try:
-        temp_dir = tempfile.gettempdir()
-
-        temp_file_name_vmaf = os.path.join(
-            temp_dir, next(tempfile._get_candidate_names()) + "-vmaf.txt"
-        )
-
         if verbose:
             print_info(f"Writing temporary VMAF information to: {temp_file_name_vmaf}")
 
@@ -274,16 +274,16 @@ def calc_ssim_psnr(
         print_error(f"Allowed scaling algorithms: {ALLOWED_SCALERS}")
         sys.exit(1)
 
+    temp_dir = tempfile.gettempdir()
+
+    temp_file_name_ssim = os.path.join(
+        temp_dir, next(tempfile._get_candidate_names()) + "-ssim.txt"
+    )
+    temp_file_name_psnr = os.path.join(
+        temp_dir, next(tempfile._get_candidate_names()) + "-psnr.txt"
+    )
+
     try:
-        temp_dir = tempfile.gettempdir()
-
-        temp_file_name_ssim = os.path.join(
-            temp_dir, next(tempfile._get_candidate_names()) + "-ssim.txt"
-        )
-        temp_file_name_psnr = os.path.join(
-            temp_dir, next(tempfile._get_candidate_names()) + "-psnr.txt"
-        )
-
         if verbose:
             print_info(f"Writing temporary SSIM information to: {temp_file_name_ssim}")
             print_info(f"Writing temporary PSNR information to: {temp_file_name_psnr}")
