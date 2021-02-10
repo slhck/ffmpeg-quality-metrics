@@ -111,13 +111,23 @@ If you don't want to deal with dependencies, build the image with Docker:
 docker build -t ffmpeg_quality_metrics .
 ```
 
-This installs `ffmpeg` with all dependencies. You can then run the container, which basically calls the Python script. To help you with mounting the volumes (since your videos are not stored in the container), you can run a helper script:
+This takes a few minutes and installs the latest `ffmpeg` [as a static build](https://johnvansickle.com/ffmpeg/) with libvmaf 2.x.
+
+You can then run the container, which basically calls the Python script. To help you with mounting the volumes (since your videos are not stored in the container), you can run a helper script:
 
 ```
-./docker_run.sh
+./docker_run.sh <dist> <ref> [OPTIONS]
 ```
 
-Check the output of the above command for more help.
+Check the output of `./docker_run.sh` for more help.
+
+For example, to run the tool with the bundled test videos and enable VMAF calculation:
+
+```
+./docker_run.sh test/dist-854x480.mkv test/ref-1280x720.mkv -ev
+```
+
+For Homebrew ffmpeg, a `Dockerfile-legacy` is provided.
 
 ## Output
 
