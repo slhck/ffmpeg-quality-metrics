@@ -19,6 +19,7 @@ Contents:
 - [Usage](#usage)
 - [Running with Docker](#running-with-docker)
 - [Output](#output)
+- [API](#api)
 - [License](#license)
 
 ------
@@ -271,6 +272,18 @@ n,adm2,motion2,ms_ssim,psnr,ssim,vif_scale0,vif_scale1,vif_scale2,vif_scale3,vma
 2,0.7064,0.35975,0.89806,18.60299,0.9247,0.54025,0.71961,0.75369,0.77607,15.85038,535.29,239.4,469.49,896.98,20.84,24.34,21.41,18.6,0.946,0.96,0.943,0.934,test/dist-854x480.mkv,test/ref-1280x720.mkv
 3,0.70505,0.35975,0.89879,18.6131,0.92466,0.5391,0.71869,0.75344,0.77616,15.63546,535.04,245.8,464.43,894.89,20.85,24.22,21.46,18.61,0.945,0.959,0.943,0.934,test/dist-854x480.mkv,test/ref-1280x720.mkv
 ```
+
+## API
+
+The program exposes an API that you can use yourself:
+
+```python
+from ffmpeg_quality_metrics.ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
+
+ffqm("path/to/ref", "path/to/dist").calc_ssim_psnr()
+```
+
+For more usage please read the docstrings in `ffmpeg_quality_metrics.py`. (API docs are coming eventually.)
 
 ## License
 

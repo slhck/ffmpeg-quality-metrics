@@ -8,7 +8,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../'))
 
-from ffmpeg_quality_metrics.__main__ import calc_ssim_psnr, calculate_global_stats
+from ffmpeg_quality_metrics.ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
 
 DIST = os.path.join(os.path.dirname(__file__), "dist-854x480.mkv")
 REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
@@ -16,23 +16,26 @@ REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
 
 class TestMetrics(unittest.TestCase):
     def test_ssim(self):
-        run_ret = calc_ssim_psnr(DIST, REF)["ssim"]
-        expected = [{'n': 1, 'ssim_y': 0.936, 'ssim_u': 0.966, 'ssim_v': 0.951, 'ssim_avg': 0.951}, {'n': 2, 'ssim_y': 0.936, 'ssim_u': 0.966, 'ssim_v': 0.952, 'ssim_avg': 0.951}, {'n': 3, 'ssim_y': 0.935, 'ssim_u': 0.965, 'ssim_v': 0.952, 'ssim_avg': 0.951}]
+        run_ret = ffqm(REF, DIST).calc_ssim_psnr()["ssim"]
+        expected = [{'n': 1, 'ssim_y': 0.934, 'ssim_u': 0.96, 'ssim_v': 0.942, 'ssim_avg': 0.945}, {'n': 2, 'ssim_y': 0.934, 'ssim_u': 0.96, 'ssim_v': 0.943, 'ssim_avg': 0.946}, {'n': 3, 'ssim_y': 0.934, 'ssim_u': 0.959, 'ssim_v': 0.943, 'ssim_avg': 0.945}]
         for expected_frame, actual_frame in zip(expected, run_ret):
             for key in ['ssim_y', 'ssim_u', 'ssim_v']:
                 self.assertAlmostEqual(expected_frame[key], actual_frame[key], places=2)
 
     def test_psnr(self):
-        run_ret = calc_ssim_psnr(DIST, REF)["psnr"]
-        expected = [{"n": 1, "mse_avg": 527.49, "mse_y": 890.56, "mse_u": 229.48, "mse_v": 462.44, "psnr_avg": 20.91, "psnr_y": 18.63, "psnr_u": 24.52, "psnr_v": 21.48}, {"n": 2, "mse_avg": 526.02, "mse_y": 887.23, "mse_u": 234.41, "mse_v": 456.41, "psnr_avg": 20.92, "psnr_y": 18.65, "psnr_u": 24.43, "psnr_v": 21.54}, {"n": 3, "mse_avg": 525.82, "mse_y": 885.0, "mse_u": 240.96, "mse_v": 451.48, "psnr_avg": 20.92, "psnr_y": 18.66, "psnr_u": 24.31, "psnr_v": 21.58}]
+        run_ret = ffqm(REF, DIST).calc_ssim_psnr()["psnr"]
+        expected = [{'n': 1, 'mse_avg': 536.71, 'mse_y': 900.22, 'mse_u': 234.48, 'mse_v': 475.43, 'psnr_avg': 20.83, 'psnr_y': 18.59, 'psnr_u': 24.43, 'psnr_v': 21.36}, {'n': 2, 'mse_avg': 535.29, 'mse_y': 896.98, 'mse_u': 239.4, 'mse_v': 469.49, 'psnr_avg': 20.84, 'psnr_y': 18.6, 'psnr_u': 24.34, 'psnr_v': 21.41}, {'n': 3, 'mse_avg': 535.04, 'mse_y': 894.89, 'mse_u': 245.8, 'mse_v': 464.43, 'psnr_avg': 20.85, 'psnr_y': 18.61, 'psnr_u': 24.22, 'psnr_v': 21.46}]
         for expected_frame, actual_frame in zip(expected, run_ret):
             for key in ['mse_avg', 'mse_y', 'mse_u', 'mse_v', 'psnr_avg', 'psnr_y', 'psnr_u', 'psnr_v']:
                 self.assertAlmostEqual(expected_frame[key], actual_frame[key], places=2)
 
     def test_global(self):
-        run_ret = calculate_global_stats(calc_ssim_psnr(DIST, REF))
-        expected = {"ssim": {"average": 0.952, "stdev": 0.0, "min": 0.952, "max": 0.952}, "psnr": {"average": 20.916666666666668, "stdev": 0.004714045207911053, "min": 20.91, "max": 20.92}}
+        f = ffqm(REF, DIST)
+        f.calc_ssim_psnr()
+        run_ret = f.get_global_stats()
+        expected = {'ssim': {'average': 0.945, 'median': 0.945, 'stdev': 0.0, 'min': 0.945, 'max': 0.946}, 'psnr': {'average': 20.84, 'median': 20.84, 'stdev': 0.008, 'min': 20.83, 'max': 20.85}}
         self.assertEqual(run_ret, expected)
+
 
 if __name__ == '__main__':
     unittest.main()
