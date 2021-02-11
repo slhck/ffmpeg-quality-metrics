@@ -283,7 +283,7 @@ from ffmpeg_quality_metrics.ffmpeg_quality_metrics import FfmpegQualityMetrics a
 ffqm("path/to/ref", "path/to/dist").calc_ssim_psnr()
 ```
 
-For more usage please read the docstrings in `ffmpeg_quality_metrics.py`. (API docs are coming eventually.)
+For more usage please read [the docs](docs/index.html).
 
 ## License
 
