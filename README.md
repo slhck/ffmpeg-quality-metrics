@@ -72,7 +72,7 @@ optional arguments:
   -v, --verbose         Show verbose output (default: False)
   -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as SSIM and PSNR (default: False)
   -m MODEL_PATH, --model-path MODEL_PATH
-                        Specify the path of the VMAF model file (default: None)
+                        Specify the path of the VMAF model file (default: vmaf_v0.6.1.pkl bundled with the program)
   -p, --phone-model     Enable VMAF phone model (default: False)
   -dp, --disable-psnr-ssim
                         Disable PSNR/SSIM computation. Use VMAF to get YUV estimate. (default: False)
@@ -85,7 +85,7 @@ optional arguments:
   -t THREADS, --threads THREADS
                         Number of threads to do the calculations (default: 0)
   -nt N_THREADS, --n-threads N_THREADS
-                        Set the value of libvmaf's n_threads option. This determines the number of threads that are used for VMAF calculation
+                        Set the value of libvmaf's n_threads option. This determines the number of threads that are used for VMAF calculation (default: number of CPUs)
 ```
 
 ### Specifying VMAF Model
