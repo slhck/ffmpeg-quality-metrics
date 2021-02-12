@@ -1,7 +1,9 @@
 # Changelog
 
 
-## (unreleased)
+## v0.12.1 (2021-02-12)
+
+* Update changelog format, release script.
 
 * Fix docs link, again.
 
