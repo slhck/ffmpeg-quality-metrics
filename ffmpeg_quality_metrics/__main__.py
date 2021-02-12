@@ -21,66 +21,43 @@ def main():
     parser.add_argument("dist", help="input file, distorted")
     parser.add_argument("ref", help="input file, reference")
 
-    parser.add_argument(
+    general_opts = parser.add_argument_group("General options")
+
+    general_opts.add_argument(
         "-n",
         "--dry-run",
         action="store_true",
         help="Do not run commands, just show what would be done",
     )
-
-    parser.add_argument(
+    general_opts.add_argument(
         "-v", "--verbose", action="store_true", help="Show verbose output"
     )
 
-    parser.add_argument(
-        "-ev",
-        "--enable-vmaf",
-        action="store_true",
-        help="Enable VMAF computation; calculates VMAF as well as SSIM and PSNR",
-    )
+    ffmpeg_opts = parser.add_argument_group("FFmpeg options")
 
-    parser.add_argument(
-        "-m",
-        "--model-path",
-        type=str,
-        default=FfmpegQualityMetrics.get_default_vmaf_model_path(),
-        help="Use a specific VMAF model file.",
-    )
-
-    parser.add_argument(
-        "-p", "--phone-model", action="store_true", help="Enable VMAF phone model"
-    )
-
-    parser.add_argument(
+    ffmpeg_opts.add_argument(
         "-dp",
         "--disable-psnr-ssim",
         action="store_true",
         help="Disable PSNR/SSIM computation. Use VMAF to get YUV estimate.",
     )
 
-    parser.add_argument(
+    ffmpeg_opts.add_argument(
         "-s",
         "--scaling-algorithm",
         default="bicubic",
         choices=FfmpegQualityMetrics.ALLOWED_SCALERS,
         help="Scaling algorithm for ffmpeg",
     )
-    parser.add_argument(
-        "-of",
-        "--output-format",
-        type=str,
-        default="json",
-        choices=["json", "csv"],
-        help="Output format for the metrics",
-    )
-    parser.add_argument(
+
+    ffmpeg_opts.add_argument(
         "-r",
         "--framerate",
         type=float,
         help="Force an input framerate",
     )
 
-    parser.add_argument(
+    ffmpeg_opts.add_argument(
         "-t",
         "--threads",
         type=int,
@@ -88,7 +65,40 @@ def main():
         help="Number of threads to do the calculations",
     )
 
-    parser.add_argument(
+    output_opts = parser.add_argument_group("Output options")
+
+    output_opts.add_argument(
+        "-of",
+        "--output-format",
+        type=str,
+        default="json",
+        choices=["json", "csv"],
+        help="Output format for the metrics",
+    )
+
+    vmaf_opts = parser.add_argument_group("VMAF options")
+
+    vmaf_opts.add_argument(
+        "-ev",
+        "--enable-vmaf",
+        action="store_true",
+        help="Enable VMAF computation; calculates VMAF as well as SSIM and PSNR",
+    )
+
+    vmaf_opts.add_argument(
+        "-m",
+        "--model-path",
+        type=str,
+        default=FfmpegQualityMetrics.get_default_vmaf_model_path(),
+        help="Use a specific VMAF model file. If none is chosen, picks a default model. "
+        f"You can also specify one of the following built-in models: {FfmpegQualityMetrics.get_supplied_vmaf_models()}",
+    )
+
+    vmaf_opts.add_argument(
+        "-p", "--phone-model", action="store_true", help="Enable VMAF phone model"
+    )
+
+    vmaf_opts.add_argument(
         "-nt",
         "--n-threads",
         type=int,

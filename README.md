@@ -57,51 +57,70 @@ The distorted file will be automatically scaled to the resolution of the referen
 See `ffmpeg_quality_metrics -h`:
 
 ```
-usage: [-h] [-n] [-v] [-ev] [-m MODEL_PATH] [-p] [-dp]
-       [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc lanczos,spline}]
-       [-of {json,csv}] [-r FRAMERATE] [-t THREADS] [-nt N_THREADS]
+usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-dp]
+       [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}] [-r FRAMERATE]
+       [-t THREADS] [-of {json,csv}] [-ev] [-m MODEL_PATH] [-p] [-nt N_THREADS]
        dist ref
-                   
+
 positional arguments:
   dist                  input file, distorted
   ref                   input file, reference
 
 optional arguments:
   -h, --help            show this help message and exit
-  -n, --dry-run         Do not run command, just show what would be done (default: False)
+
+General options:
+  -n, --dry-run         Do not run commands, just show what would be done (default: False)
   -v, --verbose         Show verbose output (default: False)
-  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as SSIM and PSNR (default: False)
-  -m MODEL_PATH, --model-path MODEL_PATH
-                        Specify the path of the VMAF model file (default: vmaf_v0.6.1.pkl bundled with the program)
-  -p, --phone-model     Enable VMAF phone model (default: False)
+
+FFmpeg options:
   -dp, --disable-psnr-ssim
                         Disable PSNR/SSIM computation. Use VMAF to get YUV estimate. (default: False)
   -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                         Scaling algorithm for ffmpeg (default: bicubic)
-  -of {json,csv}, --output-format {json,csv}
-                        Output format for the metrics (default: json)
   -r FRAMERATE, --framerate FRAMERATE
                         Force an input framerate (default: None)
   -t THREADS, --threads THREADS
                         Number of threads to do the calculations (default: 0)
+
+Output options:
+  -of {json,csv}, --output-format {json,csv}
+                        Output format for the metrics (default: json)
+
+VMAF options:
+  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as SSIM and PSNR (default: False)
+  -m MODEL_PATH, --model-path MODEL_PATH
+                        Use a specific VMAF model file. If none is chosen, picks a default model. You can also specify one of the
+                        following built-in models: ['vmaf_v0.6.1.json', 'vmaf_4k_v0.6.1.json', 'vmaf_v0.6.1neg.json'] (default: vmaf_v0.6.1.json)
+  -p, --phone-model     Enable VMAF phone model (default: False)
   -nt N_THREADS, --n-threads N_THREADS
-                        Set the value of libvmaf's n_threads option. This determines the number of threads that are used for VMAF calculation (default: number of CPUs)
+                        Set the value of libvmaf's n_threads option. This determines the number of threads that are used for VMAF
+                        calculation (default: number of CPUs)
 ```
 
 ### Specifying VMAF Model
 
-Use the `-m/--model-path` option to set the path to the model file.
+Use the `-m/--model-path` option to set the path to a different VMAF model file.
 
-For example, if you have the model file saved at:
-
-```
-/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.json
-```
-
-Run the command with:
+This program supplies the following models:
 
 ```
-ffmpeg_quality_metrics dist.mkv ref.mkv -m /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1.json
+vmaf_4k_v0.6.1.json
+vmaf_v0.6.1.json
+vmaf_v0.6.1neg.json
+```
+
+You can either specify an absolute path to an existing model, e.g.:
+
+```
+/usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
+```
+
+Or pass the file name to the built-in model. So both of these are equivalent:
+
+```
+ffmpeg_quality_metrics dist.mkv ref.mkv -m vmaf_v0.6.1neg.json
+ffmpeg_quality_metrics dist.mkv ref.mkv -m /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
 ```
 
 ## Running with Docker
