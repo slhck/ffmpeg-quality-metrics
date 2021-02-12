@@ -302,7 +302,7 @@ from ffmpeg_quality_metrics.ffmpeg_quality_metrics import FfmpegQualityMetrics a
 ffqm("path/to/ref", "path/to/dist").calc_ssim_psnr()
 ```
 
-For more usage please read [the docs](https://htmlpreview.github.io/?https://github.com/slhck/ffmpeg-quality-metrics/blob/master/docs/index.html).
+For more usage please read [the docs](https://htmlpreview.github.io/?https://github.com/slhck/ffmpeg-quality-metrics/blob/master/docs/ffmpeg_quality_metrics/ffmpeg_quality_metrics.html).
 
 ## License
 
