@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # Versioning
 with open(os.path.join(here, 'ffmpeg_quality_metrics', '__init__.py')) as version_file:
-    version = eval(version_file.read().split("\n")[0].split("=")[1].strip())
+    version = eval(version_file.read().split("\n")[2].split("=")[1].strip())
 
 # Get the long description from the README file
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
