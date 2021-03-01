@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.0.1 (2021-03-01)
+
+* Fix setup.py file.
+
+
 ## v1.0.0 (2021-03-01)
 
 * Allow top-level import.
