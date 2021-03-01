@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v1.0.0 (2021-03-01)
+
+* Allow top-level import.
+
+* Update badge URL.
+
+
 ## v0.12.1 (2021-02-12)
 
 * Update changelog format, release script.
