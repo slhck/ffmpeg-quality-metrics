@@ -297,7 +297,7 @@ n,adm2,motion2,ms_ssim,psnr,ssim,vif_scale0,vif_scale1,vif_scale2,vif_scale3,vma
 The program exposes an API that you can use yourself:
 
 ```python
-from ffmpeg_quality_metrics.ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
+from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
 
 ffqm("path/to/ref", "path/to/dist").calc_ssim_psnr()
 ```

@@ -8,7 +8,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../'))
 
-from ffmpeg_quality_metrics.ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
+from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
 
 DIST = os.path.join(os.path.dirname(__file__), "dist-854x480.mkv")
 REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
