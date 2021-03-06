@@ -1,1 +1,3 @@
 pandas
+ffmpeg-progress-yield
+tqdm

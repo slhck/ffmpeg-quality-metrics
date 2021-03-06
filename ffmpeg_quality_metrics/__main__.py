@@ -32,6 +32,9 @@ def main():
     general_opts.add_argument(
         "-v", "--verbose", action="store_true", help="Show verbose output"
     )
+    general_opts.add_argument(
+        "-pr", "--progress", action="store_true", help="Show a progress bar"
+    )
 
     ffmpeg_opts = parser.add_argument_group("FFmpeg options")
 
@@ -117,6 +120,7 @@ def main():
         dry_run=cli_args.dry_run,
         verbose=cli_args.verbose,
         threads=cli_args.threads,
+        progress=cli_args.progress,
     )
 
     if cli_args.enable_vmaf:

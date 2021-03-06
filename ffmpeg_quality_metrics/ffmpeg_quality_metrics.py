@@ -9,6 +9,8 @@ import tempfile
 import numpy as np
 import re
 import pandas as pd
+from tqdm import tqdm
+from ffmpeg_progress_yield import FfmpegProgress
 
 from .utils import (
     NUL,
@@ -59,6 +61,7 @@ class FfmpegQualityMetrics:
         dry_run=False,
         verbose=False,
         threads=DEFAULT_THREADS,
+        progress=False,
     ):
         """Instantiate a new FfmpegQualityMetrics
 
@@ -70,6 +73,7 @@ class FfmpegQualityMetrics:
             dry_run (bool, optional): Don't run anything, just print commands. Defaults to False.
             verbose (bool, optional): Show more output. Defaults to False.
             threads (int, optional): Number of ffmpeg threads. Defaults to 0 (auto).
+            progress (bool, optional): Show a progress bar. Defaults to False.
 
         Raises:
             FfmpegQualityMetricsError: A generic error
@@ -81,6 +85,7 @@ class FfmpegQualityMetrics:
         self.dry_run = bool(dry_run)
         self.verbose = bool(verbose)
         self.threads = int(threads)
+        self.progress = bool(progress)
 
         self.vmaf_data = []
         self.psnr_data = []
@@ -201,7 +206,7 @@ class FfmpegQualityMetrics:
                 f"[dist1][ref1]libvmaf='{vmaf_opts_string}'",
             ]
 
-            self._run_ffmpeg_command(filter_chains)
+            self._run_ffmpeg_command(filter_chains, desc="VMAF")
 
             if not self.dry_run:
                 with open(self.temp_files["vmaf"], "r") as in_vmaf:
@@ -219,10 +224,11 @@ class FfmpegQualityMetrics:
 
         return self.vmaf_data
 
-    def _run_ffmpeg_command(self, filter_chains=[]):
+    def _run_ffmpeg_command(self, filter_chains=[], desc=""):
         """
         Run the ffmpeg command to get the quality metrics.
         The filter chains must be specified manually.
+        'desc' can be a human readable description for the progress bar.
         """
         if not self.framerate:
             ref_framerate, dist_framerate = self._get_framerates()
@@ -252,7 +258,13 @@ class FfmpegQualityMetrics:
             NUL,
         ]
 
-        return run_command(cmd, self.dry_run, self.verbose)
+        if self.progress:
+            ff = FfmpegProgress(cmd)
+            with tqdm(total=100, position=1, desc=desc) as pbar:
+                for progress in ff.run_command_with_progress():
+                    pbar.update(progress - pbar.n)
+        else:
+            run_command(cmd, self.dry_run, self.verbose)
 
     def calc_ssim_psnr(self):
         """Calculate SSIM and PSNR
@@ -282,7 +294,7 @@ class FfmpegQualityMetrics:
                 f"[dist2][ref2]ssim='{win_path_check(self.temp_files['ssim'])}'",
             ]
 
-            self._run_ffmpeg_command(filter_chains)
+            self._run_ffmpeg_command(filter_chains, desc="PSNR and SSIM")
 
             if not self.dry_run:
                 with open(self.temp_files["psnr"], "r") as in_psnr:
