@@ -14,17 +14,12 @@ with open(os.path.join(here, 'ffmpeg_quality_metrics', '__init__.py')) as versio
 with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-try:
-    import pypandoc
-    long_description = pypandoc.convert_text(long_description, 'rst', format='md')
-except ImportError:
-    print("pypandoc module not found, could not convert Markdown to RST")
-
 setup(
     name='ffmpeg_quality_metrics',
     version=version,
     description='Calculate quality metrics with FFmpeg (SSIM, PSNR, VMAF)',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/slhck/ffmpeg-quality-metrics',
     author='Werner Robitza',
     author_email='werner.robitza@gmail.com',
