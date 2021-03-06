@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.1.2 (2021-03-06)
+
+* Add missing CLI option to readme.
+
+
 ## v1.1.1 (2021-03-06)
 
 * Fix long description content type.
