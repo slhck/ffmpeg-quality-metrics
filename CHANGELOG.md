@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.1.1 (2021-03-06)
+
+* Fix long description content type.
+
+
 ## v1.1.0 (2021-03-06)
 
 * Add progress bar, fixes #12.
