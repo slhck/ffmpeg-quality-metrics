@@ -52,7 +52,19 @@ ffmpeg_quality_metrics distorted.mp4 reference.avi
 
 The distorted file will be automatically scaled to the resolution of the reference.
 
+### Metrics
+
+The following metrics are available:
+
+| Metric | Description | Scale | Calculated by default? |
+| ------ | ------ | ------ | ------ |
+| PSNR | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB | ✔️ |
+| SSIM | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity) | 0-100 (higher is better) | ✔️ |
+| VMAF | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf) | 0-100 (higher is better) | No, use `--enable-vmaf` |
+
 ### Extended Options
+
+You can configure additional options related to scaling, speed etc.
 
 See `ffmpeg_quality_metrics -h`:
 
@@ -110,6 +122,8 @@ vmaf_v0.6.1.json
 vmaf_v0.6.1neg.json
 ```
 
+Use the `4k` version if you have a 4K reference sample. The `neg` version [is explained here](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30).
+
 You can either specify an absolute path to an existing model, e.g.:
 
 ```
@@ -151,52 +165,34 @@ For Homebrew ffmpeg, a `Dockerfile-legacy` is provided.
 
 ## Output
 
-JSON or CSV, including individual fields for Y, U, V, and averages, as well as frame numbers.
+This tool supports JSON or CSV output, including individual fields for Y, U, V, and global statistics, as well as frame numbers (`n`).
 
 JSON example:
 
 ```
 ➜ ffmpeg_quality_metrics test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf
 {
-    "vmaf": [
+    "ssim": [
         {
-            "adm2": 0.69908,
-            "motion2": 0.0,
-            "ms_ssim": 0.89698,
-            "psnr": 18.58731,
-            "ssim": 0.92415,
-            "vif_scale0": 0.53962,
-            "vif_scale1": 0.71805,
-            "vif_scale2": 0.75205,
-            "vif_scale3": 0.77367,
-            "vmaf": 14.07074,
-            "n": 1
+            "n": 1,
+            "ssim_y": 0.934,
+            "ssim_u": 0.96,
+            "ssim_v": 0.942,
+            "ssim_avg": 0.945
         },
         {
-            "adm2": 0.69846,
-            "motion2": 0.35975,
-            "ms_ssim": 0.89806,
-            "psnr": 18.60299,
-            "ssim": 0.9247,
-            "vif_scale0": 0.54025,
-            "vif_scale1": 0.71961,
-            "vif_scale2": 0.75369,
-            "vif_scale3": 0.77607,
-            "vmaf": 14.48034,
-            "n": 2
+            "n": 2,
+            "ssim_y": 0.934,
+            "ssim_u": 0.96,
+            "ssim_v": 0.943,
+            "ssim_avg": 0.946
         },
         {
-            "adm2": 0.69715,
-            "motion2": 0.35975,
-            "ms_ssim": 0.89879,
-            "psnr": 18.6131,
-            "ssim": 0.92466,
-            "vif_scale0": 0.5391,
-            "vif_scale1": 0.71869,
-            "vif_scale2": 0.75344,
-            "vif_scale3": 0.77616,
-            "vmaf": 14.27326,
-            "n": 3
+            "n": 3,
+            "ssim_y": 0.934,
+            "ssim_u": 0.959,
+            "ssim_v": 0.943,
+            "ssim_avg": 0.945
         }
     ],
     "psnr": [
@@ -234,47 +230,83 @@ JSON example:
             "psnr_v": 21.46
         }
     ],
-    "ssim": [
+    "vmaf": [
         {
-            "n": 1,
-            "ssim_y": 0.934,
-            "ssim_u": 0.96,
-            "ssim_v": 0.942,
-            "ssim_avg": 0.945
+            "psnr": 18.587308,
+            "integer_motion2": 0.0,
+            "integer_motion": 0.0,
+            "integer_adm2": 0.69907,
+            "integer_adm_scale0": 0.708183,
+            "integer_adm_scale1": 0.733469,
+            "integer_adm_scale2": 0.718624,
+            "integer_adm_scale3": 0.67301,
+            "ssim": 0.925976,
+            "integer_vif_scale0": 0.539591,
+            "integer_vif_scale1": 0.718022,
+            "integer_vif_scale2": 0.751875,
+            "integer_vif_scale3": 0.773503,
+            "ms_ssim": 0.898265,
+            "vmaf": 14.054853,
+            "n": 1
         },
         {
-            "n": 2,
-            "ssim_y": 0.934,
-            "ssim_u": 0.96,
-            "ssim_v": 0.943,
-            "ssim_avg": 0.946
+            "psnr": 18.60299,
+            "integer_motion2": 0.359752,
+            "integer_motion": 0.368929,
+            "integer_adm2": 0.698451,
+            "integer_adm_scale0": 0.706706,
+            "integer_adm_scale1": 0.73203,
+            "integer_adm_scale2": 0.718262,
+            "integer_adm_scale3": 0.672766,
+            "ssim": 0.926521,
+            "integer_vif_scale0": 0.540231,
+            "integer_vif_scale1": 0.719566,
+            "integer_vif_scale2": 0.753567,
+            "integer_vif_scale3": 0.775864,
+            "ms_ssim": 0.899353,
+            "vmaf": 14.464182,
+            "n": 2
         },
         {
-            "n": 3,
-            "ssim_y": 0.934,
-            "ssim_u": 0.959,
-            "ssim_v": 0.943,
-            "ssim_avg": 0.945
+            "psnr": 18.613101,
+            "integer_motion2": 0.359752,
+            "integer_motion": 0.359752,
+            "integer_adm2": 0.697126,
+            "integer_adm_scale0": 0.706542,
+            "integer_adm_scale1": 0.731351,
+            "integer_adm_scale2": 0.716454,
+            "integer_adm_scale3": 0.671197,
+            "ssim": 0.926481,
+            "integer_vif_scale0": 0.539091,
+            "integer_vif_scale1": 0.718657,
+            "integer_vif_scale2": 0.753306,
+            "integer_vif_scale3": 0.775984,
+            "ms_ssim": 0.900086,
+            "vmaf": 14.256442,
+            "n": 3
         }
     ],
     "global": {
         "ssim": {
-            "average": 0.9453333333333332,
-            "stdev": 0.00047140452079103207,
+            "average": 0.945,
+            "median": 0.945,
+            "stdev": 0.0,
             "min": 0.945,
             "max": 0.946
         },
         "psnr": {
             "average": 20.84,
-            "stdev": 0.008164965809278536,
+            "median": 20.84,
+            "stdev": 0.008,
             "min": 20.83,
             "max": 20.85
         },
         "vmaf": {
-            "average": 14.27478,
-            "stdev": 0.16722195390159322,
-            "min": 14.07074,
-            "max": 14.48034
+            "average": 14.258,
+            "median": 14.256,
+            "stdev": 0.167,
+            "min": 14.055,
+            "max": 14.464
         }
     },
     "input_file_dist": "test/dist-854x480.mkv",
@@ -306,7 +338,7 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
 
 ## License
 
-ffmpeg_quality_metrics, Copyright (c) 2019 Werner Robitza
+ffmpeg_quality_metrics, Copyright (c) 2019-2021 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
