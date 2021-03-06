@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v1.1.0 (2021-03-06)
+
+* Add progress bar, fixes #12.
+
+* Add vscode to gitignore.
+
+* Add VMAF unit test.
+
+* Improve README.
+
+
 ## v1.0.1 (2021-03-01)
 
 * Fix setup.py file.
