@@ -84,6 +84,7 @@ optional arguments:
 General options:
   -n, --dry-run         Do not run commands, just show what would be done (default: False)
   -v, --verbose         Show verbose output (default: False)
+  -pr, --progress       Show a progress bar (default: False)
 
 FFmpeg options:
   -dp, --disable-psnr-ssim
