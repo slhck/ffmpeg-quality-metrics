@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v1.1.3 (2021-03-06)
+
+* Update ffmpeg-progress-yield requirement.
+
+* Format setup.py.
+
+
 ## v1.1.2 (2021-03-06)
 
 * Add missing CLI option to readme.
