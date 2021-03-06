@@ -25,7 +25,7 @@ setup(
     author="Werner Robitza",
     author_email="werner.robitza@gmail.com",
     license="MIT",
-    install_requires=["pandas", "tqdm", "ffmpeg-progress-yield"],
+    install_requires=["pandas", "tqdm", "ffmpeg-progress-yield>=0.0.2"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
