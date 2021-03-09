@@ -197,25 +197,9 @@ class FfmpegQualityMetrics:
             )
 
         self.phone_model = bool(phone_model)
-
-        if model_path is None:
-            self.model_path = FfmpegQualityMetrics.get_default_vmaf_model_path()
-        else:
-            self.model_path = str(model_path)
         self.n_threads = int(n_threads)
 
-        supplied_models = FfmpegQualityMetrics.get_supplied_vmaf_models()
-
-        if not os.path.isfile(self.model_path):
-            # check if this is one of the supplied ones? e.g. user passed only a filename
-            if self.model_path in supplied_models:
-                self.model_path = os.path.join(
-                    FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY, self.model_path
-                )
-            else:
-                raise FfmpegQualityMetricsError(
-                    f"Could not find model at {self.model_path}. Please set --model-path to a valid VMAF .json model file."
-                )
+        self._set_vmaf_model_path(model_path)
 
         try:
             if self.verbose:
@@ -246,12 +230,7 @@ class FfmpegQualityMetrics:
             self._run_ffmpeg_command(filter_chains, desc="VMAF")
 
             if not self.dry_run:
-                with open(self.temp_files["vmaf"], "r") as in_vmaf:
-                    vmaf_log = json.load(in_vmaf)
-                    for frame_data in vmaf_log["frames"]:
-                        # append frame number, increase +1
-                        frame_data["metrics"]["n"] = int(frame_data["frameNum"]) + 1
-                        self.vmaf_data.append(frame_data["metrics"])
+                self._read_vmaf_temp_file()
 
         except Exception as e:
             raise e
@@ -260,6 +239,36 @@ class FfmpegQualityMetrics:
                 os.remove(self.temp_files["vmaf"])
 
         return self.vmaf_data
+
+    def _set_vmaf_model_path(self, model_path=None):
+        """
+        Logic to set the model path depending on the default or the user-supplied string
+        """
+        if model_path is None:
+            self.model_path = FfmpegQualityMetrics.get_default_vmaf_model_path()
+        else:
+            self.model_path = str(model_path)
+
+        supplied_models = FfmpegQualityMetrics.get_supplied_vmaf_models()
+
+        if not os.path.isfile(self.model_path):
+            # check if this is one of the supplied ones? e.g. user passed only a filename
+            if self.model_path in supplied_models:
+                self.model_path = os.path.join(
+                    FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY, self.model_path
+                )
+            else:
+                raise FfmpegQualityMetricsError(
+                    f"Could not find model at {self.model_path}. Please set --model-path to a valid VMAF .json model file."
+                )
+
+    def _read_vmaf_temp_file(self):
+        with open(self.temp_files["vmaf"], "r") as in_vmaf:
+            vmaf_log = json.load(in_vmaf)
+            for frame_data in vmaf_log["frames"]:
+                # append frame number, increase +1
+                frame_data["metrics"]["n"] = int(frame_data["frameNum"]) + 1
+                self.vmaf_data.append(frame_data["metrics"])
 
     def _run_ffmpeg_command(self, filter_chains=[], desc=""):
         """
