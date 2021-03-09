@@ -2,6 +2,7 @@
 # Author: Werner Robitza
 # License: MIT
 
+from build.lib.ffmpeg_quality_metrics.utils import print_error
 from functools import reduce
 import os
 import json
@@ -51,6 +52,7 @@ class FfmpegQualityMetrics:
     DEFAULT_VMAF_MODEL_DIRECTORY = os.path.join(
         os.path.dirname(__file__), "vmaf_models"
     )
+    POSSIBLE_FILTERS = ["libvmaf", "psnr", "ssim", "vif", "identity", "msad"]
 
     def __init__(
         self,
@@ -90,11 +92,16 @@ class FfmpegQualityMetrics:
         self.vmaf_data = []
         self.psnr_data = []
         self.ssim_data = []
+        self.vif_data = []
+        self.identity_data = []
+
+        self.available_filters = []
 
         self.global_stats = {}
 
         self.temp_dir = tempfile.gettempdir()
         self.temp_files = {}
+
         for key in ["psnr", "ssim", "vmaf"]:
             self.temp_files[key] = os.path.join(
                 self.temp_dir, next(tempfile._get_candidate_names()) + f"-{key}.txt"
@@ -104,6 +111,31 @@ class FfmpegQualityMetrics:
             raise FfmpegQualityMetricsError(
                 f"Allowed scaling algorithms: {self.ALLOWED_SCALERS}"
             )
+
+        self._check_available_filters()
+
+    def _check_available_filters(self):
+        """
+        Check which filters are available
+        """
+        cmd = ["ffmpeg", "-filters"]
+        stdout, _ = run_command(cmd)
+        filter_list = []
+        for line in stdout.split("\n"):
+            line = line.strip()
+            if line == "":
+                continue
+            cols = line.split(" ")
+            if len(cols) > 1:
+                filter_name = cols[1]
+                filter_list.append(filter_name)
+
+        for key in FfmpegQualityMetrics.POSSIBLE_FILTERS:
+            if key in filter_list:
+                self.available_filters.append(key)
+
+        if self.verbose:
+            print_info(f"Available filters: {self.available_filters}")
 
     @staticmethod
     def get_framerate(input_file):
@@ -143,10 +175,7 @@ class FfmpegQualityMetrics:
         return ref_framerate, dist_framerate
 
     def calc_vmaf(
-        self,
-        model_path=None,
-        phone_model=False,
-        n_threads=os.cpu_count(),
+        self, model_path=None, phone_model=False, n_threads=os.cpu_count(),
     ):
         """Calculate the VMAF scores for the input files
 
@@ -161,6 +190,12 @@ class FfmpegQualityMetrics:
         Returns:
             dict: VMAF results
         """
+        if "libvmaf" not in self.available_filters:
+            raise FfmpegQualityMetricsError(
+                "Your ffmpeg build does not have support for VMAF. "
+                "Make sure you download or build a version compiled with --enable-libvmaf!"
+            )
+
         self.phone_model = bool(phone_model)
 
         if model_path is None:
@@ -174,7 +209,9 @@ class FfmpegQualityMetrics:
         if not os.path.isfile(self.model_path):
             # check if this is one of the supplied ones? e.g. user passed only a filename
             if self.model_path in supplied_models:
-                self.model_path = os.path.join(FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY, self.model_path)
+                self.model_path = os.path.join(
+                    FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY, self.model_path
+                )
             else:
                 raise FfmpegQualityMetricsError(
                     f"Could not find model at {self.model_path}. Please set --model-path to a valid VMAF .json model file."
@@ -201,9 +238,9 @@ class FfmpegQualityMetrics:
 
             filter_chains = [
                 f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
-                "[dist]setpts=PTS-STARTPTS[dist1]",
-                "[ref]setpts=PTS-STARTPTS[ref1]",
-                f"[dist1][ref1]libvmaf='{vmaf_opts_string}'",
+                "[dist]setpts=PTS-STARTPTS[distpts]",
+                "[ref]setpts=PTS-STARTPTS[refpts]",
+                f"[distpts][refpts]libvmaf='{vmaf_opts_string}'",
             ]
 
             self._run_ffmpeg_command(filter_chains, desc="VMAF")
@@ -275,6 +312,16 @@ class FfmpegQualityMetrics:
         Returns:
             dict: SSIM and PSNR results, each with their own key
         """
+        if "ssim" not in self.available_filters:
+            raise FfmpegQualityMetricsError(
+                "Your ffmpeg build does not have support for the 'ssim' filter. "
+            )
+
+        if "psnr" not in self.available_filters:
+            raise FfmpegQualityMetricsError(
+                "Your ffmpeg build does not have support for the 'psnr' filter. "
+            )
+
         try:
             if self.verbose:
                 print_info(
@@ -297,33 +344,8 @@ class FfmpegQualityMetrics:
             self._run_ffmpeg_command(filter_chains, desc="PSNR and SSIM")
 
             if not self.dry_run:
-                with open(self.temp_files["psnr"], "r") as in_psnr:
-                    # n:1 mse_avg:529.52 mse_y:887.00 mse_u:233.33 mse_v:468.25 psnr_avg:20.89 psnr_y:18.65 psnr_u:24.45 psnr_v:21.43
-                    lines = in_psnr.readlines()
-                    for line in lines:
-                        line = line.strip()
-                        fields = line.split(" ")
-                        frame_data = {}
-                        for field in fields:
-                            k, v = field.split(":")
-                            frame_data[k] = round(float(v), 3) if k != "n" else int(v)
-                        self.psnr_data.append(frame_data)
-
-                with open(self.temp_files["ssim"], "r") as in_ssim:
-                    # n:1 Y:0.937213 U:0.961733 V:0.945788 All:0.948245 (12.860441)\n
-                    lines = in_ssim.readlines()
-                    for line in lines:
-                        line = line.strip().split(" (")[0]  # remove excess
-                        fields = line.split(" ")
-                        frame_data = {}
-                        for field in fields:
-                            k, v = field.split(":")
-                            if k != "n":
-                                # make psnr and ssim keys the same
-                                k = "ssim_" + k.lower()
-                                k = k.replace("all", "avg")
-                            frame_data[k] = round(float(v), 3) if k != "n" else int(v)
-                        self.ssim_data.append(frame_data)
+                self._read_psnr_temp_file()
+                self._read_ssim_temp_file()
 
         except Exception as e:
             raise e
@@ -334,6 +356,42 @@ class FfmpegQualityMetrics:
                 os.remove(self.temp_files["ssim"])
 
         return {"ssim": self.ssim_data, "psnr": self.psnr_data}
+
+    def _read_psnr_temp_file(self):
+        """
+        Parse the PSNR generated logfile
+        """
+        with open(self.temp_files["psnr"], "r") as in_psnr:
+            # n:1 mse_avg:529.52 mse_y:887.00 mse_u:233.33 mse_v:468.25 psnr_avg:20.89 psnr_y:18.65 psnr_u:24.45 psnr_v:21.43
+            lines = in_psnr.readlines()
+            for line in lines:
+                line = line.strip()
+                fields = line.split(" ")
+                frame_data = {}
+                for field in fields:
+                    k, v = field.split(":")
+                    frame_data[k] = round(float(v), 3) if k != "n" else int(v)
+                self.psnr_data.append(frame_data)
+
+    def _read_ssim_temp_file(self):
+        """
+        Parse the SSIM generated logfile
+        """
+        with open(self.temp_files["ssim"], "r") as in_ssim:
+            # n:1 Y:0.937213 U:0.961733 V:0.945788 All:0.948245 (12.860441)\n
+            lines = in_ssim.readlines()
+            for line in lines:
+                line = line.strip().split(" (")[0]  # remove excess
+                fields = line.split(" ")
+                frame_data = {}
+                for field in fields:
+                    k, v = field.split(":")
+                    if k != "n":
+                        # make psnr and ssim keys the same
+                        k = "ssim_" + k.lower()
+                        k = k.replace("all", "avg")
+                    frame_data[k] = round(float(v), 3) if k != "n" else int(v)
+                self.ssim_data.append(frame_data)
 
     @staticmethod
     def get_brewed_vmaf_model_path():
