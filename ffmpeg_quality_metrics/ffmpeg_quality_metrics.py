@@ -2,7 +2,6 @@
 # Author: Werner Robitza
 # License: MIT
 
-from build.lib.ffmpeg_quality_metrics.utils import print_error
 from functools import reduce
 import os
 import json
