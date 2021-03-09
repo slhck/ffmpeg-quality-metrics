@@ -95,7 +95,7 @@ class TestMetrics(unittest.TestCase):
                 self.assertAlmostEqual(expected_frame[key], actual_frame[key], places=2)
 
     def test_vmaf(self):
-        run_ret = ffqm(REF, DIST).calc_vmaf()
+        run_ret = ffqm(REF, DIST).calc_vmaf(model_path="vmaf_v0.6.1.json")
         expected = [
             {
                 "psnr": 18.587308,
