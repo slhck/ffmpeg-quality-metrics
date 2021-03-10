@@ -4,7 +4,7 @@
 
 Simple script for calculating quality metrics with FFmpeg.
 
-Currently supports PSNR, SSIM and VMAF. It will output:
+Currently supports PSNR, SSIM, VMAF and VIF. It will output:
 
 - the per-frame metrics
 - metrics for each component (Y, U, V)
@@ -60,7 +60,8 @@ The following metrics are available:
 | ------ | ------ | ------ | ------ |
 | PSNR | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB | ✔️ |
 | SSIM | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity) | 0-100 (higher is better) | ✔️ |
-| VMAF | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf) | 0-100 (higher is better) | No, use `--enable-vmaf` |
+| VMAF | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf) | 0-100 (higher is better) | No |
+| VIF | Visual Information Fidelity | 0-100 (higher is better) | No |
 
 ### Extended Options
 
@@ -69,10 +70,13 @@ You can configure additional options related to scaling, speed etc.
 See `ffmpeg_quality_metrics -h`:
 
 ```
-usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-dp]
-       [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}] [-r FRAMERATE]
-       [-t THREADS] [-of {json,csv}] [-ev] [-m MODEL_PATH] [-p] [-nt N_THREADS]
-       dist ref
+usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-p]
+                   [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
+                   [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
+                   [-r FRAMERATE] [-t THREADS] [-of {json,csv}]
+                   [--model-path MODEL_PATH] [--phone-model]
+                   [--n-threads N_THREADS]
+                   dist ref
 
 positional arguments:
   dist                  input file, distorted
@@ -82,13 +86,18 @@ optional arguments:
   -h, --help            show this help message and exit
 
 General options:
-  -n, --dry-run         Do not run commands, just show what would be done (default: False)
+  -n, --dry-run         Do not run commands, just show what would be done
+                        (default: False)
   -v, --verbose         Show verbose output (default: False)
-  -pr, --progress       Show a progress bar (default: False)
+  -p, --progress        Show a progress bar (default: False)
+
+Metric options:
+  -m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...], 
+  --metrics {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]
+        Metrics to calculate.
+        Specify multiple metrics like '--metrics ssim vmaf' (default: ['psnr', 'ssim'])
 
 FFmpeg options:
-  -dp, --disable-psnr-ssim
-                        Disable PSNR/SSIM computation. Use VMAF to get YUV estimate. (default: False)
   -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                         Scaling algorithm for ffmpeg (default: bicubic)
   -r FRAMERATE, --framerate FRAMERATE
@@ -101,14 +110,21 @@ Output options:
                         Output format for the metrics (default: json)
 
 VMAF options:
-  -ev, --enable-vmaf    Enable VMAF computation; calculates VMAF as well as SSIM and PSNR (default: False)
-  -m MODEL_PATH, --model-path MODEL_PATH
-                        Use a specific VMAF model file. If none is chosen, picks a default model. You can also specify one of the
-                        following built-in models: ['vmaf_v0.6.1.json', 'vmaf_4k_v0.6.1.json', 'vmaf_v0.6.1neg.json'] (default: vmaf_v0.6.1.json)
-  -p, --phone-model     Enable VMAF phone model (default: False)
-  -nt N_THREADS, --n-threads N_THREADS
-                        Set the value of libvmaf's n_threads option. This determines the number of threads that are used for VMAF
-                        calculation (default: number of CPUs)
+  --model-path MODEL_PATH
+                        Use a specific VMAF model file. If none is chosen,
+                        picks a default model. You can also specify one of the
+                        following built-in models: ['vmaf_v0.6.1.json',
+                        'vmaf_4k_v0.6.1.json', 'vmaf_v0.6.1neg.json']
+                        (default:
+                        /Users/werner/Documents/Projects/slhck/ffmpeg-quality-
+                        metrics/ffmpeg_quality_metrics/vmaf_models/vmaf_v0.6.1
+                        .json)
+  --phone-model         Enable VMAF phone model (default: False)
+  --n-threads N_THREADS
+                        Set the value of libvmaf's n_threads option. This
+                        determines the number of threads that are used for
+                        VMAF calculation (default: 8)
+
 ```
 
 ### Specifying VMAF Model
