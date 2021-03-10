@@ -129,7 +129,7 @@ VMAF options:
 
 ### Specifying VMAF Model
 
-Use the `-m/--model-path` option to set the path to a different VMAF model file.
+Use the `--model-path` option to set the path to a different VMAF model file.
 
 This program supplies the following models:
 
@@ -150,8 +150,8 @@ You can either specify an absolute path to an existing model, e.g.:
 Or pass the file name to the built-in model. So both of these are equivalent:
 
 ```
-ffmpeg_quality_metrics dist.mkv ref.mkv -m vmaf_v0.6.1neg.json
-ffmpeg_quality_metrics dist.mkv ref.mkv -m /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
+ffmpeg_quality_metrics dist.mkv ref.mkv -m vmaf --model-path vmaf_v0.6.1neg.json
+ffmpeg_quality_metrics dist.mkv ref.mkv -m vmaf --model-path /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
 ```
 
 ## Running with Docker
@@ -187,7 +187,7 @@ This tool supports JSON or CSV output, including individual fields for Y, U, V, 
 JSON example:
 
 ```
-➜ ffmpeg_quality_metrics test/dist-854x480.mkv test/ref-1280x720.mkv --enable-vmaf
+➜ ffmpeg_quality_metrics test/dist-854x480.mkv test/ref-1280x720.mkv -m ssim psnr vmaf
 {
     "ssim": [
         {
