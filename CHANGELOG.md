@@ -1,6 +1,33 @@
 # Changelog
 
 
+## v1.2.0 (2021-03-10)
+
+* Update docs.
+
+* Deprecate old API.
+
+* Add single calc() function, fixes #32.
+
+* Add dev requirements.
+
+* Explicitly call VMAF model in test.
+
+* Support Python 3.9.
+
+* Fix flake8 errors.
+
+* Simplify VMAF function.
+
+* Detect available filters.
+
+* Note how to update docs.
+
+* Update docs.
+
+* Remove release script.
+
+
 ## v1.1.3 (2021-03-06)
 
 * Update ffmpeg-progress-yield requirement.
