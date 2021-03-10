@@ -110,6 +110,23 @@ EXPECTED = {
             "psnr_v": 21.46,
         },
     ],
+    "vif": [
+        {
+            "n": 0,
+            "scale_0": 0.263,
+            "scale_1": 0.557,
+            "scale_2": 0.624,
+            "scale_3": 0.679,
+        },
+        {"n": 1, "scale_0": 0.264, "scale_1": 0.56, "scale_2": 0.627, "scale_3": 0.682},
+        {
+            "n": 2,
+            "scale_0": 0.262,
+            "scale_1": 0.559,
+            "scale_2": 0.626,
+            "scale_3": 0.683,
+        },
+    ],
 }
 
 
@@ -128,16 +145,26 @@ class TestMetrics(unittest.TestCase):
                 self._test_frame_by_frame(EXPECTED[key], run_ret)
 
     def test_ssim(self):
-        run_ret = ffqm(REF, DIST).calc_ssim_psnr()["ssim"]
+        run_ret = ffqm(REF, DIST).calc(["ssim"])["ssim"]
         self._test_frame_by_frame(EXPECTED["ssim"], run_ret)
 
     def test_psnr(self):
-        run_ret = ffqm(REF, DIST).calc_ssim_psnr()["psnr"]
+        run_ret = ffqm(REF, DIST).calc(["psnr"])["psnr"]
         self._test_frame_by_frame(EXPECTED["psnr"], run_ret)
 
-    def test_vmaf(self):
+    def test_vmaf_legacy(self):
         run_ret = ffqm(REF, DIST).calc_vmaf(model_path="vmaf_v0.6.1.json")
         self._test_frame_by_frame(EXPECTED["vmaf"], run_ret)
+
+    def test_vmaf(self):
+        run_ret = ffqm(REF, DIST).calc(
+            ["vmaf"], vmaf_options={"model_path": "vmaf_v0.6.1.json"}
+        )["vmaf"]
+        self._test_frame_by_frame(EXPECTED["vmaf"], run_ret)
+
+    def test_vif(self):
+        run_ret = ffqm(REF, DIST).calc(["vif"])["vif"]
+        self._test_frame_by_frame(EXPECTED["vif"], run_ret)
 
     def _test_frame_by_frame(self, expected, run_ret):
         for expected_frame, actual_frame in zip(expected, run_ret):
@@ -146,7 +173,7 @@ class TestMetrics(unittest.TestCase):
 
     def test_global(self):
         f = ffqm(REF, DIST)
-        f.calc_ssim_psnr()
+        f.calc()
         run_ret = f.get_global_stats()
         expected = {
             "ssim": {

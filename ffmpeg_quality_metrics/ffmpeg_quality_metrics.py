@@ -56,12 +56,12 @@ class FfmpegQualityMetrics:
         "phone_model": False,
         "model_path": None,
     }
-    POSSIBLE_FILTERS = ["libvmaf", "psnr", "ssim"]  # "vif", "identity", "msad"]
+    POSSIBLE_FILTERS = ["libvmaf", "psnr", "ssim", "vif"]  # , "identity", "msad"]
     METRIC_TO_FILTER_MAP = {
         "vmaf": "libvmaf",
         "psnr": "psnr",
         "ssim": "ssim",
-        # "vif": "vif",
+        "vif": "vif",
         # "identity": "identity",
         # "msad": "msad",
     }
@@ -105,7 +105,7 @@ class FfmpegQualityMetrics:
             "vmaf": [],
             "psnr": [],
             "ssim": [],
-            # "vif": [],
+            "vif": [],
             # "identity": [],
             # "msad": [],
         }
@@ -199,10 +199,10 @@ class FfmpegQualityMetrics:
         """
         if filter_name in ["ssim", "psnr"]:
             return f"{filter_name}='{win_path_check(self.temp_files[filter_name])}'"
-        elif filter_name in ["libvmaf"]:
+        elif filter_name == "libvmaf":
             return f"libvmaf='{self._get_libvmaf_opts()}'"
-        elif filter_name in ["vif", "identity", "msad"]:
-            return filter_name
+        elif filter_name == "vif":
+            return "vif,metadata=mode=print"
         else:
             raise FfmpegQualityMetricsError(f"Unknown filter {filter_name}!")
 
@@ -266,7 +266,9 @@ class FfmpegQualityMetrics:
         if n_splits == 1:
             metric_name = metrics[0]
             filter_chains.extend(
-                [f"[distpts][refpts]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"]
+                [
+                    f"[distpts][refpts]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
+                ]
             )
         # all other cases:
         else:
@@ -278,13 +280,15 @@ class FfmpegQualityMetrics:
                 )
 
         try:
-            self._run_ffmpeg_command(filter_chains, desc=", ".join(metrics))
+            output = self._run_ffmpeg_command(filter_chains, desc=", ".join(metrics))
             self._read_temp_files(metrics)
+            self._read_ffmpeg_output(output, metrics)
         except Exception as e:
             raise e
         finally:
             self._cleanup_temp_files()
 
+        # return only those data entries containing values
         return {k: v for k, v in self.data.items() if v}
 
     def _get_libvmaf_opts(self):
@@ -388,6 +392,60 @@ class FfmpegQualityMetrics:
                 frame_data["metrics"]["n"] = int(frame_data["frameNum"]) + 1
                 self.data["vmaf"].append(frame_data["metrics"])
 
+    def _read_ffmpeg_output(self, ffmpeg_output: str, metrics=[]):
+        """
+        Read the metric values from ffmpeg's stderr, for those that don't output
+        to a file.
+        """
+        if self.dry_run:
+            return
+        if "vif" in metrics:
+            self._read_vif_output(ffmpeg_output)
+
+    def _read_vif_output(self, ffmpeg_output: str):
+        """
+        Parse the VIF filter output
+        """
+        # [Parsed_metadata_4 @ 0x7f995cd08640] frame:1    pts:1       pts_time:0.0401x
+        # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.0=0.263582
+        # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.1=0.560129
+        # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.2=0.626596
+        # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.3=0.682183
+
+        lines = [line.strip() for line in ffmpeg_output.split("\n")]
+        current_frame = None
+        frame_data = {}
+
+        for line in lines:
+            if not line.startswith("[Parsed_metadata"):
+                continue
+
+            fields = line.split(" ")
+
+            # a new frame appears
+            if fields[3].startswith("frame"):
+                # if we have data already
+                if frame_data:
+                    self.data["vif"].append(frame_data)
+
+                # get the frame number and reset the frame data
+                current_frame = int(fields[3].split(":")[1])
+                frame_data = {"n": current_frame}
+                continue
+
+            # no frame was set, or no VIF info present
+            if current_frame is None or not fields[3].startswith("lavfi.vif"):
+                continue
+
+            # we have a frame
+            key, value = fields[3].split("=")
+            key = key.replace("lavfi.vif.", "").replace(".", "_")
+            frame_data[key] = round(float(value), 3)
+
+        # append final frame data
+        if frame_data:
+            self.data["vif"].append(frame_data)
+
     def _read_temp_files(self, metrics=[]):
         """
         Read the data from multiple temp files
@@ -416,6 +474,7 @@ class FfmpegQualityMetrics:
         cmd = [
             "ffmpeg",
             "-nostdin",
+            "-nostats",
             "-y",
             "-threads",
             str(self.threads),
@@ -436,12 +495,14 @@ class FfmpegQualityMetrics:
         ]
 
         if self.progress:
-            ff = FfmpegProgress(cmd)
+            ff = FfmpegProgress(cmd, self.dry_run)
             with tqdm(total=100, position=1, desc=desc) as pbar:
                 for progress in ff.run_command_with_progress():
                     pbar.update(progress - pbar.n)
+            return ff.stderr
         else:
-            run_command(cmd, self.dry_run, self.verbose)
+            _, stderr = run_command(cmd, self.dry_run, self.verbose)
+            return stderr
 
     def calc_ssim_psnr(self):
         """Calculate SSIM and PSNR
@@ -582,12 +643,20 @@ class FfmpegQualityMetrics:
         Returns:
             dict: A dictionary with stats
         """
-        for key, metric_data in self.data.items():
+        for metric_name, metric_data in self.data.items():
             if len(metric_data) == 0:
                 continue
-            value_key = key if key == "vmaf" else key + "_avg"
+
+            # which value to access?
+            if metric_name in ["ssim", "psnr"]:
+                value_key = metric_name + "_avg"
+            elif metric_name == "vmaf":
+                value_key = "vmaf"
+            elif metric_name == "vif":
+                value_key = "scale_0"
+
             values = [float(entry[value_key]) for entry in metric_data]
-            self.global_stats[key] = {
+            self.global_stats[metric_name] = {
                 "average": round(np.average(values), 3),
                 "median": round(np.median(values), 3),
                 "stdev": round(np.std(values), 3),

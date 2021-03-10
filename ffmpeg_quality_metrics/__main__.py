@@ -33,17 +33,21 @@ def main():
         "-v", "--verbose", action="store_true", help="Show verbose output"
     )
     general_opts.add_argument(
-        "-pr", "--progress", action="store_true", help="Show a progress bar"
+        "-p", "--progress", action="store_true", help="Show a progress bar"
+    )
+
+    metric_options = parser.add_argument_group("Metric options")
+
+    metric_options.add_argument(
+        "-m",
+        "--metrics",
+        default=["psnr", "ssim"],
+        help="Metrics to calculate. Specify multiple metrics like '--metrics ssim vmaf'",
+        nargs="+",
+        choices=FfmpegQualityMetrics.METRIC_TO_FILTER_MAP.keys(),
     )
 
     ffmpeg_opts = parser.add_argument_group("FFmpeg options")
-
-    ffmpeg_opts.add_argument(
-        "-dp",
-        "--disable-psnr-ssim",
-        action="store_true",
-        help="Disable PSNR/SSIM computation. Use VMAF to get YUV estimate.",
-    )
 
     ffmpeg_opts.add_argument(
         "-s",
@@ -54,10 +58,7 @@ def main():
     )
 
     ffmpeg_opts.add_argument(
-        "-r",
-        "--framerate",
-        type=float,
-        help="Force an input framerate",
+        "-r", "--framerate", type=float, help="Force an input framerate",
     )
 
     ffmpeg_opts.add_argument(
@@ -82,14 +83,6 @@ def main():
     vmaf_opts = parser.add_argument_group("VMAF options")
 
     vmaf_opts.add_argument(
-        "-ev",
-        "--enable-vmaf",
-        action="store_true",
-        help="Enable VMAF computation; calculates VMAF as well as SSIM and PSNR",
-    )
-
-    vmaf_opts.add_argument(
-        "-m",
         "--model-path",
         type=str,
         default=FfmpegQualityMetrics.get_default_vmaf_model_path(),
@@ -98,11 +91,10 @@ def main():
     )
 
     vmaf_opts.add_argument(
-        "-p", "--phone-model", action="store_true", help="Enable VMAF phone model"
+        "--phone-model", action="store_true", help="Enable VMAF phone model"
     )
 
     vmaf_opts.add_argument(
-        "-nt",
         "--n-threads",
         type=int,
         default=FfmpegQualityMetrics.DEFAULT_VMAF_THREADS,
@@ -123,18 +115,15 @@ def main():
         progress=cli_args.progress,
     )
 
-    metrics = []
+    metrics = cli_args.metrics
+
     vmaf_options = {}
-    if cli_args.enable_vmaf:
-        metrics.append("vmaf")
+    if "vmaf" in metrics:
         vmaf_options = {
             "model_path": cli_args.model_path,
             "phone_model": cli_args.phone_model,
             "n_threads": cli_args.n_threads,
         }
-
-    if not cli_args.disable_psnr_ssim:
-        metrics.extend(["ssim", "psnr"])
 
     ffqm.calc(metrics, vmaf_options=vmaf_options)
 
@@ -156,4 +145,5 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         print_error(f"General exception: {e}")
+        print(sys.exc_info())
         sys.exit(1)

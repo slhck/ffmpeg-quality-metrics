@@ -68,7 +68,7 @@ def run_command(cmd, dry_run=False, verbose=False, allow_error=False):
     if dry_run or verbose:
         print_info(quoted_cmd(cmd))
         if dry_run:
-            return
+            return "", ""
 
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
