@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v2.0.0 (2021-03-10)
+
+* Change CLI syntax, add VIF filter.
+
+  Move CLI syntax to a more flexible format for selecting metrics.
+  This is not backwards-compatible, so a major release.
+  Add the VIF filter.
+
+* Fix bug if VMAF is the only metric.
+
+* Update docs.
+
+
 ## v1.2.0 (2021-03-10)
 
 * Update docs.
