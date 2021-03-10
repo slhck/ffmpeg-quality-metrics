@@ -51,7 +51,20 @@ class FfmpegQualityMetrics:
     DEFAULT_VMAF_MODEL_DIRECTORY = os.path.join(
         os.path.dirname(__file__), "vmaf_models"
     )
-    POSSIBLE_FILTERS = ["libvmaf", "psnr", "ssim", "vif", "identity", "msad"]
+    DEFAULT_VMAF_OPTIONS = {
+        "n_threads": DEFAULT_VMAF_THREADS,
+        "phone_model": False,
+        "model_path": None,
+    }
+    POSSIBLE_FILTERS = ["libvmaf", "psnr", "ssim"]  # "vif", "identity", "msad"]
+    METRIC_TO_FILTER_MAP = {
+        "vmaf": "libvmaf",
+        "psnr": "psnr",
+        "ssim": "ssim",
+        # "vif": "vif",
+        # "identity": "identity",
+        # "msad": "msad",
+    }
 
     def __init__(
         self,
@@ -88,11 +101,14 @@ class FfmpegQualityMetrics:
         self.threads = int(threads)
         self.progress = bool(progress)
 
-        self.vmaf_data = []
-        self.psnr_data = []
-        self.ssim_data = []
-        self.vif_data = []
-        self.identity_data = []
+        self.data = {
+            "vmaf": [],
+            "psnr": [],
+            "ssim": [],
+            # "vif": [],
+            # "identity": [],
+            # "msad": [],
+        }
 
         self.available_filters = []
 
@@ -105,6 +121,10 @@ class FfmpegQualityMetrics:
             self.temp_files[key] = os.path.join(
                 self.temp_dir, next(tempfile._get_candidate_names()) + f"-{key}.txt"
             )
+            if self.verbose:
+                print_info(
+                    f"Writing temporary {key.upper()} information to: {self.temp_files[key]}"
+                )
 
         if scaling_algorithm not in self.ALLOWED_SCALERS:
             raise FfmpegQualityMetricsError(
@@ -173,8 +193,127 @@ class FfmpegQualityMetrics:
 
         return ref_framerate, dist_framerate
 
+    def _get_filter_opts(self, filter_name):
+        """
+        Return the specific ffmpeg filter options for a chosen metric filter
+        """
+        if filter_name in ["ssim", "psnr"]:
+            return f"{filter_name}='{win_path_check(self.temp_files[filter_name])}'"
+        elif filter_name in ["libvmaf"]:
+            return f"libvmaf='{self._get_libvmaf_opts()}'"
+        elif filter_name in ["vif", "identity", "msad"]:
+            return filter_name
+        else:
+            raise FfmpegQualityMetricsError(f"Unknown filter {filter_name}!")
+
+    def calc(self, metrics=["ssim", "psnr"], vmaf_options={}):
+        """Calculate one or more metrics.
+
+        Args:
+            metrics (list, optional): A list of metrics to calculate.
+                Possible values are ["ssim", "psnr", "vmaf"].
+                Defaults to ["ssim", "psnr"].
+            vmaf_options (dict, optional): VMAF-specific options.
+                model_path (str, optional): Path to the VMAF model. Defaults to 0.6.1 model.
+                phone_model (bool, optional): Use phone model. Defaults to False.
+                n_threads (int, optional): Number of VMAF threads. Defaults to os.cpu_count().
+                Defaults to {}.
+
+        Raises:
+            FfmpegQualityMetricsError: In case of an error
+            e: A generic error
+
+        Returns:
+            dict: A dictionary of per-frame info, with the key being the metric name
+        """
+        if not metrics:
+            raise FfmpegQualityMetricsError("No metrics specified!")
+
+        # check available metrics
+        for metric_name in metrics:
+            filter_name = self.METRIC_TO_FILTER_MAP.get(metric_name, None)
+            if filter_name not in self.POSSIBLE_FILTERS:
+                raise FfmpegQualityMetricsError(f"No such metric '{metric_name}'")
+            if filter_name not in self.available_filters:
+                raise FfmpegQualityMetricsError(
+                    f"Your ffmpeg version does not have the filter '{filter_name}'"
+                )
+
+        # set VMAF options specifically
+        if "vmaf" in metrics:
+            self._check_libvmaf_availability()
+            vmaf_options = {**self.DEFAULT_VMAF_OPTIONS, **vmaf_options}
+            self.phone_model = bool(vmaf_options["phone_model"])
+            self.n_threads = int(vmaf_options["n_threads"])
+            self._set_vmaf_model_path(vmaf_options["model_path"])
+
+        filter_chains = [
+            f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
+            "[dist]setpts=PTS-STARTPTS[distpts]",
+            "[ref]setpts=PTS-STARTPTS[refpts]",
+        ]
+
+        # generate split filters depending on the number of models
+        n_splits = len(metrics)
+        if n_splits > 1:
+            for source in ["dist", "ref"]:
+                suffixes = "".join([f"[{source}{n}]" for n in range(1, n_splits + 1)])
+                filter_chains.extend(
+                    [f"[{source}pts]split={n_splits}{suffixes}",]
+                )
+
+        # special case, only one metric:
+        if n_splits == 1:
+            filter_chains.extend(
+                [f"[distpts][refpts]{self._get_filter_opts(metrics[0])}"]
+            )
+        # all other cases:
+        else:
+            for n, metric_name in zip(range(1, n_splits + 1), metrics):
+                filter_chains.extend(
+                    [
+                        f"[dist{n}][ref{n}]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
+                    ]
+                )
+
+        try:
+            self._run_ffmpeg_command(filter_chains, desc=", ".join(metrics))
+            self._read_temp_files(metrics)
+        except Exception as e:
+            raise e
+        finally:
+            self._cleanup_temp_files()
+
+        return {k: v for k, v in self.data.items() if v}
+
+    def _get_libvmaf_opts(self):
+        """
+        Get a string to use for VMAF in ffmpeg filter chain
+        """
+        vmaf_opts = {
+            "model_path": win_path_check(self.model_path),
+            "phone_model": "1" if self.phone_model else "0",
+            "log_path": win_path_check(self.temp_files["vmaf"]),
+            "log_fmt": "json",
+            "psnr": "1",
+            "ssim": "1",
+            "ms_ssim": "1",
+            "n_threads": str(self.n_threads),
+        }
+
+        vmaf_opts_string = ":".join(f"{k}={v}" for k, v in vmaf_opts.items())
+
+        return vmaf_opts_string
+
+    def _check_libvmaf_availability(self):
+        if "libvmaf" not in self.available_filters:
+            raise FfmpegQualityMetricsError(
+                "Your ffmpeg build does not have support for VMAF. "
+                "Make sure you download or build a version compiled with --enable-libvmaf!"
+            )
+
     def calc_vmaf(
-        self, model_path=None, phone_model=False, n_threads=os.cpu_count(),
+        self, model_path=None, phone_model=False, n_threads=DEFAULT_VMAF_THREADS,
     ):
         """Calculate the VMAF scores for the input files
 
@@ -189,55 +328,29 @@ class FfmpegQualityMetrics:
         Returns:
             dict: VMAF results
         """
-        if "libvmaf" not in self.available_filters:
-            raise FfmpegQualityMetricsError(
-                "Your ffmpeg build does not have support for VMAF. "
-                "Make sure you download or build a version compiled with --enable-libvmaf!"
-            )
+        self._check_libvmaf_availability()
 
+        # map the user-supplied options to the internal attributes
         self.phone_model = bool(phone_model)
         self.n_threads = int(n_threads)
-
         self._set_vmaf_model_path(model_path)
 
+        filter_chains = [
+            f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
+            "[dist]setpts=PTS-STARTPTS[distpts]",
+            "[ref]setpts=PTS-STARTPTS[refpts]",
+            f"[distpts][refpts]{self._get_filter_opts('libvmaf')}",
+        ]
+
         try:
-            if self.verbose:
-                print_info(
-                    f"Writing temporary VMAF information to: {self.temp_files['vmaf']}"
-                )
-
-            vmaf_opts = {
-                "model_path": win_path_check(self.model_path),
-                "phone_model": "1" if phone_model else "0",
-                "log_path": win_path_check(self.temp_files["vmaf"]),
-                "log_fmt": "json",
-                "psnr": "1",
-                "ssim": "1",
-                "ms_ssim": "1",
-                "n_threads": str(self.n_threads),
-            }
-
-            vmaf_opts_string = ":".join(f"{k}={v}" for k, v in vmaf_opts.items())
-
-            filter_chains = [
-                f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
-                "[dist]setpts=PTS-STARTPTS[distpts]",
-                "[ref]setpts=PTS-STARTPTS[refpts]",
-                f"[distpts][refpts]libvmaf='{vmaf_opts_string}'",
-            ]
-
             self._run_ffmpeg_command(filter_chains, desc="VMAF")
-
-            if not self.dry_run:
-                self._read_vmaf_temp_file()
-
+            self._read_temp_files(["vmaf"])
         except Exception as e:
             raise e
         finally:
-            if os.path.isfile(self.temp_files["vmaf"]):
-                os.remove(self.temp_files["vmaf"])
+            self._cleanup_temp_files()
 
-        return self.vmaf_data
+        return self.data["vmaf"]
 
     def _set_vmaf_model_path(self, model_path=None):
         """
@@ -267,7 +380,20 @@ class FfmpegQualityMetrics:
             for frame_data in vmaf_log["frames"]:
                 # append frame number, increase +1
                 frame_data["metrics"]["n"] = int(frame_data["frameNum"]) + 1
-                self.vmaf_data.append(frame_data["metrics"])
+                self.data["vmaf"].append(frame_data["metrics"])
+
+    def _read_temp_files(self, metrics=[]):
+        """
+        Read the data from multiple temp files
+        """
+        if self.dry_run:
+            return
+        if "vmaf" in metrics:
+            self._read_vmaf_temp_file()
+        if "ssim" in metrics:
+            self._read_ssim_temp_file()
+        if "psnr" in metrics:
+            self._read_psnr_temp_file()
 
     def _run_ffmpeg_command(self, filter_chains=[], desc=""):
         """
@@ -330,40 +456,30 @@ class FfmpegQualityMetrics:
                 "Your ffmpeg build does not have support for the 'psnr' filter. "
             )
 
+        filter_chains = [
+            f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
+            "[dist]setpts=PTS-STARTPTS[distpts]",
+            "[ref]setpts=PTS-STARTPTS[refpts]",
+            "[distpts]split[dist1][dist2]",
+            "[refpts]split[ref1][ref2]",
+            f"[dist1][ref1]{self._get_filter_opts('ssim')}",
+            f"[dist2][ref2]{self._get_filter_opts('psnr')}",
+        ]
+
         try:
-            if self.verbose:
-                print_info(
-                    f"Writing temporary SSIM information to: {self.temp_files['ssim']}"
-                )
-                print_info(
-                    f"Writing temporary PSNR information to: {self.temp_files['psnr']}"
-                )
-
-            filter_chains = [
-                f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
-                "[dist]setpts=PTS-STARTPTS[distpts]",
-                "[ref]setpts=PTS-STARTPTS[refpts]",
-                "[distpts]split[dist1][dist2]",
-                "[refpts]split[ref1][ref2]",
-                f"[dist1][ref1]psnr='{win_path_check(self.temp_files['psnr'])}'",
-                f"[dist2][ref2]ssim='{win_path_check(self.temp_files['ssim'])}'",
-            ]
-
             self._run_ffmpeg_command(filter_chains, desc="PSNR and SSIM")
-
-            if not self.dry_run:
-                self._read_psnr_temp_file()
-                self._read_ssim_temp_file()
-
+            self._read_temp_files(["ssim", "psnr"])
         except Exception as e:
             raise e
         finally:
-            if os.path.isfile(self.temp_files["psnr"]):
-                os.remove(self.temp_files["psnr"])
-            if os.path.isfile(self.temp_files["ssim"]):
-                os.remove(self.temp_files["ssim"])
+            self._cleanup_temp_files()
 
-        return {"ssim": self.ssim_data, "psnr": self.psnr_data}
+        return {"ssim": self.data["ssim"], "psnr": self.data["psnr"]}
+
+    def _cleanup_temp_files(self):
+        for temp_file in self.temp_files.values():
+            if os.path.isfile(temp_file):
+                os.remove(temp_file)
 
     def _read_psnr_temp_file(self):
         """
@@ -379,7 +495,7 @@ class FfmpegQualityMetrics:
                 for field in fields:
                     k, v = field.split(":")
                     frame_data[k] = round(float(v), 3) if k != "n" else int(v)
-                self.psnr_data.append(frame_data)
+                self.data["psnr"].append(frame_data)
 
     def _read_ssim_temp_file(self):
         """
@@ -399,7 +515,7 @@ class FfmpegQualityMetrics:
                         k = "ssim_" + k.lower()
                         k = k.replace("all", "avg")
                     frame_data[k] = round(float(v), 3) if k != "n" else int(v)
-                self.ssim_data.append(frame_data)
+                self.data["ssim"].append(frame_data)
 
     @staticmethod
     def get_brewed_vmaf_model_path():
@@ -455,13 +571,11 @@ class FfmpegQualityMetrics:
         Returns:
             dict: A dictionary with stats
         """
-        for key in ["ssim", "psnr", "vmaf"]:
-            data = getattr(self, key + "_data")
-            if len(data) == 0:
+        for key, metric_data in self.data.items():
+            if len(metric_data) == 0:
                 continue
-
             value_key = key if key == "vmaf" else key + "_avg"
-            values = [float(entry[value_key]) for entry in data]
+            values = [float(entry[value_key]) for entry in metric_data]
             self.global_stats[key] = {
                 "average": round(np.average(values), 3),
                 "median": round(np.median(values), 3),
@@ -481,12 +595,10 @@ class FfmpegQualityMetrics:
         """
         all_dfs = []
 
-        if self.vmaf_data:
-            all_dfs.append(pd.DataFrame(self.vmaf_data))
-
-        if self.psnr_data and self.ssim_data:
-            all_dfs.append(pd.DataFrame(self.psnr_data))
-            all_dfs.append(pd.DataFrame(self.ssim_data))
+        for metric_data in self.data.values():
+            if not metric_data:
+                continue
+            all_dfs.append(pd.DataFrame(metric_data))
 
         if not all_dfs:
             raise FfmpegQualityMetricsError("No data calculated!")
@@ -512,11 +624,10 @@ class FfmpegQualityMetrics:
             str: The JSON string
         """
         ret = {}
-        for key in ["ssim", "psnr", "vmaf"]:
-            data = getattr(self, key + "_data")
-            if len(data) == 0:
+        for key, metric_data in self.data.items():
+            if len(metric_data) == 0:
                 continue
-            ret[key] = data
+            ret[key] = metric_data
         ret["global"] = self.get_global_stats()
         ret["input_file_dist"] = self.dist
         ret["input_file_ref"] = self.ref
