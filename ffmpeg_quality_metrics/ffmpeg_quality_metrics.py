@@ -264,8 +264,9 @@ class FfmpegQualityMetrics:
 
         # special case, only one metric:
         if n_splits == 1:
+            metric_name = metrics[0]
             filter_chains.extend(
-                [f"[distpts][refpts]{self._get_filter_opts(metrics[0])}"]
+                [f"[distpts][refpts]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"]
             )
         # all other cases:
         else:
