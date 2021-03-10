@@ -332,7 +332,7 @@ The program exposes an API that you can use yourself:
 ```python
 from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
 
-ffqm("path/to/ref", "path/to/dist").calc_ssim_psnr()
+ffqm("path/to/ref", "path/to/dist").calc(["ssim", "psnr"])
 ```
 
 For more usage please read [the docs](https://htmlpreview.github.io/?https://github.com/slhck/ffmpeg-quality-metrics/blob/master/docs/ffmpeg_quality_metrics/ffmpeg_quality_metrics.html).

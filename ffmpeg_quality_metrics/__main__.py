@@ -123,15 +123,20 @@ def main():
         progress=cli_args.progress,
     )
 
+    metrics = []
+    vmaf_options = {}
     if cli_args.enable_vmaf:
-        ffqm.calc_vmaf(
-            model_path=cli_args.model_path,
-            phone_model=cli_args.phone_model,
-            n_threads=cli_args.n_threads,
-        )
+        metrics.append("vmaf")
+        vmaf_options = {
+            "model_path": cli_args.model_path,
+            "phone_model": cli_args.phone_model,
+            "n_threads": cli_args.n_threads,
+        }
 
     if not cli_args.disable_psnr_ssim:
-        ffqm.calc_ssim_psnr()
+        metrics.extend(["ssim", "psnr"])
+
+    ffqm.calc(metrics, vmaf_options=vmaf_options)
 
     if cli_args.dry_run:
         print_warning("Dry run specified, exiting without computing stats")

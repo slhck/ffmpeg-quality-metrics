@@ -328,6 +328,11 @@ class FfmpegQualityMetrics:
         Returns:
             dict: VMAF results
         """
+        print_warning(
+            "The calc_vmaf() method is deprecated and will be removed eventually. "
+            "Please use calc() instead!"
+        )
+
         self._check_libvmaf_availability()
 
         # map the user-supplied options to the internal attributes
@@ -446,6 +451,11 @@ class FfmpegQualityMetrics:
         Returns:
             dict: SSIM and PSNR results, each with their own key
         """
+        print_warning(
+            "The calc_ssim_psnr() method is deprecated and will be removed eventually. "
+            "Please use calc() instead!"
+        )
+
         if "ssim" not in self.available_filters:
             raise FfmpegQualityMetricsError(
                 "Your ffmpeg build does not have support for the 'ssim' filter. "
