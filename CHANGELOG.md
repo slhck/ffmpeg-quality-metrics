@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v2.0.1 (2021-03-10)
+
+* Fix README.
+
+
 ## v2.0.0 (2021-03-10)
 
 * Change CLI syntax, add VIF filter.
