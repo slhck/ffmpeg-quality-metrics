@@ -76,6 +76,7 @@ class FfmpegQualityMetrics:
         verbose=False,
         threads=DEFAULT_THREADS,
         progress=False,
+        keep_tmp_files=False,
     ):
         """Instantiate a new FfmpegQualityMetrics
 
@@ -88,6 +89,7 @@ class FfmpegQualityMetrics:
             verbose (bool, optional): Show more output. Defaults to False.
             threads (int, optional): Number of ffmpeg threads. Defaults to 0 (auto).
             progress (bool, optional): Show a progress bar. Defaults to False.
+            keep_tmp_files (bool, optional): Keep temporary files for debugging purposes. Defaults to False.
 
         Raises:
             FfmpegQualityMetricsError: A generic error
@@ -100,6 +102,7 @@ class FfmpegQualityMetrics:
         self.verbose = bool(verbose)
         self.threads = int(threads)
         self.progress = bool(progress)
+        self.keep_tmp_files = bool(keep_tmp_files)
 
         self.data = {
             "vmaf": [],
@@ -549,6 +552,8 @@ class FfmpegQualityMetrics:
         return {"ssim": self.data["ssim"], "psnr": self.data["psnr"]}
 
     def _cleanup_temp_files(self):
+        if self.keep_tmp_files:
+            return
         for temp_file in self.temp_files.values():
             if os.path.isfile(temp_file):
                 os.remove(temp_file)

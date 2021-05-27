@@ -70,7 +70,7 @@ You can configure additional options related to scaling, speed etc.
 See `ffmpeg_quality_metrics -h`:
 
 ```
-usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-p]
+usage: ffmpeg_quality_metrics [-h] [-n] [-k] [-v] [-p]
                    [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
                    [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                    [-r FRAMERATE] [-t THREADS] [-of {json,csv}]
@@ -90,6 +90,7 @@ General options:
                         (default: False)
   -v, --verbose         Show verbose output (default: False)
   -p, --progress        Show a progress bar (default: False)
+  -k, --keep-tmp        Keep temporary files for debugging purposes (default: False)
 
 Metric options:
   -m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...], 

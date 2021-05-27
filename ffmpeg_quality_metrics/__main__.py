@@ -35,6 +35,9 @@ def main():
     general_opts.add_argument(
         "-p", "--progress", action="store_true", help="Show a progress bar"
     )
+    general_opts.add_argument(
+        "-k", "--keep-tmp", action="store_true", help="Keep temporary files for debugging purposes"
+    )
 
     metric_options = parser.add_argument_group("Metric options")
 
