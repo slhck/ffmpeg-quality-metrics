@@ -13,7 +13,8 @@ RUN wget -q https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.
   rm ffmpeg-git-amd64-static.tar.xz
 
 COPY requirements.txt .
-COPY ffmpeg_quality_metrics ffmpeg_quality_metrics
 RUN pip3 install -r requirements.txt
+
+COPY ffmpeg_quality_metrics ffmpeg_quality_metrics
 
 CMD ["python3", "-m", "ffmpeg_quality_metrics"]
