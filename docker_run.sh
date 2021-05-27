@@ -4,7 +4,7 @@
 
 py_usage() {
     docker run \
-    -t ffmpeg_quality_metrics \
+    -t ffmpeg_quality_metrics:latest \
     python3 -m ffmpeg_quality_metrics -h
 }
 
