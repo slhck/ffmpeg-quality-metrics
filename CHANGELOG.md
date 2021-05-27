@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v2.1.0 (2021-05-27)
+
+* Add option to keep temporary files.
+
+* Always pick latest dockerfile version for docker_run script.
+
+* Improve dockerfile build.
+
+* Create FUNDING.yml.
+
+* Update badge link.
+
+
 ## v2.0.3 (2021-03-10)
 
 * Add python_requires to setup.py.
