@@ -2,7 +2,7 @@ FROM python:3.9-slim
 LABEL maintainer="Werner Robitza <werner.robitza@gmail.com>"
 LABEL name="ffmpeg_quality_metrics"
 
-RUN apt-get update -y && apt-get install -y \
+RUN apt-get update -qq -y && apt-get install -qq -y \
   wget \
   xz-utils \
   python3-pandas \
