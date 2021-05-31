@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v2.2.0 (2021-05-31)
+
+* Fix detection of libvmaf model dir, fixes #34.
+
+* Re-add old PKL models.
+
+* Make docker a bit more quiet.
+
+
 ## v2.1.0 (2021-05-27)
 
 * Add option to keep temporary files.
