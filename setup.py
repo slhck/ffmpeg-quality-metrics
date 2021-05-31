@@ -40,7 +40,7 @@ setup(
     python_requires=">=3.6",
     packages=["ffmpeg_quality_metrics"],
     include_package_data=True,
-    package_data={"ffmpeg_quality_metrics": ["vmaf_models/*.json"]},
+    package_data={"ffmpeg_quality_metrics": ["vmaf_models/*.json", "vmaf_models/*.pkl"]},
     entry_points={
         "console_scripts": [
             "ffmpeg_quality_metrics=ffmpeg_quality_metrics.__main__:main",
