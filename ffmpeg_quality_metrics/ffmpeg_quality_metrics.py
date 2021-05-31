@@ -384,7 +384,7 @@ class FfmpegQualityMetrics:
                 )
             else:
                 raise FfmpegQualityMetricsError(
-                    f"Could not find model at {self.model_path}. Please set --model-path to a valid VMAF .json model file."
+                    f"Could not find model at {self.model_path}. Please set --model-path to a valid VMAF .json/.pkl model file."
                 )
 
     def _read_vmaf_temp_file(self):
@@ -626,10 +626,16 @@ class FfmpegQualityMetrics:
                 "vmaf_v0.6.1.pkl",
             )
         else:
-            # return the bundled file as a fallback
-            return os.path.join(
-                os.path.dirname(__file__), "vmaf_models", "vmaf_v0.6.1.json"
-            )
+            share_path = os.path.join("/usr", "local", "share", "model")
+            if os.path.isdir(share_path):
+                return os.path.join(
+                    share_path, "vmaf_v0.6.1.pkl"
+                )
+            else:
+                # return the bundled file as a fallback
+                return os.path.join(
+                    FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY, "vmaf_v0.6.1.json"
+                )
 
     @staticmethod
     def get_supplied_vmaf_models():

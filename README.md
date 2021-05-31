@@ -30,11 +30,11 @@ Contents:
 - FFmpeg:
     - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/).
     - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/).
-    - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice. 
+    - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
 Put the `ffmpeg` executable in your `$PATH`.
 
-*FFmpeg can be installed using Homebrew, but it is recommended that you use one of the FFmpeg builds linked above, otherwise libvmaf <v2.0.0 will be used, which is ~2x slower ([source](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30)).*
+Also note that for VMAF, if the static build supplies VMAF models, you should install them according to the respective README.
 
 ## Installation
 
@@ -112,14 +112,9 @@ Output options:
 
 VMAF options:
   --model-path MODEL_PATH
-                        Use a specific VMAF model file. If none is chosen,
-                        picks a default model. You can also specify one of the
-                        following built-in models: ['vmaf_v0.6.1.json',
-                        'vmaf_4k_v0.6.1.json', 'vmaf_v0.6.1neg.json']
-                        (default:
-                        /Users/werner/Documents/Projects/slhck/ffmpeg-quality-
-                        metrics/ffmpeg_quality_metrics/vmaf_models/vmaf_v0.6.1
-                        .json)
+                        Use a specific VMAF model file. If none is chosen, picks a default model. You can also specify one of the following built-in models:
+                        ['vmaf_4k_v0.6.1.json', 'vmaf_v0.6.1neg.pkl', 'vmaf_v0.6.1neg.json', 'vmaf_4k_v0.6.1.pkl', 'vmaf_v0.6.1.pkl', 'vmaf_v0.6.1.json'] (default:
+                        /usr/local/share/model/vmaf_v0.6.1.pkl)
   --phone-model         Enable VMAF phone model (default: False)
   --n-threads N_THREADS
                         Set the value of libvmaf's n_threads option. This
@@ -132,11 +127,16 @@ VMAF options:
 
 Use the `--model-path` option to set the path to a different VMAF model file.
 
-This program supplies the following models:
+:warning: `libvmaf` version 2.x supports JSON-based model files, whereas `libvmaf` version 1.x only supports `.pkl` files. Depending on your version of `libvmaf`, you need to specify a different model name or path.
+
+This program has built-in support for the following models:
 
 ```
-vmaf_4k_v0.6.1.json
+vmaf_v0.6.1.pkl
 vmaf_v0.6.1.json
+vmaf_4k_v0.6.1.pkl
+vmaf_4k_v0.6.1.json
+vmaf_v0.6.1neg.pkl
 vmaf_v0.6.1neg.json
 ```
 
@@ -148,10 +148,16 @@ You can either specify an absolute path to an existing model, e.g.:
 /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
 ```
 
-Or pass the file name to the built-in model. So both of these are equivalent:
+Or pass the file name to the built-in model. So all of these work:
 
-```
+```bash
+# use a downloaded JSON model for libvmaf 2.x
 ffmpeg_quality_metrics dist.mkv ref.mkv -m vmaf --model-path vmaf_v0.6.1neg.json
+
+# use the models that came with a static build, if you installed them to /usr/local/share/model as instructed
+ffmpeg_quality_metrics dist.mkv ref.mkv -m vmaf --model-path /usr/local/share/model/vmaf_v0.6.1.pkl
+
+# use a different path for models on your system
 ffmpeg_quality_metrics dist.mkv ref.mkv -m vmaf --model-path /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
 ```
 
@@ -163,7 +169,7 @@ If you don't want to deal with dependencies, build the image with Docker:
 docker build -t ffmpeg_quality_metrics .
 ```
 
-This takes a few minutes and installs the latest `ffmpeg` [as a static build](https://johnvansickle.com/ffmpeg/) with libvmaf 2.x.
+This takes a few minutes and installs the latest `ffmpeg` [as a static build](https://johnvansickle.com/ffmpeg/).
 
 You can then run the container, which basically calls the Python script. To help you with mounting the volumes (since your videos are not stored in the container), you can run a helper script:
 
@@ -363,3 +369,5 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For VMAF models, see `ffmpeg_quality_metrics/vmaf_models/LICENSE`.
