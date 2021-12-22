@@ -645,7 +645,11 @@ class FfmpegQualityMetrics:
         Returns:
             list: A list of VMAF model names
         """
-        return os.listdir(FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY)
+        return [
+            f
+            for f in os.listdir(FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY)
+            if f.endswith(".json") or f.endswith(".pkl")
+        ]
 
     def get_global_stats(self):
         """
