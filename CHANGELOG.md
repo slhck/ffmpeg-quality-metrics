@@ -1,6 +1,31 @@
 # Changelog
 
 
+## v2.3.0 (2021-12-22)
+
+* Update docs.
+
+* Update README.
+
+* Remove unneeded warning.
+
+* Print stdout on error to help with debugging.
+
+* Reomve underline from log.
+
+* Add better logging capabilities.
+
+* Normalize time base for comparison.
+
+  see https://trac.ffmpeg.org/ticket/9560
+
+* Fix default model path selection for VMAF.
+
+* Update test vector values.
+
+* Filter out LICENSE in model path.
+
+
 ## v2.2.0 (2021-05-31)
 
 * Fix detection of libvmaf model dir, fixes #34.
