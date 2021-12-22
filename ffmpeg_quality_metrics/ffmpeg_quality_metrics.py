@@ -640,9 +640,6 @@ class FfmpegQualityMetrics:
 
         share_path = os.path.join("/usr", "local", "share", "model")
         if os.path.isdir(share_path):
-            logger.warning(
-                f"Falling back to VMAF 1.x model file at {share_path}. You may want to specify an explicit path to the model you want to use."
-            )
             return os.path.join(share_path, "vmaf_v0.6.1.pkl")
         else:
             # return the bundled file as a fallback
