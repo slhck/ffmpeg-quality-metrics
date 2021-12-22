@@ -14,13 +14,17 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 
 Contents:
 
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Running with Docker](#running-with-docker)
-- [Output](#output)
-- [API](#api)
-- [License](#license)
+- [FFmpeg Quality Metrics](#ffmpeg-quality-metrics)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Metrics](#metrics)
+    - [Extended Options](#extended-options)
+    - [Specifying VMAF Model](#specifying-vmaf-model)
+  - [Running with Docker](#running-with-docker)
+  - [Output](#output)
+  - [API](#api)
+  - [License](#license)
 
 ------
 
@@ -28,13 +32,11 @@ Contents:
 
 - Python 3.6 or higher
 - FFmpeg:
-    - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/).
+    - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/). :warning: This only includes v1.x of libvmaf for now.
     - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/).
     - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
 Put the `ffmpeg` executable in your `$PATH`.
-
-Also note that for VMAF, if the static build supplies VMAF models, you should install them according to the respective README.
 
 ## Installation
 
@@ -127,7 +129,7 @@ VMAF options:
 
 Use the `--model-path` option to set the path to a different VMAF model file.
 
-:warning: `libvmaf` version 2.x supports JSON-based model files, whereas `libvmaf` version 1.x only supports `.pkl` files. Depending on your version of `libvmaf`, you need to specify a different model name or path.
+:warning: `libvmaf` version 2.x supports JSON-based model files, whereas `libvmaf` version 1.x only supports `.pkl` files. Depending on your version of `libvmaf`, you need to specify a different model name or path. If you get an error like "libvmaf encountered an error, check log for details", this might be the problem.
 
 This program has built-in support for the following models:
 
