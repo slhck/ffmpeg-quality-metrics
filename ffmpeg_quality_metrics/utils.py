@@ -66,5 +66,5 @@ def run_command(cmd, dry_run=False, allow_error=False):
         return stdout.decode("utf-8"), stderr.decode("utf-8")
     else:
         raise RuntimeError(
-            f"error running command: {quoted_cmd(cmd)}\n{stderr.decode('utf-8')}"
+            f"error running command: {quoted_cmd(cmd)}\n{stdout.decode('utf-8')}\n{stderr.decode('utf-8')}"
         )
