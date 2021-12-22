@@ -252,8 +252,8 @@ class FfmpegQualityMetrics:
 
         filter_chains = [
             f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
-            "[dist]setpts=PTS-STARTPTS[distpts]",
-            "[ref]setpts=PTS-STARTPTS[refpts]",
+            "[dist]settb=1/AVTB,setpts=PTS-STARTPTS[distpts]",
+            "[ref]settb=1/AVTB,setpts=PTS-STARTPTS[refpts]",
         ]
 
         # generate split filters depending on the number of models
