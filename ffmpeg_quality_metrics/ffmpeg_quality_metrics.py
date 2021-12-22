@@ -3,6 +3,7 @@
 # License: MIT
 
 from functools import reduce
+import logging
 import os
 import json
 import tempfile
@@ -16,11 +17,11 @@ from .utils import (
     NUL,
     ffmpeg_is_from_brew,
     has_brew,
-    print_info,
-    print_warning,
     run_command,
     win_path_check,
 )
+
+logger = logging.getLogger("ffmpeg-quality-metrics")
 
 
 class FfmpegQualityMetricsError(Exception):
@@ -124,10 +125,9 @@ class FfmpegQualityMetrics:
             self.temp_files[key] = os.path.join(
                 self.temp_dir, next(tempfile._get_candidate_names()) + f"-{key}.txt"
             )
-            if self.verbose:
-                print_info(
-                    f"Writing temporary {key.upper()} information to: {self.temp_files[key]}"
-                )
+            logger.debug(
+                f"Writing temporary {key.upper()} information to: {self.temp_files[key]}"
+            )
 
         if scaling_algorithm not in self.ALLOWED_SCALERS:
             raise FfmpegQualityMetricsError(
@@ -156,8 +156,7 @@ class FfmpegQualityMetrics:
             if key in filter_list:
                 self.available_filters.append(key)
 
-        if self.verbose:
-            print_info(f"Available filters: {self.available_filters}")
+        logger.debug(f"Available filters: {self.available_filters}")
 
     @staticmethod
     def get_framerate(input_file):
@@ -189,7 +188,7 @@ class FfmpegQualityMetrics:
         dist_framerate = FfmpegQualityMetrics.get_framerate(self.dist)
 
         if ref_framerate != dist_framerate:
-            print_warning(
+            logger.warning(
                 f"ref, dist framerates differ: {ref_framerate}, {dist_framerate}. "
                 "This may result in inaccurate quality metrics. Force an input framerate via the -r option."
             )
@@ -262,7 +261,9 @@ class FfmpegQualityMetrics:
             for source in ["dist", "ref"]:
                 suffixes = "".join([f"[{source}{n}]" for n in range(1, n_splits + 1)])
                 filter_chains.extend(
-                    [f"[{source}pts]split={n_splits}{suffixes}",]
+                    [
+                        f"[{source}pts]split={n_splits}{suffixes}",
+                    ]
                 )
 
         # special case, only one metric:
@@ -321,7 +322,10 @@ class FfmpegQualityMetrics:
             )
 
     def calc_vmaf(
-        self, model_path=None, phone_model=False, n_threads=DEFAULT_VMAF_THREADS,
+        self,
+        model_path=None,
+        phone_model=False,
+        n_threads=DEFAULT_VMAF_THREADS,
     ):
         """Calculate the VMAF scores for the input files
 
@@ -336,7 +340,7 @@ class FfmpegQualityMetrics:
         Returns:
             dict: VMAF results
         """
-        print_warning(
+        logger.warning(
             "The calc_vmaf() method is deprecated and will be removed eventually. "
             "Please use calc() instead!"
         )
@@ -504,7 +508,7 @@ class FfmpegQualityMetrics:
                     pbar.update(progress - pbar.n)
             return ff.stderr
         else:
-            _, stderr = run_command(cmd, self.dry_run, self.verbose)
+            _, stderr = run_command(cmd, dry_run=self.dry_run)
             return stderr
 
     def calc_ssim_psnr(self):
@@ -516,7 +520,7 @@ class FfmpegQualityMetrics:
         Returns:
             dict: SSIM and PSNR results, each with their own key
         """
-        print_warning(
+        logger.warning(
             "The calc_ssim_psnr() method is deprecated and will be removed eventually. "
             "Please use calc() instead!"
         )
@@ -629,22 +633,22 @@ class FfmpegQualityMetrics:
             # If the user installed ffmpeg using homebrew
             model_path = FfmpegQualityMetrics.get_brewed_vmaf_model_path()
             if model_path is not None:
-            return os.path.join(
+                return os.path.join(
                     model_path,
                     "vmaf_v0.6.1.json",
-            )
+                )
 
-            share_path = os.path.join("/usr", "local", "share", "model")
-            if os.path.isdir(share_path):
+        share_path = os.path.join("/usr", "local", "share", "model")
+        if os.path.isdir(share_path):
             logger.warning(
                 f"Falling back to VMAF 1.x model file at {share_path}. You may want to specify an explicit path to the model you want to use."
-                )
+            )
             return os.path.join(share_path, "vmaf_v0.6.1.pkl")
-            else:
-                # return the bundled file as a fallback
-                return os.path.join(
-                    FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY, "vmaf_v0.6.1.json"
-                )
+        else:
+            # return the bundled file as a fallback
+            return os.path.join(
+                FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY, "vmaf_v0.6.1.json"
+            )
 
     @staticmethod
     def get_supplied_vmaf_models():

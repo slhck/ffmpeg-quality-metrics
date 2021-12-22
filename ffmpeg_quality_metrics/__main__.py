@@ -6,11 +6,28 @@
 
 import argparse
 import sys
+import logging
 
+from .log import CustomLogFormatter
 from .ffmpeg_quality_metrics import FfmpegQualityMetrics
-from .utils import print_error, print_warning
 
 from .__init__ import __version__ as version
+
+logger = logging.getLogger("ffmpeg-quality-metrics")
+
+
+def setup_logger(level: int = logging.INFO):
+    logger = logging.getLogger("ffmpeg-quality-metrics")
+    logger.setLevel(level)
+
+    ch = logging.StreamHandler(sys.stderr)
+    ch.setLevel(level)
+
+    ch.setFormatter(CustomLogFormatter())
+
+    logger.addHandler(ch)
+
+    return logger
 
 
 def main():
@@ -36,7 +53,10 @@ def main():
         "-p", "--progress", action="store_true", help="Show a progress bar"
     )
     general_opts.add_argument(
-        "-k", "--keep-tmp", action="store_true", help="Keep temporary files for debugging purposes"
+        "-k",
+        "--keep-tmp",
+        action="store_true",
+        help="Keep temporary files for debugging purposes",
     )
 
     metric_options = parser.add_argument_group("Metric options")
@@ -61,7 +81,10 @@ def main():
     )
 
     ffmpeg_opts.add_argument(
-        "-r", "--framerate", type=float, help="Force an input framerate",
+        "-r",
+        "--framerate",
+        type=float,
+        help="Force an input framerate",
     )
 
     ffmpeg_opts.add_argument(
@@ -107,6 +130,8 @@ def main():
 
     cli_args = parser.parse_args()
 
+    setup_logger(logging.DEBUG if cli_args.verbose else logging.INFO)
+
     ffqm = FfmpegQualityMetrics(
         ref=cli_args.ref,
         dist=cli_args.dist,
@@ -131,7 +156,7 @@ def main():
     ffqm.calc(metrics, vmaf_options=vmaf_options)
 
     if cli_args.dry_run:
-        print_warning("Dry run specified, exiting without computing stats")
+        logger.warning("Dry run specified, exiting without computing stats")
         return
 
     if cli_args.output_format == "json":
@@ -139,7 +164,7 @@ def main():
     elif cli_args.output_format == "csv":
         print(ffqm.get_results_csv())
     else:
-        print_error("Wrong output format chosen, use 'json' or 'csv'")
+        logger.error("Wrong output format chosen, use 'json' or 'csv'")
         sys.exit(1)
 
 
@@ -147,6 +172,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print_error(f"General exception: {e}")
+        logger.error(f"General exception: {e}")
         print(sys.exc_info())
         sys.exit(1)
