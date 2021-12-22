@@ -597,15 +597,22 @@ class FfmpegQualityMetrics:
     @staticmethod
     def get_brewed_vmaf_model_path():
         """
-        Hack to get path for VMAF model from Linuxbrew
+        Hack to get path for VMAF model from Homebrew or Linuxbrew.
+        This works for libvmaf 2.x
 
         Returns:
-            str: the path
+            str or None: the path or None if not found
         """
         stdout, _ = run_command(["brew", "--prefix", "libvmaf"])
         cellar_path = stdout.strip()
 
-        model_path = os.path.join(cellar_path, "share", "model")
+        model_path = os.path.join(cellar_path, "share", "libvmaf", "model")
+
+        if not os.path.isdir(model_path):
+            logger.warning(
+                f"{model_path} does not exist. Are you sure you have installed the most recent version of libvmaf with Homebrew?"
+            )
+            return None
 
         return model_path
 
@@ -620,17 +627,19 @@ class FfmpegQualityMetrics:
         """
         if has_brew() and ffmpeg_is_from_brew():
             # If the user installed ffmpeg using homebrew
+            model_path = FfmpegQualityMetrics.get_brewed_vmaf_model_path()
+            if model_path is not None:
             return os.path.join(
-                # FIXME: change this once VMAF 2.0 is bundled with homebrew!
-                FfmpegQualityMetrics.get_brewed_vmaf_model_path(),
-                "vmaf_v0.6.1.pkl",
+                    model_path,
+                    "vmaf_v0.6.1.json",
             )
-        else:
+
             share_path = os.path.join("/usr", "local", "share", "model")
             if os.path.isdir(share_path):
-                return os.path.join(
-                    share_path, "vmaf_v0.6.1.pkl"
+            logger.warning(
+                f"Falling back to VMAF 1.x model file at {share_path}. You may want to specify an explicit path to the model you want to use."
                 )
+            return os.path.join(share_path, "vmaf_v0.6.1.pkl")
             else:
                 # return the bundled file as a fallback
                 return os.path.join(
