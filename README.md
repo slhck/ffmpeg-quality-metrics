@@ -32,7 +32,7 @@ Contents:
 
 - Python 3.6 or higher
 - FFmpeg:
-    - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/). :warning: This only includes v1.x of libvmaf for now.
+    - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/).
     - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/).
     - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
