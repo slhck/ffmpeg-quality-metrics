@@ -8,11 +8,11 @@ RUN apt-get update -qq -y && apt-get install -qq -y \
   python3-pandas \
   --no-install-recommends && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN wget -q https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
-  tar --strip-components 1 -xf ffmpeg-release-amd64-static.tar.xz && \
+RUN wget -q https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz && \
+  tar --strip-components 1 -xf ffmpeg-git-amd64-static.tar.xz && \
   cp ffmpeg /usr/bin/ffmpeg && \
   cp -R model /usr/local/share/ && \
-  rm ffmpeg-release-amd64-static.tar.xz
+  rm ffmpeg-git-amd64-static.tar.xz
 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
