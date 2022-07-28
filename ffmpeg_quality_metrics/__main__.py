@@ -7,9 +7,10 @@
 import argparse
 import sys
 import logging
+import traceback
 
 from .log import CustomLogFormatter
-from .ffmpeg_quality_metrics import FfmpegQualityMetrics
+from .ffmpeg_quality_metrics import FfmpegQualityMetrics, VmafOptions
 
 from .__init__ import __version__ as version
 
@@ -32,7 +33,9 @@ def setup_logger(level: int = logging.INFO):
 
 def main():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(
+            prog, max_help_position=40, width=120
+        ),
         description="ffmpeg_quality_metrics v" + version,
     )
     parser.add_argument("dist", help="input file, distorted")
@@ -109,7 +112,7 @@ def main():
     vmaf_opts = parser.add_argument_group("VMAF options")
 
     vmaf_opts.add_argument(
-        "--model-path",
+        "--vmaf-model-path",
         type=str,
         default=FfmpegQualityMetrics.get_default_vmaf_model_path(),
         help="Use a specific VMAF model file. If none is chosen, picks a default model. "
@@ -117,15 +120,39 @@ def main():
     )
 
     vmaf_opts.add_argument(
-        "--phone-model", action="store_true", help="Enable VMAF phone model"
+        "--vmaf-model-params",
+        type=str,
+        nargs="+",
+        help="A list of params to pass to the VMAF model, specified as key=value. "
+        "Specify multiple params like '--vmaf-model-params enable_transform=true enable_conf_interval=true'",
     )
 
     vmaf_opts.add_argument(
-        "--n-threads",
+        "--vmaf-threads",
         type=int,
         default=FfmpegQualityMetrics.DEFAULT_VMAF_THREADS,
         help="Set the value of libvmaf's n_threads option. "
-        "This determines the number of threads that are used for VMAF calculation",
+        "This determines the number of threads that are used for VMAF calculation. "
+        "Set to 0 for auto.",
+    )
+
+    vmaf_opts.add_argument(
+        "--vmaf-subsample",
+        type=int,
+        default=FfmpegQualityMetrics.DEFAULT_VMAF_SUBSAMPLE,
+        help="Set the value of libvmaf's n_subsample option. "
+        "This is the subsampling interval, so set to 1 for default behavior.",
+    )
+
+    vmaf_opts.add_argument(
+        "--vmaf-features",
+        type=str,
+        nargs="+",
+        help="A list of feature to enable. Pass the names of the features and any optional params. "
+        "See https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md for a list of available features. "
+        "Params must be specified as 'key=value'. "
+        "Multiple params must be separated by ':'. "
+        "Specify multiple features like '--vmaf-features cambi:full_ref=true ciede'",
     )
 
     cli_args = parser.parse_args()
@@ -145,15 +172,17 @@ def main():
 
     metrics = cli_args.metrics
 
-    vmaf_options = {}
     if "vmaf" in metrics:
-        vmaf_options = {
-            "model_path": cli_args.model_path,
-            "phone_model": cli_args.phone_model,
-            "n_threads": cli_args.n_threads,
+        vmaf_options: VmafOptions = {
+            "model_path": cli_args.vmaf_model_path,
+            "model_params": cli_args.vmaf_model_params,
+            "n_threads": cli_args.vmaf_threads,
+            "n_subsample": cli_args.vmaf_subsample,
+            "features": cli_args.vmaf_features,
         }
-
-    ffqm.calc(metrics, vmaf_options=vmaf_options)
+        ffqm.calculate(metrics, vmaf_options=vmaf_options)
+    else:
+        ffqm.calculate(metrics)
 
     if cli_args.dry_run:
         logger.warning("Dry run specified, exiting without computing stats")
@@ -173,5 +202,6 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(f"General exception: {e}")
-        print(sys.exc_info())
+        # print a stacktrace
+        traceback.print_exc()
         sys.exit(1)

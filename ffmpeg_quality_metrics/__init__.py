@@ -1,4 +1,4 @@
-from .ffmpeg_quality_metrics import FfmpegQualityMetrics, FfmpegQualityMetricsError
+from .ffmpeg_quality_metrics import FfmpegQualityMetrics, FfmpegQualityMetricsError, VmafOptions
 
 __version__ = "2.3.0"
-__all__ = ["FfmpegQualityMetrics", "FfmpegQualityMetricsError", "__version__"]
+__all__ = ["FfmpegQualityMetrics", "FfmpegQualityMetricsError", "VmafOptions", "__version__"]

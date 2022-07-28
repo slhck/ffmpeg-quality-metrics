@@ -20,7 +20,7 @@ NUL = "NUL" if IS_WIN else "/dev/null"
 logger = logging.getLogger("ffmpeg-quality-metrics")
 
 
-def win_path_check(path):
+def win_path_check(path: str) -> str:
     """
     Format a file path correctly for Windows
     """
