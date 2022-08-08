@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v3.0.0 (2022-08-08)
+
+* Support for VMAF 2.0 only.
+
+* Update copyright.
+
+* Remove warning for libvmaf in johnvansickle builds.
+
+* Use latest linux build instead of release builds.
+
+
 ## v2.3.0 (2021-12-22)
 
 * Update docs.
