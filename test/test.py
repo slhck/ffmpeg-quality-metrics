@@ -47,6 +47,71 @@ class TestMetrics:
         )["vmaf"]
         self._test_frame_by_frame(EXPECTED["vmaf"], run_ret)
 
+    def test_vmaf_features(self):
+        vmaf_opts = {
+            "features": [
+                "cambi",
+                "ciede",
+                "vif",
+                "adm",
+                "motion",
+                "float_ssim",
+                "float_ms_ssim",
+            ]
+        }
+        run_ret = ffqm(REF, DIST).calculate(
+            ["vmaf"], vmaf_options=cast(VmafOptions, vmaf_opts)
+        )["vmaf"]
+
+        assert list(run_ret[0].keys()) == [
+            "integer_adm2",
+            "integer_adm_scale0",
+            "integer_adm_scale1",
+            "integer_adm_scale2",
+            "integer_adm_scale3",
+            "integer_motion2",
+            "integer_motion",
+            "integer_vif_scale0",
+            "integer_vif_scale1",
+            "integer_vif_scale2",
+            "integer_vif_scale3",
+            "cambi",
+            "ciede2000",
+            "float_ssim",
+            "float_ms_ssim",
+            "vmaf",
+            "n",
+        ]
+
+    def test_vmaf_feature_options(self):
+        vmaf_opts = {
+            "features": [
+                "cambi:full_ref=true",
+            ]
+        }
+        run_ret = ffqm(REF, DIST).calculate(
+            ["vmaf"], vmaf_options=cast(VmafOptions, vmaf_opts)
+        )["vmaf"]
+
+        assert list(run_ret[0].keys()) == [
+            "integer_adm2",
+            "integer_adm_scale0",
+            "integer_adm_scale1",
+            "integer_adm_scale2",
+            "integer_adm_scale3",
+            "integer_motion2",
+            "integer_motion",
+            "integer_vif_scale0",
+            "integer_vif_scale1",
+            "integer_vif_scale2",
+            "integer_vif_scale3",
+            "cambi",
+            "cambi_source",
+            "cambi_full_reference",
+            "vmaf",
+            "n",
+        ]
+
     def test_vif(self):
         run_ret = ffqm(REF, DIST).calculate(["vif"])["vif"]
         self._test_frame_by_frame(EXPECTED["vif"], run_ret)
