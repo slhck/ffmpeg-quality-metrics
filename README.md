@@ -105,36 +105,40 @@ You can configure additional options related to scaling, speed etc.
 See `ffmpeg-quality-metrics -h`:
 
 ```
-usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k]
-                   [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
-                   [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
-                   [-r FRAMERATE] [-t THREADS] [-of {json,csv}] [--vmaf-model-path VMAF_MODEL_PATH]
-                   [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]] [--vmaf-threads VMAF_THREADS]
-                   [--vmaf-subsample VMAF_SUBSAMPLE] [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
-                   dist ref
+usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-p] [-k]
+                              [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
+                              [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
+                              [-r FRAMERATE] [-t THREADS] [-of {json,csv}]
+                              [--vmaf-model-path VMAF_MODEL_PATH]
+                              [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]]
+                              [--vmaf-threads VMAF_THREADS] [--vmaf-subsample VMAF_SUBSAMPLE]
+                              [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
+                              dist ref
 
-ffmpeg-quality-metrics v3.0.0
+ffmpeg_quality_metrics v3.0.0
 
 positional arguments:
   dist                                  input file, distorted
   ref                                   input file, reference
 
-optional arguments:
+options:
   -h, --help                            show this help message and exit
 
 General options:
-  -n, --dry-run                         Do not run commands, just show what would be done (default: False)
+  -n, --dry-run                         Do not run commands, just show what would be done (default:
+                                        False)
   -v, --verbose                         Show verbose output (default: False)
   -p, --progress                        Show a progress bar (default: False)
   -k, --keep-tmp                        Keep temporary files for debugging purposes (default: False)
 
 Metric options:
   -m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...], --metrics {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]
-                                        Metrics to calculate. Specify multiple metrics like '--metrics ssim vmaf'
-                                        (default: ['psnr', 'ssim'])
+                                        Metrics to calculate. Specify multiple metrics like '--
+                                        metrics ssim vmaf' (default: ['psnr', 'ssim'])
 
 FFmpeg options:
-  -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
+  -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline},
+  --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                                         Scaling algorithm for ffmpeg (default: bicubic)
   -r FRAMERATE, --framerate FRAMERATE   Force an input framerate (default: None)
   -t THREADS, --threads THREADS         Number of threads to do the calculations (default: 0)
@@ -144,24 +148,30 @@ Output options:
                                         Output format for the metrics (default: json)
 
 VMAF options:
-  --vmaf-model-path VMAF_MODEL_PATH     Use a specific VMAF model file. If none is chosen, picks a default model. You
-                                        can also specify one of the following built-in models: ['vmaf_v0.6.1.json',
-                                        'vmaf_4k_v0.6.1.json', 'vmaf_v0.6.1neg.json'] (default:
-                                        /opt/homebrew/opt/libvmaf/share/libvmaf/model/vmaf_v0.6.1.json)
+  --vmaf-model-path VMAF_MODEL_PATH     Use a specific VMAF model file. If none is chosen, picks a
+                                        default model. You can also specify one of the following
+                                        built-in models: ['vmaf_v0.6.1.json', 'vmaf_4k_v0.6.1.json',
+                                        'vmaf_v0.6.1neg.json'] (default: /opt/homebrew/opt/libvmaf/s
+                                        hare/libvmaf/model/vmaf_v0.6.1.json)
   --vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]
-                                        A list of params to pass to the VMAF model, specified as key=value. Specify
-                                        multiple params like '--vmaf-model-params enable_transform=true
-                                        enable_conf_interval=true' (default: None)
-  --vmaf-threads VMAF_THREADS           Set the value of libvmaf's n_threads option. This determines the number of
-                                        threads that are used for VMAF calculation. Set to 0 for auto. (default: 0)
-  --vmaf-subsample VMAF_SUBSAMPLE       Set the value of libvmaf's n_subsample option. This is the subsampling interval,
-                                        so set to 1 for default behavior. (default: 1)
+                                        A list of params to pass to the VMAF model, specified as
+                                        key=value. Specify multiple params like '--vmaf-model-params
+                                        enable_transform=true enable_conf_interval=true' (default:
+                                        None)
+  --vmaf-threads VMAF_THREADS           Set the value of libvmaf's n_threads option. This determines
+                                        the number of threads that are used for VMAF calculation.
+                                        Set to 0 for auto. (default: 0)
+  --vmaf-subsample VMAF_SUBSAMPLE       Set the value of libvmaf's n_subsample option. This is the
+                                        subsampling interval, so set to 1 for default behavior.
+                                        (default: 1)
   --vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]
-                                        A list of feature to enable. Pass the names of the features and any optional
-                                        params. See https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md
-                                        for a list of available features. Params must be specified as 'key=value'.
-                                        Multiple params must be separated by ':'. Specify multiple features like '--
-                                        vmaf-features cambi:full_ref=true ciede' (default: None)
+                                        A list of feature to enable. Pass the names of the features
+                                        and any optional params. See https://github.com/Netflix/vmaf
+                                        /blob/master/resource/doc/features.md for a list of
+                                        available features. Params must be specified as 'key=value'.
+                                        Multiple params must be separated by ':'. Specify multiple
+                                        features like '--vmaf-features cambi:full_ref=true ciede'
+                                        (default: None)
 ```
 
 ### Specifying VMAF Model

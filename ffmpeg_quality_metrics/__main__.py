@@ -34,9 +34,10 @@ def setup_logger(level: int = logging.INFO):
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(
-            prog, max_help_position=40, width=120
+            prog, max_help_position=40, width=100
         ),
         description="ffmpeg_quality_metrics v" + version,
+        prog="ffmpeg_quality_metrics",
     )
     parser.add_argument("dist", help="input file, distorted")
     parser.add_argument("ref", help="input file, reference")
