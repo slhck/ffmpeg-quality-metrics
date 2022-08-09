@@ -258,7 +258,7 @@ class FfmpegQualityMetrics:
 
     def calculate(
         self, metrics=["ssim", "psnr"], vmaf_options: Union[VmafOptions, None] = None
-    ):
+    ) -> Dict[str, SingleMetricData]:
         """Calculate one or more metrics.
 
         Args:
