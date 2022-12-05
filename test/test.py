@@ -16,6 +16,7 @@ REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
 
 with open(os.path.join(os.path.dirname(__file__), "response.json"), "r") as f:
     EXPECTED = json.load(f)
+GLOBAL = EXPECTED["global"]
 
 
 class TestMetrics:
@@ -125,4 +126,11 @@ class TestMetrics:
         f = ffqm(REF, DIST)
         f.calculate(metrics=["ssim", "psnr", "vmaf", "vif"])
         run_ret = f.get_global_stats()
-        assert run_ret == EXPECTED["global"]
+        for key in GLOBAL.keys():
+            for subkey in GLOBAL[key].keys():
+                print(key, subkey)
+                for metric in GLOBAL[key][subkey].keys():
+                    assert (
+                        abs(GLOBAL[key][subkey][metric] - run_ret[key][subkey][metric])
+                        < 0.02
+                    )
