@@ -351,22 +351,9 @@ class FfmpegQualityMetrics:
         """
         Get a string to use for VMAF in ffmpeg filter chain
         """
-        # we only have one model, and its path parameter is not optional
-        all_model_params: Dict[str, str] = {
-            "path": win_path_check(self.vmaf_model_path),
-        }
-
-        # add further model parameters
-        for model_param in self.vmaf_options["model_params"]:
-            key, value = model_param.split("=")
-            all_model_params[key] = value
-
-        all_model_params_str = "\\:".join(
-            f"{k}={v}" for k, v in all_model_params.items()
-        )
 
         vmaf_opts: Dict[str, str] = {
-            "model": all_model_params_str,
+            "model_path": win_path_check(self.vmaf_model_path),
             "log_path": win_path_check(self.temp_files["vmaf"]),
             "log_fmt": "json",
             "n_threads": str(self.vmaf_options["n_threads"]),
