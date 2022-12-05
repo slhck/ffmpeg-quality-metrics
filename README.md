@@ -234,7 +234,7 @@ ffmpeg-quality-metrics dist.mkv ref.mkv \
 If you don't want to deal with dependencies, build the image with Docker:
 
 ```
-docker build -t ffmpeg-quality-metrics .
+docker build -t ffmpeg_quality_metrics .
 ```
 
 This takes a few minutes and installs the latest `ffmpeg` [as a static build](https://johnvansickle.com/ffmpeg/).
