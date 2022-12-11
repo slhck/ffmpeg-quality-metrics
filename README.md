@@ -32,6 +32,7 @@ Author: Werner Robitza <werner.robitza@gmail.com>
   - [JSON Output](#json-output)
   - [CSV Output](#csv-output)
 - [API](#api)
+- [Contributors](#contributors)
 - [License](#license)
 
 ------
@@ -293,6 +294,17 @@ ffqm("path/to/ref", "path/to/dist").calculate(["ssim", "psnr"])
 ```
 
 For more usage please read [the docs](https://htmlpreview.github.io/?https://github.com/slhck/ffmpeg-quality-metrics/blob/master/docs/ffmpeg_quality_metrics.html).
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## License
 
