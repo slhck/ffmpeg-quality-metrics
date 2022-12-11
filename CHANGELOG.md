@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v3.1.0 (2022-12-11)
+
+* Fix VMAF model path error on Windows, fixes #42.
+
+* Fix flaky tests.
+
+* Fix AVTB setting, see #39.
+
+* Fix default docker image name.
+
+* Fix docs link.
+
+* Add explicit return type for calculate() function.
+
+* Decrease max width of args, update README.
+
+* Update tests.
+
+
 ## v3.0.0 (2022-08-08)
 
 * Support for VMAF 2.0 only.
