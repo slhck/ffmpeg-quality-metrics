@@ -20,6 +20,7 @@ from .utils import (
     has_brew,
     run_command,
     win_path_check,
+    win_vmaf_model_path_check,
 )
 
 logger = logging.getLogger("ffmpeg-quality-metrics")
@@ -353,7 +354,7 @@ class FfmpegQualityMetrics:
         """
         # we only have one model, and its path parameter is not optional
         all_model_params: Dict[str, str] = {
-            "path": win_path_check(self.vmaf_model_path),
+            "path": win_vmaf_model_path_check(self.vmaf_model_path)
         }
 
         # add further model parameters
