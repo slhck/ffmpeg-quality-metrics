@@ -29,6 +29,15 @@ def win_path_check(path: str) -> str:
     return path
 
 
+def win_vmaf_model_path_check(path: str) -> str:
+    """
+    Format vmaf model file path correctly for Windows
+    """
+    if IS_WIN:
+        return win_path_check(path).replace("\\", "\\\\\\")
+    return path
+
+
 def has_brew():
     """
     Check if the user has Homebrew installed
