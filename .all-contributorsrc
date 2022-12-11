@@ -1,0 +1,25 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "OrkunKocyigit",
+      "name": "Orkun Koçyiğit",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10797423?v=4",
+      "profile": "https://github.com/OrkunKocyigit",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "ffmpeg-quality-metrics",
+  "projectOwner": "slhck"
+}
