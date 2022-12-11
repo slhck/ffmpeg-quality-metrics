@@ -1,6 +1,6 @@
 # FFmpeg Quality Metrics
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://img.shields.io/pypi/v/ffmpeg-quality-metrics.svg)](https://pypi.org/project/ffmpeg-quality-metrics)
@@ -307,6 +307,7 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
   <tbody>
     <tr>
       <td align="center"><a href="https://github.com/OrkunKocyigit"><img src="https://avatars.githubusercontent.com/u/10797423?v=4?s=100" width="100px;" alt="Orkun Koçyiğit"/><br /><sub><b>Orkun Koçyiğit</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=OrkunKocyigit" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/Sorkanius"><img src="https://avatars.githubusercontent.com/u/17472224?v=4?s=100" width="100px;" alt="Ignacio Peletier"/><br /><sub><b>Ignacio Peletier</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=Sorkanius" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
