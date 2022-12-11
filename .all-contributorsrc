@@ -23,6 +23,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "cdgriffith",
+      "name": "Chris Griffith",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3275435?v=4",
+      "profile": "http://codecalamity.com/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
