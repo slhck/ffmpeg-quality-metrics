@@ -309,6 +309,7 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
       <td align="center"><a href="https://github.com/OrkunKocyigit"><img src="https://avatars.githubusercontent.com/u/10797423?v=4?s=100" width="100px;" alt="Orkun Koçyiğit"/><br /><sub><b>Orkun Koçyiğit</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=OrkunKocyigit" title="Code">💻</a></td>
       <td align="center"><a href="https://github.com/CrypticSignal"><img src="https://avatars.githubusercontent.com/u/48166845?v=4?s=100" width="100px;" alt="Hamas Shafiq"/><br /><sub><b>Hamas Shafiq</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=CrypticSignal" title="Code">💻</a></td>
       <td align="center"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/3275435?v=4?s=100" width="100px;" alt="Chris Griffith"/><br /><sub><b>Chris Griffith</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=cdgriffith" title="Code">💻</a></td>
+      <td align="center"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/17472224?v=4?s=100" width="100px;" alt="Ignacio Peletier"/><br /><sub><b>Ignacio Peletier</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=Sorkanius" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
