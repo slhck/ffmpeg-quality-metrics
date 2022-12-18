@@ -17,7 +17,7 @@ from .__init__ import __version__ as version
 logger = logging.getLogger("ffmpeg-quality-metrics")
 
 
-def setup_logger(level: int = logging.INFO):
+def setup_logger(level: int = logging.INFO) -> logging.Logger:
     logger = logging.getLogger("ffmpeg-quality-metrics")
     logger.setLevel(level)
 

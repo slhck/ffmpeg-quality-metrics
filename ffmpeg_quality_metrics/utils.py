@@ -3,18 +3,14 @@
 # License: MIT
 
 import logging
-from platform import system as _current_os
 from shutil import which
 import os
 import subprocess
 import shlex
+from typing import List, Tuple
+from platform import system
 
-CUR_OS = _current_os()
-IS_WIN = CUR_OS in ["Windows", "cli"]
-IS_NIX = (not IS_WIN) and any(
-    CUR_OS.startswith(i)
-    for i in ["CYGWIN", "MSYS", "Linux", "Darwin", "SunOS", "FreeBSD", "NetBSD"]
-)
+IS_WIN = system() in ["Windows", "cli"]
 NUL = "NUL" if IS_WIN else "/dev/null"
 
 logger = logging.getLogger("ffmpeg-quality-metrics")
@@ -23,6 +19,12 @@ logger = logging.getLogger("ffmpeg-quality-metrics")
 def win_path_check(path: str) -> str:
     """
     Format a file path correctly for Windows
+
+    Args:
+        path (str): The path to format
+
+    Returns:
+        str: The formatted path
     """
     if IS_WIN:
         return path.replace("\\", "/").replace(":", "\\:")
@@ -32,22 +34,34 @@ def win_path_check(path: str) -> str:
 def win_vmaf_model_path_check(path: str) -> str:
     """
     Format vmaf model file path correctly for Windows
+
+    Args:
+        path (str): The path to format
+
+    Returns:
+        str: The formatted path
     """
     if IS_WIN:
         return win_path_check(path).replace("\\", "\\\\\\")
     return path
 
 
-def has_brew():
+def has_brew() -> bool:
     """
     Check if the user has Homebrew installed
+
+    Returns:
+        bool: True if Homebrew is installed, False otherwise
     """
     return which("brew") is not None
 
 
-def ffmpeg_is_from_brew():
+def ffmpeg_is_from_brew() -> bool:
     """
     Is the used ffmpeg from Homebrew?
+
+    Returns:
+        bool: True if ffmpeg is from Homebrew, False otherwise
     """
     ffmpeg_path = which("ffmpeg")
     if ffmpeg_path is None:
@@ -56,11 +70,20 @@ def ffmpeg_is_from_brew():
     return os.path.islink(ffmpeg_path) and "Cellar/ffmpeg" in os.readlink(ffmpeg_path)
 
 
-def quoted_cmd(cmd):
+def quoted_cmd(cmd: List[str]) -> str:
+    """
+    Quote a command for printing.
+
+    Args:
+        cmd (list): The command to quote
+
+    Returns:
+        str: The quoted command
+    """
     return " ".join([shlex.quote(c) for c in cmd])
 
 
-def run_command(cmd, dry_run=False, allow_error=False):
+def run_command(cmd, dry_run: bool = False, allow_error: bool = False) -> Tuple[str, str]:
     """
     Run a command directly
     """

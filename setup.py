@@ -1,8 +1,6 @@
 # Always prefer setuptools over distutils
 from setuptools import setup
 
-# To use a consistent encoding
-from codecs import open
 import os
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -12,7 +10,7 @@ with open(os.path.join(here, "ffmpeg_quality_metrics", "__init__.py")) as versio
     version = eval(version_file.read().split("\n")[2].split("=")[1].strip())
 
 # Get the long description from the README file
-with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
+with open(os.path.join(here, "README.md")) as f:
     long_description = f.read()
 
 setup(
@@ -39,7 +37,10 @@ setup(
     python_requires=">=3.8",
     packages=["ffmpeg_quality_metrics"],
     include_package_data=True,
-    package_data={"ffmpeg_quality_metrics": ["vmaf_models/*.json"]},
+    package_data={"ffmpeg_quality_metrics": [
+        "vmaf_models/*.json",
+        "py.typed"
+    ]},
     entry_points={
         "console_scripts": [
             "ffmpeg_quality_metrics=ffmpeg_quality_metrics.__main__:main",

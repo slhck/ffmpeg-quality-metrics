@@ -7,7 +7,7 @@ import logging
 import os
 import json
 import tempfile
-from typing import Dict, List, TypedDict, Union, cast
+from typing import Dict, List, Tuple, TypedDict, Union, cast
 import numpy as np
 import re
 import pandas as pd
@@ -115,13 +115,13 @@ class FfmpegQualityMetrics:
         self,
         ref: str,
         dist: str,
-        scaling_algorithm=DEFAULT_SCALER,
-        framerate=None,
-        dry_run=False,
-        verbose=False,
-        threads=DEFAULT_THREADS,
-        progress=False,
-        keep_tmp_files=False,
+        scaling_algorithm: str = DEFAULT_SCALER,
+        framerate: Union[float, None] = None,
+        dry_run: Union[bool, None] = False,
+        verbose: Union[bool, None] = False,
+        threads: int = DEFAULT_THREADS,
+        progress: Union[bool, None] = False,
+        keep_tmp_files: Union[bool, None] = False,
     ):
         """Instantiate a new FfmpegQualityMetrics
 
@@ -203,7 +203,7 @@ class FfmpegQualityMetrics:
         logger.debug(f"Available filters: {self.available_filters}")
 
     @staticmethod
-    def get_framerate(input_file):
+    def get_framerate(input_file: str) -> float:
         """Parse the FPS from the input file.
 
         Args:
@@ -228,7 +228,13 @@ class FfmpegQualityMetrics:
 
         raise FfmpegQualityMetricsError(f"could not parse FPS from file {input_file}!")
 
-    def _get_framerates(self):
+    def _get_framerates(self) -> Tuple[float, float]:
+        """
+        Get the framerates of the reference and distorted files.
+
+        Returns:
+            Tuple[float, float]: The framerates of the reference and distorted files
+        """
         ref_framerate = FfmpegQualityMetrics.get_framerate(self.ref)
         dist_framerate = FfmpegQualityMetrics.get_framerate(self.dist)
 
@@ -240,9 +246,10 @@ class FfmpegQualityMetrics:
 
         return ref_framerate, dist_framerate
 
-    def _get_filter_opts(self, filter_name):
+    def _get_filter_opts(self, filter_name: str) -> str:
         """
-        Return the specific ffmpeg filter options for a chosen metric filter
+        Returns:
+            str: Specific ffmpeg filter options for a chosen metric filter.
         """
         if filter_name in ["ssim", "psnr"]:
             return f"{filter_name}='{win_path_check(self.temp_files[filter_name])}'"
@@ -346,11 +353,13 @@ class FfmpegQualityMetrics:
             self._cleanup_temp_files()
 
         # return only those data entries containing values
-        return {k: v for k, v in self.data.items() if v}
+        return cast(Dict[str, SingleMetricData], {k: v for k, v in self.data.items() if v})
 
-    def _get_libvmaf_filter_opts(self):
+    def _get_libvmaf_filter_opts(self) -> str:
         """
-        Get a string to use for VMAF in ffmpeg filter chain
+        Returns:
+
+            str: A string to use for VMAF in ffmpeg filter chain
         """
         # we only have one model, and its path parameter is not optional
         all_model_params: Dict[str, str] = {
@@ -388,14 +397,14 @@ class FfmpegQualityMetrics:
 
         return vmaf_opts_string
 
-    def _check_libvmaf_availability(self):
+    def _check_libvmaf_availability(self) -> None:
         if "libvmaf" not in self.available_filters:
             raise FfmpegQualityMetricsError(
                 "Your ffmpeg build does not have support for VMAF. "
                 "Make sure you download or build a version compiled with --enable-libvmaf!"
             )
 
-    def _set_vmaf_model_path(self, model_path: Union[str, None] = None):
+    def _set_vmaf_model_path(self, model_path: Union[str, None] = None) -> None:
         """
         Logic to set the model path depending on the default or the user-supplied string
         """
@@ -418,7 +427,10 @@ class FfmpegQualityMetrics:
                     f"Could not find model at {self.vmaf_model_path}. Please set --model-path to a valid VMAF .json model file."
                 )
 
-    def _read_vmaf_temp_file(self):
+    def _read_vmaf_temp_file(self) -> None:
+        """
+        Read the VMAF temp file and append the data to the data dict.
+        """
         with open(self.temp_files["vmaf"], "r") as in_vmaf:
             vmaf_log = json.load(in_vmaf)
             logger.debug(f"VMAF log: {json.dumps(vmaf_log, indent=4)}")
@@ -427,7 +439,7 @@ class FfmpegQualityMetrics:
                 frame_data["metrics"]["n"] = int(frame_data["frameNum"]) + 1
                 self.data["vmaf"].append(frame_data["metrics"])
 
-    def _read_ffmpeg_output(self, ffmpeg_output: str, metrics=[]):
+    def _read_ffmpeg_output(self, ffmpeg_output: str, metrics=[]) -> None:
         """
         Read the metric values from ffmpeg's stderr, for those that don't output
         to a file.
@@ -437,7 +449,7 @@ class FfmpegQualityMetrics:
         if "vif" in metrics:
             self._read_vif_output(ffmpeg_output)
 
-    def _read_vif_output(self, ffmpeg_output: str):
+    def _read_vif_output(self, ffmpeg_output: str) -> None:
         """
         Parse the VIF filter output
         """
@@ -494,11 +506,14 @@ class FfmpegQualityMetrics:
         if "psnr" in metrics:
             self._read_psnr_temp_file()
 
-    def _run_ffmpeg_command(self, filter_chains=[], desc=""):
+    def _run_ffmpeg_command(self, filter_chains: List[str] = [], desc: str = "") -> Union[str, None]:
         """
         Run the ffmpeg command to get the quality metrics.
         The filter chains must be specified manually.
         'desc' can be a human readable description for the progress bar.
+
+        Returns:
+            Union[str, None]: The output of ffmpeg's stderr
         """
         if not self.framerate:
             ref_framerate, dist_framerate = self._get_framerates()
@@ -539,7 +554,7 @@ class FfmpegQualityMetrics:
             _, stderr = run_command(cmd, dry_run=self.dry_run)
             return stderr
 
-    def calc_ssim_psnr(self):
+    def calc_ssim_psnr(self) -> Dict[str, SingleMetricData]:
         """Calculate SSIM and PSNR
 
         Raises:
@@ -583,14 +598,17 @@ class FfmpegQualityMetrics:
 
         return {"ssim": self.data["ssim"], "psnr": self.data["psnr"]}
 
-    def _cleanup_temp_files(self):
+    def _cleanup_temp_files(self) -> None:
+        """
+        Remove the temporary files
+        """
         if self.keep_tmp_files:
             return
         for temp_file in self.temp_files.values():
             if os.path.isfile(temp_file):
                 os.remove(temp_file)
 
-    def _read_psnr_temp_file(self):
+    def _read_psnr_temp_file(self) -> None:
         """
         Parse the PSNR generated logfile
         """
@@ -606,7 +624,7 @@ class FfmpegQualityMetrics:
                     frame_data[k] = round(float(v), 3) if k != "n" else int(v)
                 self.data["psnr"].append(frame_data)
 
-    def _read_ssim_temp_file(self):
+    def _read_ssim_temp_file(self) -> None:
         """
         Parse the SSIM generated logfile
         """
@@ -627,7 +645,7 @@ class FfmpegQualityMetrics:
                 self.data["ssim"].append(frame_data)
 
     @staticmethod
-    def get_brewed_vmaf_model_path():
+    def get_brewed_vmaf_model_path() -> Union[str, None]:
         """
         Hack to get path for VMAF model from Homebrew or Linuxbrew.
         This works for libvmaf 2.x
@@ -649,7 +667,7 @@ class FfmpegQualityMetrics:
         return model_path
 
     @staticmethod
-    def get_default_vmaf_model_path():
+    def get_default_vmaf_model_path() -> str:
         """
         Return the default model path depending on whether the user is running Homebrew
         or has a static build.
@@ -676,12 +694,12 @@ class FfmpegQualityMetrics:
             )
 
     @staticmethod
-    def get_supplied_vmaf_models():
+    def get_supplied_vmaf_models() -> List[str]:
         """
         Return a list of VMAF models supplied with the software.
 
         Returns:
-            list: A list of VMAF model names
+            List[str]: A list of VMAF model names
         """
         return [
             f
@@ -689,7 +707,7 @@ class FfmpegQualityMetrics:
             if f.endswith(".json")
         ]
 
-    def get_global_stats(self):
+    def get_global_stats(self) -> Dict[str, Dict[str, float]]:
         """
         Return a dictionary for each calculated metric, with different statstics
 
