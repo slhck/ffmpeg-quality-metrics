@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v3.1.1 (2022-12-18)
+
+* Improve typing support.
+
+* Add contributor manually.
+
+* Docs: update .all-contributorsrc [skip ci]
+
+* Docs: update README.md [skip ci]
+
+* Docs: update .all-contributorsrc [skip ci]
+
+* Docs: update README.md [skip ci]
+
+* Docs: create .all-contributorsrc [skip ci]
+
+* Docs: update README.md [skip ci]
+
+* Add contributors template.
+
+
 ## v3.1.0 (2022-12-11)
 
 * Fix VMAF model path error on Windows, fixes #42.
