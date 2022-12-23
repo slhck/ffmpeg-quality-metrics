@@ -7,7 +7,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # Versioning
 with open(os.path.join(here, "ffmpeg_quality_metrics", "__init__.py")) as version_file:
-    version = eval(version_file.read().split("\n")[2].split("=")[1].strip())
+    # parse the string that looks like '__version__ = "3.1.2"'
+    for line in version_file:
+        if line.startswith("__version__"):
+            version = line.split("=")[1].strip().strip('"')
+            break
 
 # Get the long description from the README file
 with open(os.path.join(here, "README.md")) as f:
