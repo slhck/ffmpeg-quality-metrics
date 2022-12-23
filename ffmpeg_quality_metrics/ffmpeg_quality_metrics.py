@@ -7,7 +7,7 @@ import logging
 import os
 import json
 import tempfile
-from typing import Dict, List, Tuple, TypedDict, Union, cast
+from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
 import numpy as np
 import re
 import pandas as pd
@@ -50,14 +50,12 @@ class VmafOptions(TypedDict):
     """
 
 
+MetricName = Literal["psnr", "ssim", "vmaf", "vif"]
+FilterName = Literal["psnr", "ssim", "libvmaf", "vif"]
 SingleMetricData = List[Dict[str, float]]
-
-
-class MetricData(TypedDict):
-    psnr: SingleMetricData
-    ssim: SingleMetricData
-    vmaf: SingleMetricData
-    vif: SingleMetricData
+GlobalStatsData = Dict[str, float]
+GlobalStats = Dict[MetricName, Dict[str, GlobalStatsData]]
+MetricData = Dict[MetricName, SingleMetricData]
 
 
 # =====================================================================================================================
@@ -101,8 +99,8 @@ class FfmpegQualityMetrics:
         "n_subsample": DEFAULT_VMAF_SUBSAMPLE,
         "features": [],
     }
-    POSSIBLE_FILTERS = ["libvmaf", "psnr", "ssim", "vif"]  # , "identity", "msad"]
-    METRIC_TO_FILTER_MAP = {
+    POSSIBLE_FILTERS: List[FilterName] = ["libvmaf", "psnr", "ssim", "vif"]  # , "identity", "msad"]
+    METRIC_TO_FILTER_MAP: Dict[MetricName, FilterName] = {
         "vmaf": "libvmaf",
         "psnr": "psnr",
         "ssim": "ssim",
@@ -160,17 +158,17 @@ class FfmpegQualityMetrics:
 
         self.available_filters: List[str] = []
 
-        self.global_stats: Dict[str, Dict[str, float]] = {}
+        self.global_stats: GlobalStats = {}
 
         self.temp_dir = tempfile.gettempdir()
-        self.temp_files: Dict[str, str] = {}
+        self.temp_files: Dict[FilterName, str] = {}
 
-        for key in ["psnr", "ssim", "vmaf"]:
-            self.temp_files[key] = os.path.join(
-                self.temp_dir, next(tempfile._get_candidate_names()) + f"-{key}.txt"  # type: ignore
+        for filter_name in self.POSSIBLE_FILTERS:
+            self.temp_files[cast(FilterName, filter_name)] = os.path.join(
+                self.temp_dir, next(tempfile._get_candidate_names()) + f"-{filter_name}.txt"  # type: ignore
             )
             logger.debug(
-                f"Writing temporary {key.upper()} information to: {self.temp_files[key]}"
+                f"Writing temporary {filter_name.upper()} information to: {self.temp_files[cast(FilterName, filter_name)]}"
             )
 
         if scaling_algorithm not in self.ALLOWED_SCALERS:
@@ -246,7 +244,7 @@ class FfmpegQualityMetrics:
 
         return ref_framerate, dist_framerate
 
-    def _get_filter_opts(self, filter_name: str) -> str:
+    def _get_filter_opts(self, filter_name: FilterName) -> str:
         """
         Returns:
             str: Specific ffmpeg filter options for a chosen metric filter.
@@ -265,7 +263,7 @@ class FfmpegQualityMetrics:
         return self.calculate(**kwargs)
 
     def calculate(
-        self, metrics=["ssim", "psnr"], vmaf_options: Union[VmafOptions, None] = None
+        self, metrics: List[MetricName] = ["ssim", "psnr"], vmaf_options: Union[VmafOptions, None] = None
     ) -> Dict[str, SingleMetricData]:
         """Calculate one or more metrics.
 
@@ -303,7 +301,7 @@ class FfmpegQualityMetrics:
             if vmaf_options:
                 for key, value in vmaf_options.items():
                     if value is not None:
-                        self.vmaf_options[key] = value
+                        self.vmaf_options[key] = value  # type: ignore
             self._set_vmaf_model_path(self.vmaf_options["model_path"])
 
         filter_chains = [
@@ -377,7 +375,7 @@ class FfmpegQualityMetrics:
 
         vmaf_opts: Dict[str, str] = {
             "model": all_model_params_str,
-            "log_path": win_path_check(self.temp_files["vmaf"]),
+            "log_path": win_path_check(self.temp_files["libvmaf"]),
             "log_fmt": "json",
             "n_threads": str(self.vmaf_options["n_threads"]),
             "n_subsample": str(self.vmaf_options["n_subsample"]),
@@ -431,7 +429,7 @@ class FfmpegQualityMetrics:
         """
         Read the VMAF temp file and append the data to the data dict.
         """
-        with open(self.temp_files["vmaf"], "r") as in_vmaf:
+        with open(self.temp_files["libvmaf"], "r") as in_vmaf:
             vmaf_log = json.load(in_vmaf)
             logger.debug(f"VMAF log: {json.dumps(vmaf_log, indent=4)}")
             for frame_data in vmaf_log["frames"]:
@@ -707,7 +705,7 @@ class FfmpegQualityMetrics:
             if f.endswith(".json")
         ]
 
-    def get_global_stats(self) -> Dict[str, Dict[str, float]]:
+    def get_global_stats(self) -> GlobalStats:
         """
         Return a dictionary for each calculated metric, with different statstics
 
@@ -716,22 +714,22 @@ class FfmpegQualityMetrics:
         """
         for metric_name in self.data:
             logger.debug(f"Aggregating stats for {metric_name}")
-            metric_data = cast(SingleMetricData, self.data[metric_name])
+            metric_data = cast(SingleMetricData, self.data[metric_name])  # type: ignore
             if len(metric_data) == 0:
                 continue
             submetric_keys = [k for k in metric_data[0].keys() if k != "n"]
 
-            stats = {}
+            stats: Dict[str, GlobalStatsData] = {}
             for submetric_key in submetric_keys:
                 values = [float(frame[submetric_key]) for frame in metric_data]
                 stats[submetric_key] = {
-                    "average": round(np.average(values), 3),
-                    "median": round(np.median(values), 3),
+                    "average": round(float(np.average(values)), 3),
+                    "median": round(float(np.median(values)), 3),
                     "stdev": round(np.std(values), 3),
                     "min": round(np.min(values), 3),
                     "max": round(np.max(values), 3),
                 }
-            self.global_stats[metric_name] = stats
+            self.global_stats[metric_name] = stats  # type: ignore
 
         return self.global_stats
 
@@ -772,9 +770,9 @@ class FfmpegQualityMetrics:
         Returns:
             str: The JSON string
         """
-        ret = {}
+        ret: Dict = {}
         for key in self.data:
-            metric_data = cast(SingleMetricData, self.data[key])
+            metric_data = cast(SingleMetricData, self.data[key])  # type: ignore
             if len(metric_data) == 0:
                 continue
             ret[key] = metric_data
