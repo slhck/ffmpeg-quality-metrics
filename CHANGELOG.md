@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v3.1.3 (2022-12-23)
+
+* Fix finding version in setup.py.
+
+
 ## v3.1.2 (2022-12-23)
 
 * Format with black.
