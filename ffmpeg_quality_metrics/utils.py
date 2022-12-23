@@ -83,7 +83,9 @@ def quoted_cmd(cmd: List[str]) -> str:
     return " ".join([shlex.quote(c) for c in cmd])
 
 
-def run_command(cmd, dry_run: bool = False, allow_error: bool = False) -> Tuple[str, str]:
+def run_command(
+    cmd, dry_run: bool = False, allow_error: bool = False
+) -> Tuple[str, str]:
     """
     Run a command directly
     """

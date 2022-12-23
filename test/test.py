@@ -131,5 +131,6 @@ class TestMetrics:
                 print(key, subkey)
                 for metric in GLOBAL[key][subkey].keys():
                     assert (
-                        abs(GLOBAL[key][subkey][metric] - run_ret[key][subkey][metric]) < 0.02
+                        abs(GLOBAL[key][subkey][metric] - run_ret[key][subkey][metric])
+                        < 0.02
                     )

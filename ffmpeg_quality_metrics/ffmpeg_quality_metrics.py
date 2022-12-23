@@ -99,7 +99,12 @@ class FfmpegQualityMetrics:
         "n_subsample": DEFAULT_VMAF_SUBSAMPLE,
         "features": [],
     }
-    POSSIBLE_FILTERS: List[FilterName] = ["libvmaf", "psnr", "ssim", "vif"]  # , "identity", "msad"]
+    POSSIBLE_FILTERS: List[FilterName] = [
+        "libvmaf",
+        "psnr",
+        "ssim",
+        "vif",
+    ]  # , "identity", "msad"]
     METRIC_TO_FILTER_MAP: Dict[MetricName, FilterName] = {
         "vmaf": "libvmaf",
         "psnr": "psnr",
@@ -263,7 +268,9 @@ class FfmpegQualityMetrics:
         return self.calculate(**kwargs)
 
     def calculate(
-        self, metrics: List[MetricName] = ["ssim", "psnr"], vmaf_options: Union[VmafOptions, None] = None
+        self,
+        metrics: List[MetricName] = ["ssim", "psnr"],
+        vmaf_options: Union[VmafOptions, None] = None,
     ) -> Dict[str, SingleMetricData]:
         """Calculate one or more metrics.
 
@@ -351,7 +358,9 @@ class FfmpegQualityMetrics:
             self._cleanup_temp_files()
 
         # return only those data entries containing values
-        return cast(Dict[str, SingleMetricData], {k: v for k, v in self.data.items() if v})
+        return cast(
+            Dict[str, SingleMetricData], {k: v for k, v in self.data.items() if v}
+        )
 
     def _get_libvmaf_filter_opts(self) -> str:
         """
@@ -504,7 +513,9 @@ class FfmpegQualityMetrics:
         if "psnr" in metrics:
             self._read_psnr_temp_file()
 
-    def _run_ffmpeg_command(self, filter_chains: List[str] = [], desc: str = "") -> Union[str, None]:
+    def _run_ffmpeg_command(
+        self, filter_chains: List[str] = [], desc: str = ""
+    ) -> Union[str, None]:
         """
         Run the ffmpeg command to get the quality metrics.
         The filter chains must be specified manually.
