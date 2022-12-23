@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v3.1.2 (2022-12-23)
+
+* Format with black.
+
+* Improve types.
+
+
 ## v3.1.1 (2022-12-18)
 
 * Improve typing support.
