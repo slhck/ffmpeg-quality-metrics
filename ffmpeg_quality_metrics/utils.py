@@ -3,12 +3,12 @@
 # License: MIT
 
 import logging
-from shutil import which
 import os
-import subprocess
 import shlex
-from typing import List, Tuple
+import subprocess
 from platform import system
+from shutil import which
+from typing import List, Tuple
 
 IS_WIN = system() in ["Windows", "cli"]
 NUL = "NUL" if IS_WIN else "/dev/null"

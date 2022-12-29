@@ -2,17 +2,18 @@
 # Author: Werner Robitza
 # License: MIT
 
-from functools import reduce
+import json
 import logging
 import os
-import json
-import tempfile
-from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
-import numpy as np
 import re
+import tempfile
+from functools import reduce
+from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
+
+import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from ffmpeg_progress_yield import FfmpegProgress
+from tqdm import tqdm
 
 from .utils import (
     NUL,

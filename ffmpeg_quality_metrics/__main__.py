@@ -5,14 +5,13 @@
 # License: MIT
 
 import argparse
-import sys
 import logging
+import sys
 import traceback
 
-from .log import CustomLogFormatter
-from .ffmpeg_quality_metrics import FfmpegQualityMetrics, VmafOptions
-
 from .__init__ import __version__ as version
+from .ffmpeg_quality_metrics import FfmpegQualityMetrics, VmafOptions
+from .log import CustomLogFormatter
 
 logger = logging.getLogger("ffmpeg-quality-metrics")
 

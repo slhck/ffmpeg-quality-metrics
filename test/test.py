@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
+import json
 import os
 import sys
-import json
 from typing import cast
-
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/../"))
 
-from ffmpeg_quality_metrics import VmafOptions  # noqa E402
 from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm  # noqa E402
+from ffmpeg_quality_metrics import VmafOptions  # noqa E402
 
 DIST = os.path.join(os.path.dirname(__file__), "dist-854x480.mkv")
 REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
