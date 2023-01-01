@@ -291,7 +291,7 @@ As there is no tidy way to represent global data in the same CSV file, you can u
 The program exposes an API that you can use yourself:
 
 ```python
-from ffmpeg-quality-metrics import FfmpegQualityMetrics as ffqm
+from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
 
 ffqm("path/to/ref", "path/to/dist").calculate(["ssim", "psnr"])
 ```
