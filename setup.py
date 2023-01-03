@@ -37,6 +37,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     python_requires=">=3.8",
     packages=["ffmpeg_quality_metrics"],
@@ -44,7 +45,6 @@ setup(
     package_data={"ffmpeg_quality_metrics": ["vmaf_models/*.json", "py.typed"]},
     entry_points={
         "console_scripts": [
-            "ffmpeg_quality_metrics=ffmpeg_quality_metrics.__main__:main",
             "ffmpeg-quality-metrics=ffmpeg_quality_metrics.__main__:main",
         ],
     },

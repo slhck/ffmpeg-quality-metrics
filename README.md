@@ -15,11 +15,7 @@ Currently supports PSNR, SSIM, VMAF and VIF. It will output:
 
 Author: Werner Robitza <werner.robitza@gmail.com>
 
-> **⚠️ BREAKING CHANGES:** Version 3.0 adds the following changes:
->
-> * No more support for libvmaf 1.x
-> * Python ≥ 3.8 is required
-> * The `global` object of the JSON response now contains individual keys for each submetric, e.g. `["global"]["psnr"]["psnr_avg"]["average"]`.
+**Note:** Previous versions installed a `ffmpeg_quality_metrics` executable. To harmonize it with other tools, now the executable is called `ffmpeg-quality-metrics`. Please ensure you remove the old executable (e.g. run `which ffmpeg_quality_metrics` and remove the file).
 
 **Contents:**
 
