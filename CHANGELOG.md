@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v3.1.4 (2023-01-03)
+
+* Remove MANIFEST.in.
+
+* Fix API import.
+
+* Sort imports.
+
+
 ## v3.1.3 (2022-12-23)
 
 * Fix finding version in setup.py.
