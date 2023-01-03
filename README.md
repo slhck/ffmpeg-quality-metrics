@@ -5,6 +5,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/ffmpeg-quality-metrics.svg)](https://pypi.org/project/ffmpeg-quality-metrics)
 
+[![Python package](https://github.com/slhck/ffmpeg-quality-metrics/actions/workflows/python-package.yml/badge.svg)](https://github.com/slhck/ffmpeg-quality-metrics/actions/workflows/python-package.yml)
+
 Calculate various video quality metrics with FFmpeg.
 
 Currently supports PSNR, SSIM, VMAF and VIF. It will output:
