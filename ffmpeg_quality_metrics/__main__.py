@@ -30,7 +30,7 @@ def setup_logger(level: int = logging.INFO) -> logging.Logger:
     return logger
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(
             prog, max_help_position=40, width=100

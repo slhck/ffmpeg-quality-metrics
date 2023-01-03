@@ -432,7 +432,8 @@ class FfmpegQualityMetrics:
                 )
             else:
                 raise FfmpegQualityMetricsError(
-                    f"Could not find model at {self.vmaf_model_path}. Please set --model-path to a valid VMAF .json model file."
+                    f"Could not find model at {self.vmaf_model_path}. "
+                    "Please set --model-path to a valid VMAF .json model file."
                 )
 
     def _read_vmaf_temp_file(self) -> None:
@@ -670,7 +671,8 @@ class FfmpegQualityMetrics:
 
         if not os.path.isdir(model_path):
             logger.warning(
-                f"{model_path} does not exist. Are you sure you have installed the most recent version of libvmaf with Homebrew?"
+                f"{model_path} does not exist. "
+                "Are you sure you have installed the most recent version of libvmaf with Homebrew?"
             )
             return None
 
