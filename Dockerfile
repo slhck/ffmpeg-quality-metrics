@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 LABEL maintainer="Werner Robitza <werner.robitza@gmail.com>"
 LABEL name="ffmpeg_quality_metrics"
 

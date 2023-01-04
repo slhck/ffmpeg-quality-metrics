@@ -4,7 +4,7 @@
 
 py_usage() {
     docker run \
-    -t ffmpeg_quality_metrics:latest \
+    -t ffmpeg-quality-metrics:latest \
     python3 -m ffmpeg_quality_metrics -h
 }
 
@@ -34,11 +34,16 @@ refDir="$(realpath "$(dirname "$2")")"
 
 shift; shift
 
+if ! docker image inspect ffmpeg-quality-metrics:latest > /dev/null 2>&1; then
+    echo "Image 'ffmpeg-quality-metrics:latest' not found, building it first ..."
+    docker build -t ffmpeg-quality-metrics:latest .
+fi
+
 docker run \
     --rm \
     -v "$distDir":"/tmp/dist" \
     -v "$refDir":"/tmp/ref" \
-    -t ffmpeg_quality_metrics \
+    -t ffmpeg-quality-metrics:latest \
     python3 -m ffmpeg_quality_metrics \
     "/tmp/dist/$distFileBasename" \
     "/tmp/ref/$refFileBasename" \
