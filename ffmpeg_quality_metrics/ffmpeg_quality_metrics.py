@@ -614,6 +614,7 @@ class FfmpegQualityMetrics:
         Remove the temporary files
         """
         if self.keep_tmp_files:
+            logger.debug("Keeping temporary files, make sure to remove them manually!")
             return
         for temp_file in self.temp_files.values():
             if os.path.isfile(temp_file):

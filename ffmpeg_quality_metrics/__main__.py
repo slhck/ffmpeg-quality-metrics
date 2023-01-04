@@ -168,6 +168,7 @@ def main() -> None:
         verbose=cli_args.verbose,
         threads=cli_args.threads,
         progress=cli_args.progress,
+        keep_tmp_files=cli_args.keep_tmp,
     )
 
     metrics = cli_args.metrics
