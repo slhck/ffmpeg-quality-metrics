@@ -1,6 +1,25 @@
 # Changelog
 
 
+## v3.1.5 (2023-01-04)
+
+* Fix keep-tmp option.
+
+* Update docker instructions.
+
+* Fix github workflows.
+
+* Add workflow badge.
+
+* Update python metadata, remove old console script.
+
+* Minor code formatting.
+
+* Add github workflows.
+
+* Fix type error.
+
+
 ## v3.1.4 (2023-01-03)
 
 * Remove MANIFEST.in.
