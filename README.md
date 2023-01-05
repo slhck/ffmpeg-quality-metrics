@@ -26,7 +26,7 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 - [Usage](#usage)
   - [Metrics](#metrics)
   - [Extended Options](#extended-options)
-  - [Specifying VMAF Model](#specifying-vmaf-model)
+  - [VMAF-specific Settings](#vmaf-specific-settings)
 - [Examples](#examples)
 - [Running with Docker](#running-with-docker)
 - [Output](#output)
@@ -61,7 +61,7 @@ Using pip:
 pip3 install ffmpeg-quality-metrics
 ```
 
-Or clone this repository, then run the tool with `python3 -m ffmpeg-quality-metrics`.
+Or clone this repository, then run the tool with `python3 -m ffmpeg_quality_metrics`.
 
 ## Usage
 
@@ -71,34 +71,28 @@ In the simplest case, if you have a distorted (encoded, maybe scaled) version an
 ffmpeg-quality-metrics distorted.mp4 reference.avi
 ```
 
-The distorted file will be automatically scaled to the resolution of the reference, and the default metrics will be computed.
+The distorted file will be automatically scaled to the resolution of the reference, and the default metrics (PSNR, SSIM) will be computed.
 
 ### Metrics
 
 The following metrics are available in this tool:
 
-| Metric | Description | Scale | Components/Submetrics | Calculated by default? |
-| ------ | ------ | ------ | ----- | ------ |
-| PSNR | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB | `mse_avg`, `mse_y`, `mse_u`, `mse_v`, `psnr_avg`, `psnr_y`, `psnr_u`, `psnr_v` | ✔️ |
-| SSIM | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity) | 0-100 (higher is better) | `ssim_y`, `ssim_u`, `ssim_v`, `ssim_avg` | ✔️ |
-| VMAF | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf) | 0-100 (higher is better) | `vmaf`, `integer_adm2`, `integer_adm_scale0`, `integer_adm_scale1`, `integer_adm_scale2`, `integer_adm_scale3`, `integer_motion2`, `integer_motion`, `integer_vif_scale0`, `integer_vif_scale1`, `integer_vif_scale2`, `integer_vif_scale3` | No |
-| VIF | Visual Information Fidelity | 0-100 (higher is better) | `scale_0`, `scale_1`, `scale_2`, `scale_3` | No |
+| Metric | Description                                                                            | Scale                    | Components/Submetrics                                                                                                                                                                                                                       | Calculated by default? |
+| ------ | -------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| PSNR   | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB                       | `mse_avg`, `mse_y`, `mse_u`, `mse_v`, `psnr_avg`, `psnr_y`, `psnr_u`, `psnr_v`                                                                                                                                                              | ✔️                      |
+| SSIM   | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity)           | 0-100 (higher is better) | `ssim_y`, `ssim_u`, `ssim_v`, `ssim_avg`                                                                                                                                                                                                    | ✔️                      |
+| VMAF   | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf)                | 0-100 (higher is better) | `vmaf`, `integer_adm2`, `integer_adm_scale0`, `integer_adm_scale1`, `integer_adm_scale2`, `integer_adm_scale3`, `integer_motion2`, `integer_motion`, `integer_vif_scale0`, `integer_vif_scale1`, `integer_vif_scale2`, `integer_vif_scale3` | No                     |
+| VIF    | Visual Information Fidelity                                                            | 0-100 (higher is better) | `scale_0`, `scale_1`, `scale_2`, `scale_3`                                                                                                                                                                                                  | No                     |
 
-VMAF allows you to calculate even [more additional features](https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md) as submetrics:
+As shown in the table, every metric can have more than one submetric computed, and they will be printed in the output.
 
-| Metric | Feature name | Core feature in VMAF? |
-| ------ | ------ | ------ |
-| PSNR | `psnr` | |
-| PSNR-HVS | `psnr_hvs` | |
-| CIEDE2000 | `ciede` | |
-| CAMBI | `cambi` | |
-| VIF | `vif` | ✔️ |
-| ADM | `adm` | ✔️ |
-| Motion | `motion` | ✔️ |
-| SSIM | `float_ssim` | |
-| MS-SSIM | `float_ms_ssim` | |
+If you want to calculate additional metrics, enable them with the `--metrics` option:
 
-You can enable these with the `--vmaf-features` option (see usage below).
+```
+ffmpeg-quality-metrics --metrics psnr ssim vmaf distorted.mp4 reference.avi
+```
+
+Here, VMAF uses the default model. You can specify a different model with the [`--vmaf-model` option](#specifying-vmaf-model). VMAF also allows you to calculate even [more additional features](https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md) as submetrics. You can enable these with the [`--vmaf-features` option](#specifying-vmaf-model-params).
 
 ### Extended Options
 
@@ -107,7 +101,7 @@ You can configure additional options related to scaling, speed etc.
 See `ffmpeg-quality-metrics -h`:
 
 ```
-usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-p] [-k]
+usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k]
                               [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                               [-r FRAMERATE] [-t THREADS] [-of {json,csv}]
@@ -117,7 +111,7 @@ usage: ffmpeg_quality_metrics [-h] [-n] [-v] [-p] [-k]
                               [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
                               dist ref
 
-ffmpeg_quality_metrics v3.0.0
+ffmpeg_quality_metrics v3.1.5
 
 positional arguments:
   dist                                  input file, distorted
@@ -139,8 +133,7 @@ Metric options:
                                         metrics ssim vmaf' (default: ['psnr', 'ssim'])
 
 FFmpeg options:
-  -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline},
-  --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
+  -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                                         Scaling algorithm for ffmpeg (default: bicubic)
   -r FRAMERATE, --framerate FRAMERATE   Force an input framerate (default: None)
   -t THREADS, --threads THREADS         Number of threads to do the calculations (default: 0)
@@ -176,7 +169,11 @@ VMAF options:
                                         (default: None)
 ```
 
-### Specifying VMAF Model
+### VMAF-specific Settings
+
+As VMAF is more complex than the other metrics, it has a few more options.
+
+#### Specifying VMAF Model
 
 Use the `--vmaf-model-path` option to set the path to a different VMAF model file. The default is `vmaf_v0.6.1.json`.
 
@@ -204,6 +201,36 @@ ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path vmaf_v0.6.1neg
 
 # use a different path for models on your system
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
+```
+
+#### Specifying VMAF Features
+
+VMAF includes several metrics, each of which correspond to a feature name. By default, only three core features are used. Use the `--vmaf-features` option to enable additional features on top of the core features.
+
+The following table shows the available features:
+
+| Metric    | Feature name    | Core feature in VMAF? |
+| --------- | --------------- | --------------------- |
+| PSNR      | `psnr`          |                       |
+| PSNR-HVS  | `psnr_hvs`      |                       |
+| CIEDE2000 | `ciede`         |                       |
+| CAMBI     | `cambi`         |                       |
+| VIF       | `vif`           | ✔️                     |
+| ADM       | `adm`           | ✔️                     |
+| Motion    | `motion`        | ✔️                     |
+| SSIM      | `float_ssim`    |                       |
+| MS-SSIM   | `float_ms_ssim` |                       |
+
+For example, to enable the CAMBI feature, use:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi
+```
+
+Each feature additionally takes a number of optional parameters. These are specified as `key=value` pairs, separated by `:`. For example, to enable the full-reference CAMBI calculation, use:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi:full_ref=true
 ```
 
 ## Examples
@@ -326,7 +353,7 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
 
 ## License
 
-ffmpeg-quality-metrics, Copyright (c) 2019-2022 Werner Robitza
+ffmpeg-quality-metrics, Copyright (c) 2019-2023 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
