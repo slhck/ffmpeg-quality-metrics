@@ -1,4 +1,4 @@
-# FFmpeg Quality Metrics
+****# FFmpeg Quality Metrics
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -316,9 +316,25 @@ As there is no tidy way to represent global data in the same CSV file, you can u
 The program exposes an API that you can use yourself:
 
 ```python
-from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
+from ffmpeg_quality_metrics import FfmpegQualityMetrics
 
-ffqm("path/to/ref", "path/to/dist").calculate(["ssim", "psnr"])
+ffqm = FfmpegQualityMetrics("path/to/ref", "path/to/dist")
+
+metrics = ffqm.calculate(["ssim", "psnr"])
+
+# check the available metrics
+print(metrics.keys())
+# ['ssim', 'psnr']
+
+# get the SSIM values for the first frame
+print(metrics["ssim"][0])
+# {'n': 1, 'ssim_y': 0.934, 'ssim_u': 0.96, 'ssim_v': 0.942, 'ssim_avg': 0.945}
+
+# average the ssim_y values over all frames
+print(sum([frame["ssim_y"] for frame in metrics["ssim"]]) / len(metrics["ssim"]))
+
+# or just get the global stats
+print(ffqm.get_global_stats()["ssim"]["ssim_y"]["average"])
 ```
 
 For more usage please read [the docs](https://htmlpreview.github.io/?https://github.com/slhck/ffmpeg-quality-metrics/blob/master/docs/ffmpeg_quality_metrics.html).

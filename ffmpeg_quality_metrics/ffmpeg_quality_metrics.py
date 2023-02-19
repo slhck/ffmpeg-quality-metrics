@@ -52,11 +52,22 @@ class VmafOptions(TypedDict):
 
 
 MetricName = Literal["psnr", "ssim", "vmaf", "vif"]
+"""The name of a metric."""
+
 FilterName = Literal["psnr", "ssim", "libvmaf", "vif"]
+"""The name of an ffmpeg filter used for that metric."""
+
 SingleMetricData = List[Dict[str, float]]
+"""A per-frame list of metric values."""
+
 GlobalStatsData = Dict[str, float]
+"""A dict of global stats for a metric."""
+
 GlobalStats = Dict[MetricName, Dict[str, GlobalStatsData]]
+"""A dict of global stats for all metrics."""
+
 MetricData = Dict[MetricName, SingleMetricData]
+"""A dict of per-frame metric values for all metrics."""
 
 
 # =====================================================================================================================
@@ -132,7 +143,7 @@ class FfmpegQualityMetrics:
         Args:
             ref (str): reference file
             dist (str): distorted file
-            scaling_algorithm (str, optional): A scaling algorithm. Defaults to "bicubic".
+            scaling_algorithm (str, optional): A scaling algorithm. Must be one of the following: ["fast_bilinear", "bilinear", "bicubic", "experimental", "neighbor", "area", "bicublin", "gauss", "sinc", "lanczos", "spline"]. Defaults to "bicubic"
             framerate (float, optional): Force a frame rate. Defaults to None.
             dry_run (bool, optional): Don't run anything, just print commands. Defaults to False.
             verbose (bool, optional): Show more output. Defaults to False.
@@ -272,7 +283,7 @@ class FfmpegQualityMetrics:
         self,
         metrics: List[MetricName] = ["ssim", "psnr"],
         vmaf_options: Union[VmafOptions, None] = None,
-    ) -> Dict[str, SingleMetricData]:
+    ) -> Dict[MetricName, SingleMetricData]:
         """Calculate one or more metrics.
 
         Args:
@@ -286,7 +297,7 @@ class FfmpegQualityMetrics:
             e: A generic error
 
         Returns:
-            dict: A dictionary of per-frame info, with the key being the metric name
+            dict: A dictionary of per-frame info, with the key being the metric name and the value being a dict of frame numbers ('n') and metric values.
         """
         if not metrics:
             raise FfmpegQualityMetricsError("No metrics specified!")
@@ -360,7 +371,8 @@ class FfmpegQualityMetrics:
 
         # return only those data entries containing values
         return cast(
-            Dict[str, SingleMetricData], {k: v for k, v in self.data.items() if v}
+            Dict[MetricName, SingleMetricData],
+            {k: v for k, v in self.data.items() if v},
         )
 
     def _get_libvmaf_filter_opts(self) -> str:
@@ -565,7 +577,7 @@ class FfmpegQualityMetrics:
             _, stderr = run_command(cmd, dry_run=self.dry_run)
             return stderr
 
-    def calc_ssim_psnr(self) -> Dict[str, SingleMetricData]:
+    def calc_ssim_psnr(self) -> Dict[MetricName, SingleMetricData]:
         """Calculate SSIM and PSNR
 
         Raises:
@@ -725,7 +737,7 @@ class FfmpegQualityMetrics:
         Return a dictionary for each calculated metric, with different statstics
 
         Returns:
-            dict: A dictionary with stats, each key being a metric name
+            dict: A dictionary with stats, each key being a metric name and each value being a dictionary with the stats for every submetric. The stats are: 'average', 'median', 'stdev', 'min', 'max'.
         """
         for metric_name in self.data:
             logger.debug(f"Aggregating stats for {metric_name}")
