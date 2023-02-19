@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v3.1.6 (2023-02-19)
+
+* Update README and docs.
+
+* Remove stalebot.
+
+* Update README.
+
+
 ## v3.1.5 (2023-01-04)
 
 * Fix keep-tmp option.
