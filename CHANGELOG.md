@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v3.1.7 (2023-02-20)
+
+* Fix readme example, fixes #58.
+
+
 ## v3.1.6 (2023-02-19)
 
 * Update README and docs.
