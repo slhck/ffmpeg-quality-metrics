@@ -1,6 +1,6 @@
 ****# FFmpeg Quality Metrics
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://img.shields.io/pypi/v/ffmpeg-quality-metrics.svg)](https://pypi.org/project/ffmpeg-quality-metrics)
@@ -320,7 +320,7 @@ The program exposes an API that you can use yourself:
 ```python
 from ffmpeg_quality_metrics import FfmpegQualityMetrics
 
-ffqm = FfmpegQualityMetrics("path/to/ref", "path/to/dist")
+ffqm = FfmpegQualityMetrics("path/to/reference-video.mp4", "path/to/distorted-video.mp4")
 
 metrics = ffqm.calculate(["ssim", "psnr"])
 
@@ -349,10 +349,11 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
 <table>
   <tbody>
     <tr>
-      <td align="center"><a href="https://github.com/OrkunKocyigit"><img src="https://avatars.githubusercontent.com/u/10797423?v=4?s=100" width="100px;" alt="Orkun Koçyiğit"/><br /><sub><b>Orkun Koçyiğit</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=OrkunKocyigit" title="Code">💻</a></td>
-      <td align="center"><a href="https://github.com/CrypticSignal"><img src="https://avatars.githubusercontent.com/u/48166845?v=4?s=100" width="100px;" alt="Hamas Shafiq"/><br /><sub><b>Hamas Shafiq</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=CrypticSignal" title="Code">💻</a></td>
-      <td align="center"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/3275435?v=4?s=100" width="100px;" alt="Chris Griffith"/><br /><sub><b>Chris Griffith</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=cdgriffith" title="Code">💻</a></td>
-      <td align="center"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/17472224?v=4?s=100" width="100px;" alt="Ignacio Peletier"/><br /><sub><b>Ignacio Peletier</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=Sorkanius" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/OrkunKocyigit"><img src="https://avatars.githubusercontent.com/u/10797423?v=4?s=100" width="100px;" alt="Orkun Koçyiğit"/><br /><sub><b>Orkun Koçyiğit</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=OrkunKocyigit" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/CrypticSignal"><img src="https://avatars.githubusercontent.com/u/48166845?v=4?s=100" width="100px;" alt="Hamas Shafiq"/><br /><sub><b>Hamas Shafiq</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=CrypticSignal" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/3275435?v=4?s=100" width="100px;" alt="Chris Griffith"/><br /><sub><b>Chris Griffith</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=cdgriffith" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/17472224?v=4?s=100" width="100px;" alt="Ignacio Peletier"/><br /><sub><b>Ignacio Peletier</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=Sorkanius" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/nav9"><img src="https://avatars.githubusercontent.com/u/2093933?v=4?s=100" width="100px;" alt="Nav"/><br /><sub><b>Nav</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/issues?q=author%3Anav9" title="Bug reports">🐛</a></td>
     </tr>
   </tbody>
 </table>
