@@ -89,8 +89,10 @@ As shown in the table, every metric can have more than one submetric computed, a
 If you want to calculate additional metrics, enable them with the `--metrics` option:
 
 ```
-ffmpeg-quality-metrics --metrics psnr ssim vmaf distorted.mp4 reference.avi
+ffmpeg-quality-metrics distorted.mp4 reference.avi --metrics psnr ssim vmaf
 ```
+
+Specify multiple metrics by separating them with a space (e.g., in the above example, `psnr ssim vmaf`).
 
 Here, VMAF uses the default model. You can specify a different model with the [`--vmaf-model` option](#specifying-vmaf-model). VMAF also allows you to calculate even [more additional features](https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md) as submetrics. You can enable these with the [`--vmaf-features` option](#specifying-vmaf-model-params).
 
