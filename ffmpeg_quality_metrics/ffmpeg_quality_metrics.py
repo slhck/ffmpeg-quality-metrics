@@ -164,6 +164,11 @@ class FfmpegQualityMetrics:
         self.progress = bool(progress)
         self.keep_tmp_files = bool(keep_tmp_files)
 
+        if self.ref == self.dist:
+            logger.warning(
+                "Reference and distorted files are the same! This may lead to unexpected results or numerical issues."
+            )
+
         self.data: MetricData = {
             "vmaf": [],
             "psnr": [],
