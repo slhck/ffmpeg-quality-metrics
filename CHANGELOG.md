@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v3.2.0 (2023-03-06)
+
+* Allow overriding temp dir.
+
+* Fix executable name in CLI help.
+
+* Link to VMAF docs.
+
+* Fix formatting.
+
+* Update README with more features.
+
+* Add warning for same file input, fixes #59.
+
+* Update contributors.
+
+
 ## v3.1.7 (2023-02-20)
 
 * Fix readme example, fixes #58.
