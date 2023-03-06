@@ -224,6 +224,8 @@ The following table shows the available features:
 | SSIM      | `float_ssim`    |                       |
 | MS-SSIM   | `float_ms_ssim` |                       |
 
+To find out more about the features, check out the [VMAF documentation](https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md).
+
 For example, to enable the CAMBI feature, use:
 
 ```bash
