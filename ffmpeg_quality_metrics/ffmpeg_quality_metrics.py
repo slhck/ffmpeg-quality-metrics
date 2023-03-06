@@ -167,6 +167,11 @@ class FfmpegQualityMetrics:
         self.keep_tmp_files = bool(keep_tmp_files)
         self.tmp_dir = str(tmp_dir) if tmp_dir is not None else tempfile.gettempdir()
 
+        if not os.path.isfile(self.ref):
+            raise FfmpegQualityMetricsError(f"Reference file not found: {self.ref}")
+        if not os.path.isfile(self.dist):
+            raise FfmpegQualityMetricsError(f"Distorted file not found: {self.dist}")
+
         if self.ref == self.dist:
             logger.warning(
                 "Reference and distorted files are the same! This may lead to unexpected results or numerical issues."
@@ -185,6 +190,9 @@ class FfmpegQualityMetrics:
 
         self.global_stats: GlobalStats = {}
 
+        if not os.path.isdir(self.tmp_dir):
+            logger.debug(f"Creating temporary directory: {self.tmp_dir}")
+            os.makedirs(self.tmp_dir)
         self.temp_files: Dict[FilterName, str] = {}
 
         for filter_name in self.POSSIBLE_FILTERS:
