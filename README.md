@@ -229,10 +229,51 @@ For example, to enable the CAMBI feature, use:
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi
 ```
 
-Each feature additionally takes a number of optional parameters. These are specified as `key=value` pairs, separated by `:`. For example, to enable the full-reference CAMBI calculation, use:
+#### VMAF Feature Parameters
+
+Some features additionally take a number of optional parameters. The following table shows the available parameters for each feature:
+
+| Feature   | Parameter                | Default  | Description                                                                                                                        |
+| --------- | ------------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `adm`     | `adm_csf_mode`           | `0`      | Contrast sensitivity function                                                                                                      |
+| `adm`     | `adm_enhn_gain_limit`    | `100.0`  | Enhancement gain imposed on adm, must be >= 1.0, where 1.0 means the gain is completely disabled                                   |
+| `adm`     | `adm_norm_view_dist`     | `3.0`    | Normalized viewing distance = viewing distance / ref display's physical height                                                     |
+| `adm`     | `adm_ref_display_height` | `1080`   | Reference display height in pixels                                                                                                 |
+| `adm`     | `debug`                  | `false`  | Debug mode: enable additional output                                                                                               |
+| `cambi`   | `enc_bitdepth`           |          | Encoding bitdepth.                                                                                                                 |
+| `cambi`   | `enc_height`             |          | Encoding height.                                                                                                                   |
+| `cambi`   | `enc_width`              |          | Encoding width.                                                                                                                    |
+| `cambi`   | `eotf`                   | `bt1886` | Determines the EOTF used to compute the visibility thresholds.                                                                     |
+| `cambi`   | `full_ref`               | `false`  | Set to `true` to enable full-reference CAMBI calculation.                                                                          |
+| `cambi`   | `heatmaps_path`          |          | Set to a target folder where the CAMBI heatmaps will be stored as `.gray` files                                                    |
+| `cambi`   | `max_log_contrast`       | `2`      | Maximum contrast in log luma level (2^max_log_contrast) at 10-bits.                                                                |
+| `cambi`   | `src_height`             |          | Source height. Only used when full_ref=true.                                                                                       |
+| `cambi`   | `src_width`              |          | Source width. Only used when full_ref=true.                                                                                        |
+| `cambi`   | `topk`                   | `0.2`    | Ratio of pixels for the spatial pooling computation.                                                                               |
+| `cambi`   | `tvi_threshold`          | `0.75`   | Visibility threshold for luminance ΔL < tvi_threshold*L_mean.                                                                      |
+| `cambi`   | `window_size`            | `63`     | Window size to compute CAMBI: 63 corresponds to ~1 degree at 4k.                                                                   |
+| `motion`  | `debug`                  | `true`   | Enable additional output for debugging.                                                                                            |
+| `motion`  | `motion_force_zero`      | `false`  | Force the motion score to be zero. This parameter is a feature-specific parameter.                                                 |
+| `ms_ssim` | `clip_db`                | `false`  | Clip dB scores                                                                                                                     |
+| `ms_ssim` | `enable_db`              | `false`  | Write MS-SSIM values as dB                                                                                                         |
+| `ms_ssim` | `enable_lcs`             | `false`  | Enable luminance, contrast and structure intermediate output                                                                       |
+| `ssim`    | `clip_db`                | `false`  | Clip dB scores                                                                                                                     |
+| `ssim`    | `enable_db`              | `false`  | Write SSIM values as dB                                                                                                            |
+| `ssim`    | `enable_lcs`             | `false`  | Enable luminance, contrast and structure intermediate output                                                                       |
+| `vif`     | `debug`                  | `false`  | Debug mode: enable additional output                                                                                               |
+| `vif`     | `vif_enhn_gain_limit`    | `100.0`  | Enhancement gain imposed on vif, must be >= 1.0, where 1.0 means the gain is completely disabled                                   |
+| `vif`     | `vif_kernelscale`        | `1.0`    | Scaling factor for the gaussian kernel (2.0 means multiplying the standard deviation by 2 and enlarge the kernel size accordingly) |
+
+The parameters are specified as `key=value` pairs, separated by `:`. For example, to enable the full-reference CAMBI calculation, use:
 
 ```bash
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi:full_ref=true
+```
+
+To generate the CAMBI heatmaps, use:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi:heatmaps_path=/tmp/cambi
 ```
 
 ## Examples
