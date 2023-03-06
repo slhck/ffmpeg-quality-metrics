@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v3.2.1 (2023-03-06)
+
+* Check for existing files before running.
+
+* Fix executable name in CLI help, again.
+
+
 ## v3.2.0 (2023-03-06)
 
 * Allow overriding temp dir.
