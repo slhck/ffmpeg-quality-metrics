@@ -35,8 +35,8 @@ def main() -> None:
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(
             prog, max_help_position=40, width=100
         ),
-        description="ffmpeg-quality-metrics v" + version,
-        prog="ffmpeg-quality-metrics",
+        description="ffmpeg_quality_metrics v" + version,
+        prog="ffmpeg_quality_metrics",
     )
     parser.add_argument("dist", help="input file, distorted")
     parser.add_argument("ref", help="input file, reference")
@@ -60,6 +60,12 @@ def main() -> None:
         "--keep-tmp",
         action="store_true",
         help="Keep temporary files for debugging purposes",
+    )
+    general_opts.add_argument(
+        "--tmp-dir",
+        type=str,
+        default=None,
+        help="Directory to store temporary files in (will use system default if not specified)",
     )
 
     metric_options = parser.add_argument_group("Metric options")
@@ -169,6 +175,7 @@ def main() -> None:
         threads=cli_args.threads,
         progress=cli_args.progress,
         keep_tmp_files=cli_args.keep_tmp,
+        tmp_dir=cli_args.tmp_dir,
     )
 
     metrics = cli_args.metrics

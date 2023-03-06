@@ -137,6 +137,7 @@ class FfmpegQualityMetrics:
         threads: int = DEFAULT_THREADS,
         progress: Union[bool, None] = False,
         keep_tmp_files: Union[bool, None] = False,
+        tmp_dir: Union[str, None] = None,
     ):
         """Instantiate a new FfmpegQualityMetrics
 
@@ -150,6 +151,7 @@ class FfmpegQualityMetrics:
             threads (int, optional): Number of ffmpeg threads. Defaults to 0 (auto).
             progress (bool, optional): Show a progress bar. Defaults to False.
             keep_tmp_files (bool, optional): Keep temporary files for debugging purposes. Defaults to False.
+            tmp_dir (str, optional): Directory to store temporary files. Will use system default if not specified. Defaults to None.
 
         Raises:
             FfmpegQualityMetricsError: A generic error
@@ -163,6 +165,7 @@ class FfmpegQualityMetrics:
         self.threads = int(threads)
         self.progress = bool(progress)
         self.keep_tmp_files = bool(keep_tmp_files)
+        self.tmp_dir = str(tmp_dir) if tmp_dir is not None else tempfile.gettempdir()
 
         if self.ref == self.dist:
             logger.warning(
@@ -182,12 +185,14 @@ class FfmpegQualityMetrics:
 
         self.global_stats: GlobalStats = {}
 
-        self.temp_dir = tempfile.gettempdir()
         self.temp_files: Dict[FilterName, str] = {}
 
         for filter_name in self.POSSIBLE_FILTERS:
+            suffix = "txt" if filter_name != "libvmaf" else "json"
+
             self.temp_files[cast(FilterName, filter_name)] = os.path.join(
-                self.temp_dir, next(tempfile._get_candidate_names()) + f"-{filter_name}.txt"  # type: ignore
+                self.tmp_dir,
+                f"ffmpeg_quality_metrics_{filter_name}_{os.path.basename(self.ref)}_{os.path.basename(self.dist)}.{suffix}",
             )
             logger.debug(
                 f"Writing temporary {filter_name.upper()} information to: {self.temp_files[cast(FilterName, filter_name)]}"
@@ -630,12 +635,12 @@ class FfmpegQualityMetrics:
         """
         Remove the temporary files
         """
-        if self.keep_tmp_files:
-            logger.debug("Keeping temporary files, make sure to remove them manually!")
-            return
         for temp_file in self.temp_files.values():
             if os.path.isfile(temp_file):
-                os.remove(temp_file)
+                if self.keep_tmp_files:
+                    logger.debug(f"Keeping temp file {temp_file}")
+                else:
+                    os.remove(temp_file)
 
     def _read_psnr_temp_file(self) -> None:
         """

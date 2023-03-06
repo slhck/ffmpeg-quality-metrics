@@ -104,7 +104,7 @@ You can configure additional options related to scaling, speed etc.
 See `ffmpeg-quality-metrics -h`:
 
 ```
-usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k]
+usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                               [-r FRAMERATE] [-t THREADS] [-of {json,csv}]
@@ -114,7 +114,7 @@ usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k]
                               [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
                               dist ref
 
-ffmpeg_quality_metrics v3.1.5
+ffmpeg-quality-metrics v3.2.0
 
 positional arguments:
   dist                                  input file, distorted
@@ -129,6 +129,8 @@ General options:
   -v, --verbose                         Show verbose output (default: False)
   -p, --progress                        Show a progress bar (default: False)
   -k, --keep-tmp                        Keep temporary files for debugging purposes (default: False)
+  --tmp-dir TMP_DIR                     Directory to store temporary files in (will use system
+                                        default if not specified) (default: None)
 
 Metric options:
   -m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...], --metrics {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]
