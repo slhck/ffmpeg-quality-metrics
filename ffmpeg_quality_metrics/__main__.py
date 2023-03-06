@@ -35,8 +35,8 @@ def main() -> None:
         formatter_class=lambda prog: argparse.ArgumentDefaultsHelpFormatter(
             prog, max_help_position=40, width=100
         ),
-        description="ffmpeg_quality_metrics v" + version,
-        prog="ffmpeg_quality_metrics",
+        description="ffmpeg-quality-metrics v" + version,
+        prog="ffmpeg-quality-metrics",
     )
     parser.add_argument("dist", help="input file, distorted")
     parser.add_argument("ref", help="input file, reference")
