@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v3.3.0 (2023-07-18)
+
+* Add dist-delay option.
+
+* Add encoding to setup.py for windows compat.
+
+* Add encoding to setup.py for windows compat.
+
+
 ## v3.2.1 (2023-03-06)
 
 * Check for existing files before running.
