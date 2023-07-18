@@ -296,10 +296,6 @@ class FfmpegQualityMetrics:
         else:
             raise FfmpegQualityMetricsError(f"Unknown filter {filter_name}!")
 
-    def calc(self, **kwargs):
-        logger.warning("The calc method is deprecated. Use calculate() instead.")
-        return self.calculate(**kwargs)
-
     def calculate(
         self,
         metrics: List[MetricName] = ["ssim", "psnr"],
@@ -599,50 +595,6 @@ class FfmpegQualityMetrics:
         else:
             _, stderr = run_command(cmd, dry_run=self.dry_run)
             return stderr
-
-    def calc_ssim_psnr(self) -> Dict[MetricName, SingleMetricData]:
-        """Calculate SSIM and PSNR
-
-        Raises:
-            e: A generic error
-
-        Returns:
-            dict: SSIM and PSNR results, each with their own key
-        """
-        logger.warning(
-            "The calc_ssim_psnr() method is deprecated and will be removed eventually. "
-            "Please use calc() instead!"
-        )
-
-        if "ssim" not in self.available_filters:
-            raise FfmpegQualityMetricsError(
-                "Your ffmpeg build does not have support for the 'ssim' filter. "
-            )
-
-        if "psnr" not in self.available_filters:
-            raise FfmpegQualityMetricsError(
-                "Your ffmpeg build does not have support for the 'psnr' filter. "
-            )
-
-        filter_chains = [
-            f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
-            "[dist]setpts=PTS-STARTPTS[distpts]",
-            "[ref]setpts=PTS-STARTPTS[refpts]",
-            "[distpts]split[dist1][dist2]",
-            "[refpts]split[ref1][ref2]",
-            f"[dist1][ref1]{self._get_filter_opts('ssim')}",
-            f"[dist2][ref2]{self._get_filter_opts('psnr')}",
-        ]
-
-        try:
-            self._run_ffmpeg_command(filter_chains, desc="PSNR and SSIM")
-            self._read_temp_files(["ssim", "psnr"])
-        except Exception as e:
-            raise e
-        finally:
-            self._cleanup_temp_files()
-
-        return {"ssim": self.data["ssim"], "psnr": self.data["psnr"]}
 
     def _cleanup_temp_files(self) -> None:
         """
