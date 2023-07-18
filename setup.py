@@ -14,7 +14,7 @@ with open(os.path.join(here, "ffmpeg_quality_metrics", "__init__.py")) as versio
             break
 
 # Get the long description from the README file
-with open(os.path.join(here, "README.md")) as f:
+with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
