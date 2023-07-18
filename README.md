@@ -74,6 +74,8 @@ ffmpeg-quality-metrics distorted.mp4 reference.avi
 
 The distorted file will be automatically scaled to the resolution of the reference, and the default metrics (PSNR, SSIM) will be computed.
 
+Note that if your distorted file is not in time sync with the reference, you can use the `--dist-delay` option to delay the distorted file by a certain amount of seconds (positive or negative).
+
 ### Metrics
 
 The following metrics are available in this tool:
@@ -107,14 +109,14 @@ See `ffmpeg-quality-metrics -h`:
 usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
-                              [-r FRAMERATE] [-t THREADS] [-of {json,csv}]
+                              [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS] [-of {json,csv}]
                               [--vmaf-model-path VMAF_MODEL_PATH]
                               [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]]
                               [--vmaf-threads VMAF_THREADS] [--vmaf-subsample VMAF_SUBSAMPLE]
                               [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
                               dist ref
 
-ffmpeg-quality-metrics v3.2.0
+ffmpeg-quality-metrics v3.2.1
 
 positional arguments:
   dist                                  input file, distorted
@@ -141,6 +143,8 @@ FFmpeg options:
   -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                                         Scaling algorithm for ffmpeg (default: bicubic)
   -r FRAMERATE, --framerate FRAMERATE   Force an input framerate (default: None)
+  --dist-delay DIST_DELAY               Delay the distorted video against the reference by this many
+                                        seconds (default: 0.0)
   -t THREADS, --threads THREADS         Number of threads to do the calculations (default: 0)
 
 Output options:

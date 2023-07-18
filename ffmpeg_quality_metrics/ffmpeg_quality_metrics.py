@@ -132,6 +132,7 @@ class FfmpegQualityMetrics:
         dist: str,
         scaling_algorithm: str = DEFAULT_SCALER,
         framerate: Union[float, None] = None,
+        dist_delay: float = 0,
         dry_run: Union[bool, None] = False,
         verbose: Union[bool, None] = False,
         threads: int = DEFAULT_THREADS,
@@ -146,6 +147,7 @@ class FfmpegQualityMetrics:
             dist (str): distorted file
             scaling_algorithm (str, optional): A scaling algorithm. Must be one of the following: ["fast_bilinear", "bilinear", "bicubic", "experimental", "neighbor", "area", "bicublin", "gauss", "sinc", "lanczos", "spline"]. Defaults to "bicubic"
             framerate (float, optional): Force a frame rate. Defaults to None.
+            dist_delay (float): Delay the distorted file against the reference by this amount of seconds. Defaults to 0.
             dry_run (bool, optional): Don't run anything, just print commands. Defaults to False.
             verbose (bool, optional): Show more output. Defaults to False.
             threads (int, optional): Number of ffmpeg threads. Defaults to 0 (auto).
@@ -160,6 +162,7 @@ class FfmpegQualityMetrics:
         self.dist = str(dist)
         self.scaling_algorithm = str(scaling_algorithm)
         self.framerate = float(framerate) if framerate is not None else None
+        self.dist_delay = float(dist_delay)
         self.dry_run = bool(dry_run)
         self.verbose = bool(verbose)
         self.threads = int(threads)
@@ -573,6 +576,8 @@ class FfmpegQualityMetrics:
             str(ref_framerate),
             "-i",
             self.ref,
+            "-itsoffset",
+            str(self.dist_delay),
             "-r",
             str(dist_framerate),
             "-i",

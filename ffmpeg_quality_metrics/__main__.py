@@ -97,6 +97,13 @@ def main() -> None:
     )
 
     ffmpeg_opts.add_argument(
+        "--dist-delay",
+        type=float,
+        default=0.0,
+        help="Delay the distorted video against the reference by this many seconds",
+    )
+
+    ffmpeg_opts.add_argument(
         "-t",
         "--threads",
         type=int,
@@ -170,6 +177,7 @@ def main() -> None:
         dist=cli_args.dist,
         scaling_algorithm=cli_args.scaling_algorithm,
         framerate=cli_args.framerate,
+        dist_delay=cli_args.dist_delay,
         dry_run=cli_args.dry_run,
         verbose=cli_args.verbose,
         threads=cli_args.threads,
