@@ -6,7 +6,9 @@ from setuptools import setup
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Versioning
-with open(os.path.join(here, "ffmpeg_quality_metrics", "__init__.py")) as version_file:
+with open(
+    os.path.join(here, "ffmpeg_quality_metrics", "__init__.py"), encoding="utf-8"
+) as version_file:
     # parse the string that looks like '__version__ = "3.1.2"'
     for line in version_file:
         if line.startswith("__version__"):
