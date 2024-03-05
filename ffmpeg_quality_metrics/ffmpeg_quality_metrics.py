@@ -180,6 +180,11 @@ class FfmpegQualityMetrics:
                 "Reference and distorted files are the same! This may lead to unexpected results or numerical issues."
             )
 
+        if ref.endswith(".yuv") or dist.endswith(".yuv"):
+            raise FfmpegQualityMetricsError(
+                "YUV files are not supported, please convert to a format that ffmpeg can read natively, such as Y4M or FFV1."
+            )
+
         self.data: MetricData = {
             "vmaf": [],
             "psnr": [],
