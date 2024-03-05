@@ -69,12 +69,19 @@ Or clone this repository, then run the tool with `python3 -m ffmpeg_quality_metr
 In the simplest case, if you have a distorted (encoded, maybe scaled) version and the reference:
 
 ```
-ffmpeg-quality-metrics distorted.mp4 reference.avi
+ffmpeg-quality-metrics distorted.mp4 reference.y4m
 ```
 
 The distorted file will be automatically scaled to the resolution of the reference, and the default metrics (PSNR, SSIM) will be computed.
 
 Note that if your distorted file is not in time sync with the reference, you can use the `--dist-delay` option to delay the distorted file by a certain amount of seconds (positive or negative).
+
+> [!NOTE]
+> Raw YUV files cannot be read with this tool. We should all be using lossless containers like Y4M or FFV1. If you have a raw YUV file, you can use FFmpeg to convert it to a format that this tool can read. Adjust the options as needed.
+>
+> ```bash
+> ffmpeg -framerate 24 -video_size 1920x1080 -pix_fmt yuv420p -i input.yuv output.y4m
+> ```
 
 ### Metrics
 
@@ -82,10 +89,10 @@ The following metrics are available in this tool:
 
 | Metric | Description                                                                            | Scale                    | Components/Submetrics                                                                                                                                                                                                                       | Calculated by default? |
 | ------ | -------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| PSNR   | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB                       | `mse_avg`, `mse_y`, `mse_u`, `mse_v`, `psnr_avg`, `psnr_y`, `psnr_u`, `psnr_v`                                                                                                                                                              | ✔️                      |
-| SSIM   | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity)           | 0-100 (higher is better) | `ssim_y`, `ssim_u`, `ssim_v`, `ssim_avg`                                                                                                                                                                                                    | ✔️                      |
-| VMAF   | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf)                | 0-100 (higher is better) | `vmaf`, `integer_adm2`, `integer_adm_scale0`, `integer_adm_scale1`, `integer_adm_scale2`, `integer_adm_scale3`, `integer_motion2`, `integer_motion`, `integer_vif_scale0`, `integer_vif_scale1`, `integer_vif_scale2`, `integer_vif_scale3` | No                     |
-| VIF    | Visual Information Fidelity                                                            | 0-100 (higher is better) | `scale_0`, `scale_1`, `scale_2`, `scale_3`                                                                                                                                                                                                  | No                     |
+| PSNR   | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB                       | `mse_avg`<br> `mse_y`<br> `mse_u`<br> `mse_v`<br> `psnr_avg`<br> `psnr_y`<br> `psnr_u`<br> `psnr_v`                                                                                                                                                              | ✔️                      |
+| SSIM   | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity)           | 0-100 (higher is better) | `ssim_y`<br> `ssim_u`<br> `ssim_v`<br> `ssim_avg`                                                                                                                                                                                                    | ✔️                      |
+| VMAF   | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf)                | 0-100 (higher is better) | `vmaf`<br> `integer_adm2`<br> `integer_adm_scale0`<br> `integer_adm_scale1`<br> `integer_adm_scale2`<br> `integer_adm_scale3`<br> `integer_motion2`<br> `integer_motion`<br> `integer_vif_scale0`<br> `integer_vif_scale1`<br> `integer_vif_scale2`<br> `integer_vif_scale3` | No                     |
+| VIF    | Visual Information Fidelity                                                            | 0-100 (higher is better) | `scale_0`<br> `scale_1`<br> `scale_2`<br> `scale_3`                                                                                                                                                                                                  | No                     |
 
 As shown in the table, every metric can have more than one submetric computed, and they will be printed in the output.
 
@@ -422,7 +429,7 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
 
 ## License
 
-ffmpeg-quality-metrics, Copyright (c) 2019-2023 Werner Robitza
+ffmpeg-quality-metrics, Copyright (c) 2019-2024 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
