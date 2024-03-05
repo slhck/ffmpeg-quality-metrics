@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v3.3.1 (2024-03-05)
+
+* Update readme.
+
+* Add error for raw YUV files.
+
+* Remove deprecated methods.
+
+
 ## v3.3.0 (2023-07-18)
 
 * Add dist-delay option.
