@@ -44,15 +44,15 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 What you need:
 
 - OS: Linux, macOS, Windows
-- Python 3.8 or higher
-- FFmpeg:
+- Python 3.9 or higher
+- FFmpeg 7.1 or higher is recommended:
     - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/).
     - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/) or install via `brew install ffmpeg`.
     - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
 Put the `ffmpeg` executable in your `$PATH`.
 
-If you want to calculate VMAF, your ffmpeg build should include `libvmaf 2.3.1` or higher. This is the case with the static builds listed above or the Homebrew `ffmpeg` v5.1 package.
+If you want to calculate VMAF, your ffmpeg build should include `libvmaf 2.3.1` or higher. This is the case with the static builds listed above or the Homebrew `ffmpeg` v5.1 and above.
 
 ## Installation
 
@@ -68,7 +68,7 @@ Or clone this repository, then run the tool with `python3 -m ffmpeg_quality_metr
 
 In the simplest case, if you have a distorted (encoded, maybe scaled) version and the reference:
 
-```
+```bash
 ffmpeg-quality-metrics distorted.mp4 reference.y4m
 ```
 

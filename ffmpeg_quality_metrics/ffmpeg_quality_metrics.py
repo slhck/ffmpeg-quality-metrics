@@ -13,12 +13,15 @@ from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
 import numpy as np
 import pandas as pd
 from ffmpeg_progress_yield import FfmpegProgress
+from packaging.version import Version
+from packaging.version import parse as parse_version
 from tqdm import tqdm
 
 from .utils import (
     NUL,
     ffmpeg_is_from_brew,
     has_brew,
+    quoted_cmd,
     run_command,
     win_path_check,
     win_vmaf_model_path_check,
@@ -244,6 +247,18 @@ class FfmpegQualityMetrics:
         logger.debug(f"Available filters: {self.available_filters}")
 
     @staticmethod
+    def get_ffmpeg_version() -> Version:
+        """
+        Get the version of ffmpeg
+        """
+        cmd = ["ffmpeg", "-version"]
+        stdout, _ = run_command(cmd)
+        # $ ffmpeg -version
+        # ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers
+        # ...
+        return parse_version(stdout.split("\n")[0].split(" ")[2])
+
+    @staticmethod
     def get_framerate(input_file: str) -> float:
         """Parse the FPS from the input file.
 
@@ -345,11 +360,24 @@ class FfmpegQualityMetrics:
                         self.vmaf_options[key] = value  # type: ignore
             self._set_vmaf_model_path(self.vmaf_options["model_path"])
 
-        filter_chains = [
-            f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
-            "[dist]settb=AVTB,setpts=PTS-STARTPTS[distpts]",
-            "[ref]settb=AVTB,setpts=PTS-STARTPTS[refpts]",
-        ]
+        ffmpeg_version = FfmpegQualityMetrics.get_ffmpeg_version()
+        if ffmpeg_version < parse_version("7.1"):
+            logger.warning(
+                "FFmpeg version is less than 7.1. Using deprecated scale2ref filter. Please update to 7.1 or higher."
+            )
+            filter_chains = [
+                f"[1][0]scale2ref=flags={self.scaling_algorithm}[dist][ref]",
+                "[dist]settb=AVTB,setpts=PTS-STARTPTS[distpts]",
+                "[ref]settb=AVTB,setpts=PTS-STARTPTS[refpts]",
+            ]
+        else:
+            # ffmpeg 7.1 or higher: scale2ref filter is deprecated
+            # input 0: ref, input 1: dist --> swapped for scale filter
+            filter_chains = [
+                f"[1][0]scale=rw:rh:flags={self.scaling_algorithm}[dist]",
+                "[dist]settb=AVTB,setpts=PTS-STARTPTS[distpts]",
+                "[0]settb=AVTB,setpts=PTS-STARTPTS[refpts]",
+            ]
 
         # generate split filters depending on the number of models
         n_splits = len(metrics)
@@ -592,6 +620,7 @@ class FfmpegQualityMetrics:
         ]
 
         if self.progress:
+            logger.debug(quoted_cmd(cmd))
             ff = FfmpegProgress(cmd, self.dry_run)
             with tqdm(total=100, position=1, desc=desc) as pbar:
                 for progress in ff.run_command_with_progress():
