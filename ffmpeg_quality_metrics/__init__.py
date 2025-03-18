@@ -9,7 +9,7 @@ from .ffmpeg_quality_metrics import (
     VmafOptions,
 )
 
-__version__ = "3.3.1"
+__version__ = "3.4.0"
 __all__ = [
     "FfmpegQualityMetrics",
     "FfmpegQualityMetricsError",
