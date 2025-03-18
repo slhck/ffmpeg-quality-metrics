@@ -256,7 +256,10 @@ class FfmpegQualityMetrics:
         # $ ffmpeg -version
         # ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers
         # ...
-        return parse_version(stdout.split("\n")[0].split(" ")[2])
+        version_str = stdout.split("\n")[0].split(" ")[2]
+        # Clean the version string by removing the "-static" suffix if it exists
+        version_str = version_str.split("-")[0]
+        return parse_version(version_str)
 
     @staticmethod
     def get_framerate(input_file: str) -> float:
