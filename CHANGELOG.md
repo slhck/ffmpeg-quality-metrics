@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v3.4.1 (2025-03-18)
+
+* Fix version parsing.
+
+
 ## v3.4.0 (2025-03-18)
 
 * Fix handling for ffmpeg 7.1, remove python 3.8 support.
