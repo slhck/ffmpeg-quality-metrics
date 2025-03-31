@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v3.5.0 (2025-03-31)
+
+* Add MSAD support, fixes #31.
+
+
 ## v3.4.2 (2025-03-31)
 
 * Change CI ffmpeg bin.
