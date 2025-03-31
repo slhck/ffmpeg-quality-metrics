@@ -8,7 +8,7 @@ import os
 import re
 import tempfile
 from functools import reduce
-from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
+from typing import Dict, List, Literal, Optional, Tuple, TypedDict, Union, cast
 
 import numpy as np
 import pandas as pd
@@ -247,7 +247,7 @@ class FfmpegQualityMetrics:
         logger.debug(f"Available filters: {self.available_filters}")
 
     @staticmethod
-    def get_ffmpeg_version() -> Version:
+    def get_ffmpeg_version() -> Optional[Version]:
         """
         Get the version of ffmpeg
         """
@@ -256,10 +256,22 @@ class FfmpegQualityMetrics:
         # $ ffmpeg -version
         # ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers
         # ...
+        #
+        # or sometimes:
+        # ffmpeg version n7.1-latest-linux64-gpl-7.1
         version_str = stdout.split("\n")[0].split(" ")[2]
+
         # Clean the version string by removing the "-static" suffix if it exists
         version_str = version_str.split("-")[0]
-        return parse_version(version_str)
+
+        # Clean a "n" at the beginning of the version string if it exists
+        version_str = version_str.lstrip("n")
+
+        try:
+            return parse_version(version_str)
+        except Exception:
+            logger.warning(f"Could not parse ffmpeg version: {version_str}")
+            return None
 
     @staticmethod
     def get_framerate(input_file: str) -> float:
@@ -364,7 +376,7 @@ class FfmpegQualityMetrics:
             self._set_vmaf_model_path(self.vmaf_options["model_path"])
 
         ffmpeg_version = FfmpegQualityMetrics.get_ffmpeg_version()
-        if ffmpeg_version < parse_version("7.1"):
+        if ffmpeg_version is None or ffmpeg_version < parse_version("7.1"):
             logger.warning(
                 "FFmpeg version is less than 7.1. Using deprecated scale2ref filter. Please update to 7.1 or higher."
             )
