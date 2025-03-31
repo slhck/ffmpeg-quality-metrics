@@ -10,15 +10,24 @@
 
 Calculate various video quality metrics with FFmpeg.
 
-Currently supports PSNR, SSIM, VMAF and VIF. It will output:
+Currently supports:
+
+- ✅ PSNR
+- ✅ SSIM
+- ✅ VIF
+- ✅ MSAD
+- ✅ VMAF
+
+It will output:
 
 - the per-frame metrics
-- metrics for each plane (Y, U, V) or components/submetrics (in the case of VIF, VMAF)
 - global statistics (min/max/average/standard deviation)
 
 Author: Werner Robitza <werner.robitza@gmail.com>
 
-**Note:** Previous versions installed a `ffmpeg_quality_metrics` executable. To harmonize it with other tools, now the executable is called `ffmpeg-quality-metrics`. Please ensure you remove the old executable (e.g. run `which ffmpeg_quality_metrics` and remove the file).
+> [!NOTE]
+>
+> Previous versions installed a `ffmpeg_quality_metrics` executable. To harmonize it with other tools, now the executable is called `ffmpeg-quality-metrics`. Please ensure you remove the old executable (e.g. run `which ffmpeg_quality_metrics` and remove the file).
 
 **Contents:**
 
@@ -84,12 +93,13 @@ Note that if your distorted file is not in time sync with the reference, you can
 
 The following metrics are available in this tool:
 
-| Metric | Description                                                                            | Scale                    | Components/Submetrics                                                                                                                                                                                                                       | Calculated by default? |
-| ------ | -------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| PSNR   | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB                       | `mse_avg`<br> `mse_y`<br> `mse_u`<br> `mse_v`<br> `psnr_avg`<br> `psnr_y`<br> `psnr_u`<br> `psnr_v`                                                                                                                                                              | ✔️                      |
-| SSIM   | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity)           | 0-100 (higher is better) | `ssim_y`<br> `ssim_u`<br> `ssim_v`<br> `ssim_avg`                                                                                                                                                                                                    | ✔️                      |
-| VMAF   | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf)                | 0-100 (higher is better) | `vmaf`<br> `integer_adm2`<br> `integer_adm_scale0`<br> `integer_adm_scale1`<br> `integer_adm_scale2`<br> `integer_adm_scale3`<br> `integer_motion2`<br> `integer_motion`<br> `integer_vif_scale0`<br> `integer_vif_scale1`<br> `integer_vif_scale2`<br> `integer_vif_scale3` | No                     |
-| VIF    | Visual Information Fidelity                                                            | 0-100 (higher is better) | `scale_0`<br> `scale_1`<br> `scale_2`<br> `scale_3`                                                                                                                                                                                                  | No                     |
+| Metric | Description                                                                            | Scale                                                  | Components/Submetrics                                                                                                                                                                                                                                                        | Calculated by default? |
+| ------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| PSNR   | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB (higher is better)                                  | `mse_avg`<br> `mse_y`<br> `mse_u`<br> `mse_v`<br> `psnr_avg`<br> `psnr_y`<br> `psnr_u`<br> `psnr_v`                                                                                                                                                                          | ✔️                      |
+| SSIM   | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity)           | 0-100 (higher is better)                               | `ssim_y`<br> `ssim_u`<br> `ssim_v`<br> `ssim_avg`                                                                                                                                                                                                                            | ✔️                      |
+| VMAF   | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf)                | 0-100 (higher is better)                               | `vmaf`<br> `integer_adm2`<br> `integer_adm_scale0`<br> `integer_adm_scale1`<br> `integer_adm_scale2`<br> `integer_adm_scale3`<br> `integer_motion2`<br> `integer_motion`<br> `integer_vif_scale0`<br> `integer_vif_scale1`<br> `integer_vif_scale2`<br> `integer_vif_scale3` | No                     |
+| VIF    | Visual Information Fidelity                                                            | 0-100 (higher is better)                               | `scale_0`<br> `scale_1`<br> `scale_2`<br> `scale_3`                                                                                                                                                                                                                          | No                     |
+| MSAD   | Mean Sum of Squared Differences                                                        | depends on input video, minimum is 0 (higher is worse) | `msad_y`<br> `msad_u`<br> `msad_v`<br> `msad_avg`                                                                                                                                                                                                                            | No                     |
 
 As shown in the table, every metric can have more than one submetric computed, and they will be printed in the output.
 
@@ -111,7 +121,7 @@ See `ffmpeg-quality-metrics -h`:
 
 ```
 usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
-                              [-m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]]
+                              [-m {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...]]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                               [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS] [-of {json,csv}]
                               [--vmaf-model-path VMAF_MODEL_PATH]
@@ -120,7 +130,7 @@ usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
                               dist ref
 
-ffmpeg-quality-metrics v3.2.1
+ffmpeg-quality-metrics v3.4.2
 
 positional arguments:
   dist                                  input file, distorted
@@ -139,7 +149,7 @@ General options:
                                         default if not specified) (default: None)
 
 Metric options:
-  -m {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...], --metrics {vmaf,psnr,ssim,vif} [{vmaf,psnr,ssim,vif} ...]
+  -m {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...], --metrics {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...]
                                         Metrics to calculate. Specify multiple metrics like '--
                                         metrics ssim vmaf' (default: ['psnr', 'ssim'])
 
@@ -299,10 +309,10 @@ ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi:heatmaps_p
 
 These parameters control the VMAF model itself (not the features).
 
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `enable_transform` | Enable the transform feature, which transforms the scores to represent quality as perceived on a phone ([used to be called `phone_model`](https://github.com/Netflix/vmaf/blob/master/resource/doc/models.md#predict-quality-on-a-cellular-phone-screen)) | `false` |
-| `enable_conf_interval` | Enable the [confidence interval calculation](https://github.com/Netflix/vmaf/blob/master/resource/doc/conf_interval.md) | `false` |
+| Parameter              | Description                                                                                                                                                                                                                                               | Default |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `enable_transform`     | Enable the transform feature, which transforms the scores to represent quality as perceived on a phone ([used to be called `phone_model`](https://github.com/Netflix/vmaf/blob/master/resource/doc/models.md#predict-quality-on-a-cellular-phone-screen)) | `false` |
+| `enable_conf_interval` | Enable the [confidence interval calculation](https://github.com/Netflix/vmaf/blob/master/resource/doc/conf_interval.md)                                                                                                                                   | `false` |
 
 To specify these parameters, use the `--vmaf-model-params` option, and separate each parameter with a space. For example:
 

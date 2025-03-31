@@ -54,10 +54,10 @@ class VmafOptions(TypedDict):
     """
 
 
-MetricName = Literal["psnr", "ssim", "vmaf", "vif"]
+MetricName = Literal["psnr", "ssim", "vmaf", "vif", "msad"]
 """The name of a metric."""
 
-FilterName = Literal["psnr", "ssim", "libvmaf", "vif"]
+FilterName = Literal["psnr", "ssim", "libvmaf", "vif", "msad"]
 """The name of an ffmpeg filter used for that metric."""
 
 SingleMetricData = List[Dict[str, float]]
@@ -119,14 +119,14 @@ class FfmpegQualityMetrics:
         "psnr",
         "ssim",
         "vif",
-    ]  # , "identity", "msad"]
+        "msad",
+    ]
     METRIC_TO_FILTER_MAP: Dict[MetricName, FilterName] = {
         "vmaf": "libvmaf",
         "psnr": "psnr",
         "ssim": "ssim",
         "vif": "vif",
-        # "identity": "identity",
-        # "msad": "msad",
+        "msad": "msad",
     }
 
     def __init__(
@@ -193,8 +193,7 @@ class FfmpegQualityMetrics:
             "psnr": [],
             "ssim": [],
             "vif": [],
-            # "identity": [],
-            # "msad": [],
+            "msad": [],
         }
 
         self.available_filters: List[str] = []
@@ -328,6 +327,8 @@ class FfmpegQualityMetrics:
             return f"libvmaf='{self._get_libvmaf_filter_opts()}'"
         elif filter_name == "vif":
             return "vif,metadata=mode=print"
+        elif filter_name == "msad":
+            return "msad,metadata=mode=print"
         else:
             raise FfmpegQualityMetricsError(f"Unknown filter {filter_name}!")
 
@@ -533,17 +534,34 @@ class FfmpegQualityMetrics:
         if self.dry_run:
             return
         if "vif" in metrics:
-            self._read_vif_output(ffmpeg_output)
+            self._parse_ffmpeg_metadata_output(ffmpeg_output, "vif")
+        if "msad" in metrics:
+            self._parse_ffmpeg_metadata_output(ffmpeg_output, "msad")
 
-    def _read_vif_output(self, ffmpeg_output: str) -> None:
+    def _parse_ffmpeg_metadata_output(
+        self, ffmpeg_output: str, metric_name: Literal["vif", "msad"]
+    ) -> None:
         """
-        Parse the VIF filter output
+        Parse the filter output written to ffmpeg's metadata output
+
+        Args:
+            ffmpeg_output (str): The output of ffmpeg's stderr
+            metric_name (Literal["vif", "msad"]): The name of the metric to parse
         """
+        # Example for VIF:
+        #
         # [Parsed_metadata_4 @ 0x7f995cd08640] frame:1    pts:1       pts_time:0.0401x
         # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.0=0.263582
         # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.1=0.560129
         # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.2=0.626596
         # [Parsed_metadata_4 @ 0x7f995cd08640] lavfi.vif.scale.3=0.682183
+        #
+        # Example for MSAD:
+        #
+        # [Parsed_metadata_6 @ 0x10ad04ea0] lavfi.msad.msad.Y=0.029998
+        # [Parsed_metadata_6 @ 0x10ad04ea0] lavfi.msad.msad.U=0.019501
+        # [Parsed_metadata_6 @ 0x10ad04ea0] lavfi.msad.msad.V=0.026455
+        # [Parsed_metadata_6 @ 0x10ad04ea0] lavfi.msad.msad_avg=0.025318
 
         lines = [line.strip() for line in ffmpeg_output.split("\n")]
         current_frame = None
@@ -559,7 +577,7 @@ class FfmpegQualityMetrics:
             if fields[3].startswith("frame"):
                 # if we have data already
                 if frame_data:
-                    self.data["vif"].append(frame_data)
+                    self.data[metric_name].append(frame_data)
 
                 # get the frame number and reset the frame data
                 current_frame = int(fields[3].split(":")[1])
@@ -567,17 +585,19 @@ class FfmpegQualityMetrics:
                 continue
 
             # no frame was set, or no VIF info present
-            if current_frame is None or not fields[3].startswith("lavfi.vif"):
+            if current_frame is None or not fields[3].startswith(
+                f"lavfi.{metric_name}"
+            ):
                 continue
 
             # we have a frame
             key, value = fields[3].split("=")
-            key = key.replace("lavfi.vif.", "").replace(".", "_")
+            key = key.replace(f"lavfi.{metric_name}.", "").replace(".", "_").lower()
             frame_data[key] = round(float(value), 3)
 
         # append final frame data
         if frame_data:
-            self.data["vif"].append(frame_data)
+            self.data[metric_name].append(frame_data)
 
     def _read_temp_files(self, metrics=[]):
         """
