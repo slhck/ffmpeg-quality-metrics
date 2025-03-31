@@ -23,7 +23,6 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 **Contents:**
 
 - [Requirements](#requirements)
-- [Installation](#installation)
 - [Usage](#usage)
   - [Metrics](#metrics)
   - [Extended Options](#extended-options)
@@ -46,15 +45,13 @@ What you need:
 - OS: Linux, macOS, Windows
 - Python 3.9 or higher
 - FFmpeg 7.1 or higher is recommended:
-    - **Linux:** Download the git master build from [here](https://johnvansickle.com/ffmpeg/). Installation instructions, as well as how to add FFmpeg and FFprobe to your PATH, can be found [here](https://www.johnvansickle.com/ffmpeg/faq/).
+    - **Linux:** Download a build matching your platform from [here](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest).
     - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/) or install via `brew install ffmpeg`.
     - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
-Put the `ffmpeg` executable in your `$PATH`.
+Put the `ffmpeg` executable in your `$PATH`, e.g. `/usr/local/bin/ffmpeg`.
 
-If you want to calculate VMAF, your ffmpeg build should include `libvmaf 2.3.1` or higher. This is the case with the static builds listed above or the Homebrew `ffmpeg` v5.1 and above.
-
-## Installation
+If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model).
 
 Using pip:
 
