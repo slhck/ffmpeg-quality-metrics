@@ -245,6 +245,12 @@ For example, to enable the CAMBI feature, use:
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi
 ```
 
+To enable more than one feature, separate them with a space:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi psnr
+```
+
 #### VMAF Feature Parameters
 
 Some features additionally take a number of optional parameters. The following table shows the available parameters for each feature:
@@ -291,6 +297,25 @@ To generate the CAMBI heatmaps, use:
 ```bash
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi:heatmaps_path=/tmp/cambi
 ```
+
+#### VMAF Model Parameters
+
+These parameters control the VMAF model itself (not the features).
+
+| Parameter | Description | Default |
+| --------- | ----------- | ------- |
+| `enable_transform` | Enable the transform feature, which transforms the scores to represent quality as perceived on a phone ([used to be called `phone_model`](https://github.com/Netflix/vmaf/blob/master/resource/doc/models.md#predict-quality-on-a-cellular-phone-screen)) | `false` |
+| `enable_conf_interval` | Enable the [confidence interval calculation](https://github.com/Netflix/vmaf/blob/master/resource/doc/conf_interval.md) | `false` |
+
+To specify these parameters, use the `--vmaf-model-params` option, and separate each parameter with a space. For example:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-params enable_transform=true enable_conf_interval=true
+```
+
+> [!NOTE]
+>
+> The `enable_conf_interval` parameter currently does not change the output.
 
 ## Examples
 
