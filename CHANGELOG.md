@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v3.4.2 (2025-03-31)
+
+* Change CI ffmpeg bin.
+
+* Fix ffmpeg version parsing.
+
+* Update readme.
+
+* Update ci pipeline.
+
+
 ## v3.4.1 (2025-03-18)
 
 * Fix version parsing.
