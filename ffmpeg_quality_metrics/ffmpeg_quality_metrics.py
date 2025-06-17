@@ -657,9 +657,13 @@ class FfmpegQualityMetrics:
         if self.progress:
             logger.debug(quoted_cmd(cmd))
             ff = FfmpegProgress(cmd, self.dry_run)
-            with tqdm(total=100, position=1, desc=desc) as pbar:
-                for progress in ff.run_command_with_progress():
-                    pbar.update(progress - pbar.n)
+            try:
+                with tqdm(total=100, position=1, desc=desc) as pbar:
+                    for progress in ff.run_command_with_progress():
+                        pbar.update(progress - pbar.n)
+            finally:
+                if ff.process.poll() is None:
+                    ff.quit()
             return ff.stderr
         else:
             _, stderr = run_command(cmd, dry_run=self.dry_run)
