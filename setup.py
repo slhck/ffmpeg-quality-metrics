@@ -1,7 +1,7 @@
 # Always prefer setuptools over distutils
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -42,8 +42,8 @@ setup(
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
     ],
-    python_requires=">=3.8",
-    packages=["ffmpeg_quality_metrics"],
+    python_requires=">=3.9",
+    packages=["ffmpeg_quality_metrics", "ffmpeg_quality_metrics.vmaf_models"],
     include_package_data=True,
     package_data={"ffmpeg_quality_metrics": ["vmaf_models/*.json", "py.typed"]},
     entry_points={
