@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v3.5.1 (2025-06-17)
+
+* Add contributor.
+
+* Added quit for FfmpegProgress to let it react on SIGTERM.
+
+* Fix readme.
+
+
 ## v3.5.0 (2025-03-31)
 
 * Add MSAD support, fixes #31.
