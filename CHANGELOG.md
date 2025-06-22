@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v3.5.3 (2025-06-22)
+
+* Fix install_requires.
+
+
 ## v3.5.2 (2025-06-22)
 
 * Fix classifier.
