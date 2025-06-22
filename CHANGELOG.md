@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v3.5.2 (2025-06-22)
+
+* Fix classifier.
+
+* Update ffmpeg-progress-yield to clean up properly.
+
+* Set python_requires to >=3.9.
+
+* Changed license specifier.
+
+* Removed wheel settings from setup.cfg.
+
+
 ## v3.5.1 (2025-06-17)
 
 * Add contributor.
