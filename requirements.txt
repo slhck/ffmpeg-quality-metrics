@@ -1,4 +1,4 @@
 pandas
-ffmpeg-progress-yield>=0.3.0
+ffmpeg-progress-yield>=1.0.1
 tqdm
 packaging
