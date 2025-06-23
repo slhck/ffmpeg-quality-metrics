@@ -5,7 +5,7 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://img.shields.io/pypi/v/ffmpeg-quality-metrics.svg)](https://pypi.org/project/ffmpeg-quality-metrics)
-
+![Docker Image Version](https://img.shields.io/docker/v/slhck/ffmpeg-quality-metrics?sort=semver&label=Docker%20image)
 [![Python package](https://github.com/slhck/ffmpeg-quality-metrics/actions/workflows/python-package.yml/badge.svg)](https://github.com/slhck/ffmpeg-quality-metrics/actions/workflows/python-package.yml)
 
 Calculate various video quality metrics with FFmpeg.
