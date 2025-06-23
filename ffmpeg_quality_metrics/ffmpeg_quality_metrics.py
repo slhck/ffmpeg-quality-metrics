@@ -14,7 +14,7 @@ from os import devnull as NUL
 
 from ffmpeg_progress_yield import FfmpegProgress
 from tqdm import tqdm
-from statistics import median, stdev, mean
+from statistics import median, pstdev, mean
 
 from .utils import (
     ffmpeg_is_from_brew,
@@ -756,7 +756,7 @@ class FfmpegQualityMetrics:
                 stats[submetric_key] = {
                     "average": round(float(mean(values)), 3),
                     "median": round(float(median(values)), 3),
-                    "stdev": round(float(stdev(values)), 3),
+                    "stdev": round(float(pstdev(values)), 3),
                     "min": round(min(values), 3),
                     "max": round(max(values), 3),
                 }
