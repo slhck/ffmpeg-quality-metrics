@@ -10,13 +10,13 @@ import re
 import tempfile
 import csv
 from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
+from os import devnull as NUL
 
-import numpy as np
 from ffmpeg_progress_yield import FfmpegProgress
 from tqdm import tqdm
+from statistics import median, stdev, mean
 
 from .utils import (
-    NUL,
     ffmpeg_is_from_brew,
     has_brew,
     quoted_cmd,
@@ -754,11 +754,11 @@ class FfmpegQualityMetrics:
             for submetric_key in submetric_keys:
                 values = [float(frame[submetric_key]) for frame in metric_data]
                 stats[submetric_key] = {
-                    "average": round(float(np.average(values)), 3),
-                    "median": round(float(np.median(values)), 3),
-                    "stdev": round(float(np.std(values)), 3),
-                    "min": round(np.min(values), 3),
-                    "max": round(np.max(values), 3),
+                    "average": round(float(mean(values)), 3),
+                    "median": round(float(median(values)), 3),
+                    "stdev": round(float(stdev(values)), 3),
+                    "min": round(min(values), 3),
+                    "max": round(max(values), 3),
                 }
             self.global_stats[metric_name] = stats  # type: ignore
 

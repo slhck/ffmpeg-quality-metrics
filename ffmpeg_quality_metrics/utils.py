@@ -11,10 +11,8 @@ from shutil import which
 from typing import List, Tuple
 
 IS_WIN = system() in ["Windows", "cli"]
-NUL = "NUL" if IS_WIN else "/dev/null"
 
 logger = logging.getLogger("ffmpeg-quality-metrics")
-
 
 def win_path_check(path: str) -> str:
     """
