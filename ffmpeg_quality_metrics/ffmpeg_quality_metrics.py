@@ -2,19 +2,17 @@
 # Author: Werner Robitza
 # License: MIT
 
+from io import StringIO
 import json
 import logging
 import os
 import re
 import tempfile
-from functools import reduce
-from typing import Dict, List, Literal, Optional, Tuple, TypedDict, Union, cast
+import csv
+from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
 
 import numpy as np
-import pandas as pd
 from ffmpeg_progress_yield import FfmpegProgress
-from packaging.version import Version
-from packaging.version import parse as parse_version
 from tqdm import tqdm
 
 from .utils import (
@@ -773,28 +771,66 @@ class FfmpegQualityMetrics:
         Returns:
             str: The CSV string
         """
-        all_dfs = []
+        # Check if we have any data
+        has_data = any(metric_data for metric_data in self.data.values())
+        if not has_data:
+            raise FfmpegQualityMetricsError("No data calculated!")
 
+        # Collect all frames and merge data by frame number
+        frames_data: Dict[int, Dict[str, Union[str, float, int]]] = {}
+
+        # Process each metric's data
         for metric_data in self.data.values():
             if not metric_data:
                 continue
-            all_dfs.append(pd.DataFrame(cast(SingleMetricData, metric_data)))
 
-        if not all_dfs:
-            raise FfmpegQualityMetricsError("No data calculated!")
+            for frame_info in cast(SingleMetricData, metric_data):
+                frame_num = frame_info['n']
+                if frame_num not in frames_data:
+                    frames_data[frame_num] = {'n': frame_num}
 
-        try:
-            df = reduce(lambda x, y: pd.merge(x, y, on="n"), all_dfs)
+                # Add all metric properties for this frame
+                for key, value in frame_info.items():
+                    if key != 'n':  # Skip frame number as it's already added
+                        frames_data[frame_num][key] = value
 
-            df["input_file_dist"] = self.dist
-            df["input_file_ref"] = self.ref
+        if not frames_data:
+            raise FfmpegQualityMetricsError("No frame data found!")
 
-            cols = df.columns.tolist()
-            cols.insert(0, cols.pop(cols.index("n")))
-            df = df.reindex(columns=cols)
-            return df.to_csv(index=False)
-        except Exception as e:
-            raise FfmpegQualityMetricsError(f"Error merging data to CSV: {e}")
+        # Sort frames by frame number
+        sorted_frames = sorted(frames_data.keys())
+
+        # Collect all unique column names (excluding 'n' which we'll put first)
+        all_columns = set()
+        for frame_data in frames_data.values():
+            all_columns.update(frame_data.keys())
+        all_columns.discard('n')
+
+        # Create column order: n first, then sorted metric columns, then input files
+        columns = ['n'] + sorted(all_columns) + ['input_file_dist', 'input_file_ref']
+
+        # Generate CSV using StringIO and csv module
+        output = StringIO()
+        writer = csv.writer(output)
+
+        # Write header
+        writer.writerow(columns)
+
+        # Write data rows
+        for frame_num in sorted_frames:
+            frame_data = frames_data[frame_num]
+            row = []
+            for col in columns:
+                if col == 'input_file_dist':
+                    row.append(self.dist)
+                elif col == 'input_file_ref':
+                    row.append(self.ref)
+                else:
+                    # Use the frame data value or empty string if not present
+                    row.append(frame_data.get(col, ''))
+            writer.writerow(row)
+
+        return output.getvalue()
 
     def get_results_json(self) -> str:
         """

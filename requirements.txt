@@ -1,4 +1,2 @@
-pandas
 ffmpeg-progress-yield>=1.0.1
 tqdm
-packaging

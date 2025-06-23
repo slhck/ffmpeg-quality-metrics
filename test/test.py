@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import csv
 import json
 import os
 import sys
+from io import StringIO
 from typing import cast
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/../"))
@@ -137,3 +139,44 @@ class TestMetrics:
                         abs(GLOBAL[key][subkey][metric] - run_ret[key][subkey][metric])
                         < THRESHOLD
                     )
+
+    def test_csv_output(self):
+        f = ffqm(REF, DIST)
+        f.calculate(metrics=["ssim", "psnr"])
+        csv_output = f.get_results_csv()
+        
+        # Check that CSV output is not empty
+        assert csv_output.strip() != ""
+        
+        # Parse CSV properly using csv module
+        csv_reader = csv.reader(StringIO(csv_output))
+        rows = list(csv_reader)
+        
+        assert len(rows) > 0, "CSV should have at least a header row"
+        headers = rows[0]
+        
+        # Verify expected columns exist
+        expected_columns = ['n', 'mse_avg', 'mse_y', 'mse_u', 'mse_v', 
+                          'psnr_avg', 'psnr_y', 'psnr_u', 'psnr_v',
+                          'ssim_y', 'ssim_u', 'ssim_v', 'ssim_avg',
+                          'input_file_dist', 'input_file_ref']
+        
+        for col in expected_columns:
+            assert col in headers, f"Expected column '{col}' not found in CSV headers: {headers}"
+        
+        # Check that we have data rows (at least 2 rows: header + data)
+        assert len(rows) > 1, "CSV should contain header and at least one data row"
+        
+        # Verify data rows have correct number of columns
+        for i, row in enumerate(rows[1:], 1):
+            assert len(row) == len(headers), f"Row {i} has {len(row)} values but expected {len(headers)}"
+            
+            # Check that frame number (n) is numeric and starts from 1
+            frame_num = int(row[headers.index('n')])
+            assert frame_num == i, f"Frame number should be {i} but got {frame_num}"
+            
+            # Verify input file columns contain the correct file paths
+            dist_col_idx = headers.index('input_file_dist')
+            ref_col_idx = headers.index('input_file_ref')
+            assert DIST in row[dist_col_idx], f"Expected distorted file path in row {i}"
+            assert REF in row[ref_col_idx], f"Expected reference file path in row {i}"
