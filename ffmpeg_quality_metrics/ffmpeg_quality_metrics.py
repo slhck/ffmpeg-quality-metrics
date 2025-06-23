@@ -785,7 +785,7 @@ class FfmpegQualityMetrics:
                 continue
 
             for frame_info in cast(SingleMetricData, metric_data):
-                frame_num = frame_info['n']
+                frame_num = int(frame_info['n'])
                 if frame_num not in frames_data:
                     frames_data[frame_num] = {'n': frame_num}
 
@@ -801,7 +801,7 @@ class FfmpegQualityMetrics:
         sorted_frames = sorted(frames_data.keys())
 
         # Collect all unique column names (excluding 'n' which we'll put first)
-        all_columns = set()
+        all_columns: set[str] = set()
         for frame_data in frames_data.values():
             all_columns.update(frame_data.keys())
         all_columns.discard('n')
@@ -827,7 +827,7 @@ class FfmpegQualityMetrics:
                     row.append(self.ref)
                 else:
                     # Use the frame data value or empty string if not present
-                    row.append(frame_data.get(col, ''))
+                    row.append(str(frame_data.get(col, '')))
             writer.writerow(row)
 
         return output.getvalue()
