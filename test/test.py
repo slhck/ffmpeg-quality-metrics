@@ -15,6 +15,8 @@ from ffmpeg_quality_metrics import VmafOptions  # noqa E402
 DIST = os.path.join(os.path.dirname(__file__), "dist-854x480.mkv")
 REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
 
+# generate with:
+# python3 -m ffmpeg_quality_metrics test/dist-854x480.mkv test/ref-1280x720.mkv -m ssim psnr vmaf vif > test/response.json
 with open(os.path.join(os.path.dirname(__file__), "response.json"), "r") as f:
     EXPECTED = json.load(f)
 GLOBAL = EXPECTED["global"]
@@ -144,37 +146,37 @@ class TestMetrics:
         f = ffqm(REF, DIST)
         f.calculate(metrics=["ssim", "psnr"])
         csv_output = f.get_results_csv()
-        
+
         # Check that CSV output is not empty
         assert csv_output.strip() != ""
-        
+
         # Parse CSV properly using csv module
         csv_reader = csv.reader(StringIO(csv_output))
         rows = list(csv_reader)
-        
+
         assert len(rows) > 0, "CSV should have at least a header row"
         headers = rows[0]
-        
+
         # Verify expected columns exist
-        expected_columns = ['n', 'mse_avg', 'mse_y', 'mse_u', 'mse_v', 
+        expected_columns = ['n', 'mse_avg', 'mse_y', 'mse_u', 'mse_v',
                           'psnr_avg', 'psnr_y', 'psnr_u', 'psnr_v',
                           'ssim_y', 'ssim_u', 'ssim_v', 'ssim_avg',
                           'input_file_dist', 'input_file_ref']
-        
+
         for col in expected_columns:
             assert col in headers, f"Expected column '{col}' not found in CSV headers: {headers}"
-        
+
         # Check that we have data rows (at least 2 rows: header + data)
         assert len(rows) > 1, "CSV should contain header and at least one data row"
-        
+
         # Verify data rows have correct number of columns
         for i, row in enumerate(rows[1:], 1):
             assert len(row) == len(headers), f"Row {i} has {len(row)} values but expected {len(headers)}"
-            
+
             # Check that frame number (n) is numeric and starts from 1
             frame_num = int(row[headers.index('n')])
             assert frame_num == i, f"Frame number should be {i} but got {frame_num}"
-            
+
             # Verify input file columns contain the correct file paths
             dist_col_idx = headers.index('input_file_dist')
             ref_col_idx = headers.index('input_file_ref')
