@@ -351,13 +351,17 @@ ffmpeg-quality-metrics dist.mkv ref.mkv \
 
 ## Running with Docker
 
-If you don't want to deal with dependencies, build the image with Docker:
+You can use the pre-built image from Docker Hub:
 
+```bash
+docker run -v "$(pwd):/videos" -it slhck/ffmpeg-quality-metrics
 ```
+
+Alternatively, download this repository and run
+
+```bash
 docker build -t ffmpeg-quality-metrics .
 ```
-
-This takes a few minutes and installs the latest `ffmpeg` [as a static build](https://johnvansickle.com/ffmpeg/).
 
 You can then run the container, which basically calls the Python script. To help you with mounting the volumes (since your videos are not stored in the container), you can run a helper script:
 

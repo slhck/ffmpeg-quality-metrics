@@ -1,22 +1,35 @@
-FROM python:3.11-slim
-LABEL maintainer="Werner Robitza <werner.robitza@gmail.com>"
-LABEL name="ffmpeg_quality_metrics"
+FROM python:3.13-slim as base
 
-RUN apt-get update -qq -y && apt-get install -qq -y \
-  wget \
-  xz-utils \
-  python3-pandas \
-  --no-install-recommends && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+FROM base as builder
+RUN mkdir /ffmpeg
+WORKDIR /ffmpeg
 
-RUN wget -q https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz && \
-  tar --strip-components 1 -xf ffmpeg-git-amd64-static.tar.xz && \
-  cp ffmpeg /usr/bin/ffmpeg && \
-  cp -R model /usr/local/share/ && \
-  rm ffmpeg-git-amd64-static.tar.xz
+# Install wget and xz-utils for downloading and extracting FFmpeg
+RUN apt-get update && apt-get install -y wget xz-utils && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip3 install -r requirements.txt
+# Detect architecture and download appropriate FFmpeg build
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        FFMPEG_ARCH="linux64"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        FFMPEG_ARCH="linuxarm64"; \
+    else \
+        echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-${FFMPEG_ARCH}-gpl.tar.xz && \
+    tar -xf ffmpeg-master-latest-${FFMPEG_ARCH}-gpl.tar.xz -C /ffmpeg --strip-components=1
 
-COPY ffmpeg_quality_metrics ffmpeg_quality_metrics
+FROM base
+COPY --from=builder /ffmpeg/bin/ffmpeg /usr/local/bin
+COPY --from=builder /ffmpeg/bin/ffprobe /usr/local/bin
+RUN chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe
 
-CMD ["python3", "-m", "ffmpeg_quality_metrics"]
+# install app in dev mode:
+# COPY . /app
+# WORKDIR /app
+# RUN pip3 install -r requirements.txt && pip3 install .
+
+# install app in prod mode
+RUN pip3 install ffmpeg-quality-metrics
+
+ENTRYPOINT ["ffmpeg-quality-metrics"]

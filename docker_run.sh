@@ -41,10 +41,9 @@ fi
 
 docker run \
     --rm \
-    -v "$distDir":"/tmp/dist" \
-    -v "$refDir":"/tmp/ref" \
+    -v "$distDir":"/videos/dist" \
+    -v "$refDir":"/videos/ref" \
     -t ffmpeg-quality-metrics:latest \
-    python3 -m ffmpeg_quality_metrics \
-    "/tmp/dist/$distFileBasename" \
-    "/tmp/ref/$refFileBasename" \
+    "/videos/dist/$distFileBasename" \
+    "/videos/ref/$refFileBasename" \
     "$@"
