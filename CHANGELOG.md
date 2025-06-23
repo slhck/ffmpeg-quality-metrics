@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v3.6.0 (2025-06-23)
+
+* Fix failing tests due to wrong stdev function.
+
+* Remove numpy dependency.
+
+* Add native CSV output, remove pandas/numpy dependency.
+
+* Proper docker support.
+
+* Remove support for ffmpeg < 7.1.
+
+
 ## v3.5.3 (2025-06-22)
 
 * Fix install_requires.
