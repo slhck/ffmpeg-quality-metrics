@@ -756,7 +756,7 @@ class FfmpegQualityMetrics:
                 stats[submetric_key] = {
                     "average": round(float(mean(values)), 3),
                     "median": round(float(median(values)), 3),
-                    "stdev": round(float(pstdev(values)), 3),
+                    "stdev": round(float(pstdev([float(v) for v in values])), 3),
                     "min": round(min(values), 3),
                     "max": round(max(values), 3),
                 }
