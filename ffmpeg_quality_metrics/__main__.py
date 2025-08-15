@@ -6,6 +6,7 @@
 
 import argparse
 import logging
+import os
 import sys
 import traceback
 
@@ -121,6 +122,15 @@ def main() -> None:
         choices=["json", "csv"],
         help="Output format for the metrics",
     )
+    # ---------- NEW SWITCH ----------
+    output_opts.add_argument(
+        "-f",
+        "--output-file",
+        type=str,
+        metavar="FILE",
+        help="Write the result to FILE instead of stdout. "
+             "Extension (.json or .csv) decides the format if --output-format is omitted.",
+    )
 
     vmaf_opts = parser.add_argument_group("VMAF options")
 
@@ -204,13 +214,25 @@ def main() -> None:
         logger.warning("Dry run specified, exiting without computing stats")
         return
 
-    if cli_args.output_format == "json":
-        print(ffqm.get_results_json())
-    elif cli_args.output_format == "csv":
+    # ---------- NEW OUTPUT LOGIC ----------
+    # Decide what to emit and where
+    out_path = cli_args.output_file
+    if out_path:
+        ext = os.path.splitext(out_path)[1].lower()
+        # Extension has precedence if --output-format was not explicitly given
+        if not cli_args.output_format or (ext in {".json", ".csv"}):
+            fmt = "csv" if ext == ".csv" else "json"
+        else:
+            fmt = cli_args.output_format
+        payload = ffqm.get_results_csv() if fmt == "csv" else ffqm.get_results_json()
+        with open(out_path, "w", encoding="utf-8") as fh:
+            fh.write(payload)
+
+    # Always echo to stdout (keeps backward compatibility with pipes)
+    if cli_args.output_format == "csv":
         print(ffqm.get_results_csv())
     else:
-        logger.error("Wrong output format chosen, use 'json' or 'csv'")
-        sys.exit(1)
+        print(ffqm.get_results_json())
 
 
 if __name__ == "__main__":
@@ -218,6 +240,5 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logger.error(f"General exception: {e}")
-        # print a stacktrace
         traceback.print_exc()
         sys.exit(1)
