@@ -1,6 +1,34 @@
 # Changelog
 
 
+## v3.6.1 (2025-08-15)
+
+* Add contributor.
+
+* Fix: prevent pstdev crash on non-finite values (Python 3.13) (#69)
+
+  * Fix ffmpeg_quality_metrics.py
+
+  Fix pstdev usage for Python 3.13 compatibility
+
+  Ensure we always pass a list of floats to statistics.pstdev
+  to avoid AttributeError when elements are already floats.
+
+  * Fix: prevent pstdev crash on non-finite values (Python 3.13)
+
+  When calculating global statistics, statistics.pstdev can receive inf or NaN, causing
+  Attribute Error: 'float' object has no attribute 'numerator' on Python 3.13.
+  Filter out non-finite values before computing the standard deviation and fall back to 0.0 when fewer than two valid samples remain. Keeps all comments and surrounding code intact.
+
+* Fix docker hub link.
+
+* Fix tests, using ffmpeg gb1172b8cc6.
+
+* Add docker badge.
+
+* Fix type errors.
+
+
 ## v3.6.0 (2025-06-23)
 
 * Fix failing tests due to wrong stdev function.
