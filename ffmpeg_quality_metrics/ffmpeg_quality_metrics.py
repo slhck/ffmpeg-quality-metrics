@@ -753,10 +753,11 @@ class FfmpegQualityMetrics:
             stats: Dict[str, GlobalStatsData] = {}
             for submetric_key in submetric_keys:
                 values = [float(frame[submetric_key]) for frame in metric_data]
+                finite = [float(v) for v in values if str(v) not in {"inf", "-inf", "nan"}]
                 stats[submetric_key] = {
                     "average": round(float(mean(values)), 3),
                     "median": round(float(median(values)), 3),
-                    "stdev": round(float(pstdev(values)), 3),
+                    "stdev": round(float(pstdev(finite)) if len(finite) > 1 else 0.0, 3),
                     "min": round(min(values), 3),
                     "max": round(max(values), 3),
                 }
