@@ -27,7 +27,7 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 
 > [!NOTE]
 >
-> Previous versions installed a `ffmpeg_quality_metrics` executable. To harmonize it with other tools, now the executable is called `ffmpeg-quality-metrics`. Please ensure you remove the old executable (e.g. run `which ffmpeg_quality_metrics` and remove the file).
+> Previous versions installed a `ffmpeg_quality_metrics` executable. To harmonize it with other tools, now the executable is called `ffmpeg-quality-metrics`. Please ensure you remove the old executable if you have it.
 
 **Contents:**
 
@@ -60,7 +60,7 @@ What you need:
 
 Put the `ffmpeg` executable in your `$PATH`, e.g. `/usr/local/bin/ffmpeg`.
 
-If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model).
+If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf).
 
 Using pip:
 
@@ -83,7 +83,7 @@ The distorted file will be automatically scaled to the resolution of the referen
 Note that if your distorted file is not in time sync with the reference, you can use the `--dist-delay` option to delay the distorted file by a certain amount of seconds (positive or negative).
 
 > [!NOTE]
-> Raw YUV files cannot be read with this tool. We should all be using lossless containers like Y4M or FFV1. If you have a raw YUV file, you can use FFmpeg to convert it to a format that this tool can read. Adjust the options as needed.
+> Raw YUV files cannot be read with this tool. We should all be using lossless containers like Y4M or FFV1. If you have a raw YUV file, you can use FFmpeg to convert it to a format that this tool can read:
 >
 > ```bash
 > ffmpeg -framerate 24 -video_size 1920x1080 -pix_fmt yuv420p -i input.yuv output.y4m
@@ -102,18 +102,19 @@ ffmpeg-quality-metrics distorted.mkv reference.mkv -f result.csv
 
 # Explicit override
 ffmpeg-quality-metrics d.mkv r.mkv -f report --output-format csv   # writes report.csv
+```
 
 ### Metrics
 
 The following metrics are available in this tool:
 
-| Metric | Description                                                                            | Scale                                                  | Components/Submetrics                                                                                                                                                                                                                                                        | Calculated by default? |
-| ------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| PSNR   | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB (higher is better)                                  | `mse_avg`<br> `mse_y`<br> `mse_u`<br> `mse_v`<br> `psnr_avg`<br> `psnr_y`<br> `psnr_u`<br> `psnr_v`                                                                                                                                                                          | ✔️                      |
-| SSIM   | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity)           | 0-100 (higher is better)                               | `ssim_y`<br> `ssim_u`<br> `ssim_v`<br> `ssim_avg`                                                                                                                                                                                                                            | ✔️                      |
-| VMAF   | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf)                | 0-100 (higher is better)                               | `vmaf`<br> `integer_adm2`<br> `integer_adm_scale0`<br> `integer_adm_scale1`<br> `integer_adm_scale2`<br> `integer_adm_scale3`<br> `integer_motion2`<br> `integer_motion`<br> `integer_vif_scale0`<br> `integer_vif_scale1`<br> `integer_vif_scale2`<br> `integer_vif_scale3` | No                     |
-| VIF    | Visual Information Fidelity                                                            | 0-100 (higher is better)                               | `scale_0`<br> `scale_1`<br> `scale_2`<br> `scale_3`                                                                                                                                                                                                                          | No                     |
-| MSAD   | Mean Sum of Absolute Differences                                                        | depends on input video, minimum is 0 (higher is worse) | `msad_y`<br> `msad_u`<br> `msad_v`<br> `msad_avg`                                                                                                                                                                                                                            | No                     |
+| Metric | Description                                                                            | Scale                                                  | Components/Submetrics                      |
+| ------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------|
+| PSNR   | [Peak Signal to Noise Ratio](https://en.wikipedia.org/wiki/Peak_signal-to-noise_ratio) | dB (higher is better)                                  | `mse_avg`<br> `mse_y`<br> `mse_u`<br> `mse_v`<br> `psnr_avg`<br> `psnr_y`<br> `psnr_u`<br> `psnr_v` |
+| SSIM   | [Structural Similarity](https://en.wikipedia.org/wiki/Structural_similarity)           | 0-100 (higher is better)                               | `ssim_y`<br> `ssim_u`<br> `ssim_v`<br> `ssim_avg` |
+| VMAF   | [Video Multi-Method Assessment Fusion](https://github.com/Netflix/vmaf)                | 0-100 (higher is better)                               | `vmaf`<br> `integer_adm2`<br> `integer_adm_scale0`<br> `integer_adm_scale1`<br> `integer_adm_scale2`<br> ... |
+| VIF    | Visual Information Fidelity                                                            | 0-100 (higher is better)                               | `scale_0`<br> `scale_1`<br> `scale_2`<br> `scale_3` |
+| MSAD   | Mean Sum of Absolute Differences                                                        | depends on input video, minimum is 0 (higher is worse) | `msad_y`<br> `msad_u`<br> `msad_v`<br> `msad_avg` |
 
 As shown in the table, every metric can have more than one submetric computed, and they will be printed in the output.
 
@@ -125,7 +126,7 @@ ffmpeg-quality-metrics distorted.mp4 reference.avi --metrics psnr ssim vmaf
 
 Specify multiple metrics by separating them with a space (e.g., in the above example, `psnr ssim vmaf`).
 
-Here, VMAF uses the default model. You can specify a different model with the [`--vmaf-model` option](#specifying-vmaf-model). VMAF also allows you to calculate even [more additional features](https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md) as submetrics. You can enable these with the [`--vmaf-features` option](#specifying-vmaf-model-params).
+Here, VMAF uses the default model. You can specify a different model with the [`--vmaf-model` option](#specifying-vmaf-model). VMAF also allows you to calculate even [more additional features](https://github.com/Netflix/vmaf/blob/master/resource/doc/features.md).
 
 ### Extended Options
 
@@ -178,14 +179,13 @@ FFmpeg options:
 Output options:
   -of {json,csv}, --output-format {json,csv}
                                         Output format for the metrics (default: json)
-  -f <filename>.{extension}				Output file <filename>.json or <filename>.csv
-  
+  -f <filename>.{extension}             Output file <filename>.json or <filename>.csv
+
 VMAF options:
   --vmaf-model-path VMAF_MODEL_PATH     Use a specific VMAF model file. If none is chosen, picks a
                                         default model. You can also specify one of the following
                                         built-in models: ['vmaf_v0.6.1.json', 'vmaf_4k_v0.6.1.json',
-                                        'vmaf_v0.6.1neg.json'] (default: /opt/homebrew/opt/libvmaf/s
-                                        hare/libvmaf/model/vmaf_v0.6.1.json)
+                                        'vmaf_v0.6.1neg.json'] (default: /opt/homebrew/opt/libvmaf/share/libvmaf/model/vmaf_v0.6.1.json)
   --vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]
                                         A list of params to pass to the VMAF model, specified as
                                         key=value. Specify multiple params like '--vmaf-model-params
@@ -243,7 +243,7 @@ ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path /usr/local/opt
 
 #### Specifying VMAF Features
 
-VMAF includes several metrics, each of which correspond to a feature name. By default, only three core features are used. Use the `--vmaf-features` option to enable additional features on top of the core features.
+VMAF includes several metrics, each of which correspond to a feature name. By default, only three core features are used. Use the `--vmaf-features` option to enable additional features on top of the core set.
 
 The following table shows the available features:
 
@@ -324,10 +324,10 @@ ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-features cambi:heatmaps_p
 
 These parameters control the VMAF model itself (not the features).
 
-| Parameter              | Description                                                                                                                                                                                                                                               | Default |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `enable_transform`     | Enable the transform feature, which transforms the scores to represent quality as perceived on a phone ([used to be called `phone_model`](https://github.com/Netflix/vmaf/blob/master/resource/doc/models.md#predict-quality-on-a-cellular-phone-screen)) | `false` |
-| `enable_conf_interval` | Enable the [confidence interval calculation](https://github.com/Netflix/vmaf/blob/master/resource/doc/conf_interval.md)                                                                                                                                   | `false` |
+| Parameter              | Description                                                                                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enable_transform`     | Enable the transform feature, which transforms the scores to represent quality as perceived on a phone ([used to be called `phone_model`](https://github.com/Netflix/vmaf/blob/master/model/phone.yml)) |
+| `enable_conf_interval` | Enable the [confidence interval calculation](https://github.com/Netflix/vmaf/blob/master/resource/doc/conf_interval.md)                                                      |
 
 To specify these parameters, use the `--vmaf-model-params` option, and separate each parameter with a space. For example:
 
@@ -457,13 +457,13 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/OrkunKocyigit"><img src="https://avatars.githubusercontent.com/u/10797423?v=4?s=100" width="100px;" alt="Orkun Koçyiğit"/><br /><sub><b>Orkun Koçyiğit</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=OrkunKocyigit" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/CrypticSignal"><img src="https://avatars.githubusercontent.com/u/48166845?v=4?s=100" width="100px;" alt="Hamas Shafiq"/><br /><sub><b>Hamas Shafiq</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=CrypticSignal" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/3275435?v=4?s=100" width="100px;" alt="Chris Griffith"/><br /><sub><b>Chris Griffith</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=cdgriffith" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/17472224?v=4?s=100" width="100px;" alt="Ignacio Peletier"/><br /><sub><b>Ignacio Peletier</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=Sorkanius" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/nav9"><img src="https://avatars.githubusercontent.com/u/2093933?v=4?s=100" width="100px;" alt="Nav"/><br /><sub><b>Nav</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/issues?q=author%3Anav9" title="Bug reports">🐛</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/xt99"><img src="https://avatars.githubusercontent.com/u/608600?v=4?s=100" width="100px;" alt="Alexey Slobodiskiy"/><br /><sub><b>Alexey Slobodiskiy</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=xt99" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ls-milkyway"><img src="https://avatars.githubusercontent.com/u/55090624?v=4?s=100" width="100px;" alt="ls-milkyway"/><br /><sub><b>ls-milkyway</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=ls-milkyway" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/OrkunKocyigit"><img src="https://avatars.githubusercontent.com/u/10797423?v=4?s=100" width="100px;" alt="Orkun Koçyiğit"/><br /><sub><b>Orkun Koçyiğit</b></sub></a><br /><a href="#tool-OrkunKocyigit" title="Tools">🔧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/CrypticSignal"><img src="https://avatars.githubusercontent.com/u/48166845?v=4?s=100" width="100px;" alt="Hamas Shafiq"/><br /><sub><b>Hamas Shafiq</b></sub></a><br /><a href="#tool-CrypticSignal" title="Tools">🔧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/3275435?v=4?s=100" width="100px;" alt="Chris Griffith"/><br /><sub><b>Chris Griffith</b></sub></a><br /><a href="#tool-ChrisGriffith" title="Tools">🔧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://codecalamity.com/"><img src="https://avatars.githubusercontent.com/u/17472224?v=4?s=100" width="100px;" alt="Ignacio Peletier"/><br /><sub><b>Ignacio Peletier</b></sub></a><br /><a href="#tool-IgnacioPeletier" title="Tools">🔧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/nav9"><img src="https://avatars.githubusercontent.com/u/2093933?v=4?s=100" width="100px;" alt="Nav"/><br /><sub><b>Nav</b></sub></a><br /><a href="#tool-Nav" title="Tools">🔧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/xt99"><img src="https://avatars.githubusercontent.com/u/608600?v=4?s=100" width="100px;" alt="Alexey Slobodiskiy"/><br /><sub><b>Alexey Slobodiskiy</b></sub></a><br /><a href="#tool-AlexeySlobodiskiy" title="Tools">🔧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ls-milkyway"><img src="https://avatars.githubusercontent.com/u/55090624?v=4?s=100" width="100px;" alt="ls-milkyway"/><br /><sub><b>ls-milkyway</b></sub></a><br /><a href="#tool-ls-milkyway" title="Tools">🔧</a></td>
     </tr>
   </tbody>
 </table>
