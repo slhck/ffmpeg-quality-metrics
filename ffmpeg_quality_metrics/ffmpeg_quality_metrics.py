@@ -5,6 +5,7 @@
 from io import StringIO
 import json
 import logging
+import math
 import os
 import re
 import tempfile
@@ -753,13 +754,17 @@ class FfmpegQualityMetrics:
             stats: Dict[str, GlobalStatsData] = {}
             for submetric_key in submetric_keys:
                 values = [float(frame[submetric_key]) for frame in metric_data]
-                finite = [float(v) for v in values if str(v) not in {"inf", "-inf", "nan"}]
+                # Filter out non-finite values (inf, -inf, nan) for robust statistics
+                finite = [v for v in values if math.isfinite(v)]
+                # Fallback to [0.0] if all values are non-finite to prevent crashes
+                all_values = finite if finite else [0.0]
+                
                 stats[submetric_key] = {
-                    "average": round(float(mean(values)), 3),
-                    "median": round(float(median(values)), 3),
+                    "average": round(float(mean(all_values)), 3),
+                    "median": round(float(median(all_values)), 3),
                     "stdev": round(float(pstdev(finite)) if len(finite) > 1 else 0.0, 3),
-                    "min": round(min(values), 3),
-                    "max": round(max(values), 3),
+                    "min": round(min(all_values), 3),
+                    "max": round(max(all_values), 3),
                 }
             self.global_stats[metric_name] = stats  # type: ignore
 
