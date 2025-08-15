@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v3.6.2 (2025-08-15)
+
+* Improve non-finite value handling in global statistics.
+
+  This commit enhances the previous fix by:
+  - Using math.isfinite() instead of string-based filtering for more robust detection
+  - Applying consistent non-finite filtering to all statistics (average, median, min, max), not just stdev
+  - Adding proper fallback handling when all values are non-finite to prevent crashes
+  - Maintaining backward compatibility while improving reliability across Python versions
+
+  The previous approach only filtered non-finite values for standard deviation calculation,
+  leaving other statistics vulnerable to similar issues. This comprehensive solution
+  ensures all computed statistics are robust against inf/NaN inputs.
+
+  🤖 Generated with [Claude Code](https://claude.ai/code)
+
+
 ## v3.6.1 (2025-08-15)
 
 * Add contributor.
