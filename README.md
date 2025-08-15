@@ -89,6 +89,20 @@ Note that if your distorted file is not in time sync with the reference, you can
 > ffmpeg -framerate 24 -video_size 1920x1080 -pix_fmt yuv420p -i input.yuv output.y4m
 > ```
 
+### Writing results to a file
+
+Instead of redirecting stdout you can now write the results directly to a file:
+
+```bash
+# JSON (default)
+ffmpeg-quality-metrics distorted.mkv reference.mkv -f result.json
+
+# CSV
+ffmpeg-quality-metrics distorted.mkv reference.mkv -f result.csv
+
+# Explicit override
+ffmpeg-quality-metrics d.mkv r.mkv -f report --output-format csv   # writes report.csv
+
 ### Metrics
 
 The following metrics are available in this tool:
@@ -120,7 +134,7 @@ You can configure additional options related to scaling, speed etc.
 See `ffmpeg-quality-metrics -h`:
 
 ```
-usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
+usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR] [-f]
                               [-m {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...]]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                               [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS] [-of {json,csv}]
@@ -164,7 +178,8 @@ FFmpeg options:
 Output options:
   -of {json,csv}, --output-format {json,csv}
                                         Output format for the metrics (default: json)
-
+  -f <filename>.{extension}				Output file <filename>.json or <filename>.csv
+  
 VMAF options:
   --vmaf-model-path VMAF_MODEL_PATH     Use a specific VMAF model file. If none is chosen, picks a
                                         default model. You can also specify one of the following
