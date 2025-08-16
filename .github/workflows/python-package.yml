@@ -21,10 +21,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install FFmpeg (Ubuntu 24.04 ships 7.1 with VMAF & VIF)
+    - name: Install FFmpeg 7.1 (static build with VMAF)
       run: |
-        sudo apt-get update
-        sudo apt-get install -y ffmpeg
+        wget -q https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz
+        tar -xf ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz
+        sudo mv ffmpeg-n7.1-latest-linux64-gpl-7.1/bin/* /usr/local/bin/
+        ffmpeg -version
 
     - name: Install Python dependencies
       run: |
