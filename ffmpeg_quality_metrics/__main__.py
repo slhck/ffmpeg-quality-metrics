@@ -124,7 +124,7 @@ def main() -> None:
     )
     # ---------- NEW SWITCH ----------
     output_opts.add_argument(
-        "-f",
+        "-o",
         "--output-file",
         type=str,
         metavar="FILE",
