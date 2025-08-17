@@ -123,7 +123,7 @@ See `ffmpeg-quality-metrics -h`:
 usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [-m {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...]]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
-                              [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS] [-of {json,csv}]
+                              [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS] [-o OUTPUT_FILE] [-of {json,csv}]
                               [--vmaf-model-path VMAF_MODEL_PATH]
                               [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]]
                               [--vmaf-threads VMAF_THREADS] [--vmaf-subsample VMAF_SUBSAMPLE]
@@ -162,6 +162,9 @@ FFmpeg options:
   -t THREADS, --threads THREADS         Number of threads to do the calculations (default: 0)
 
 Output options:
+  -o OUTPUT_FILE, --output-file OUTPUT_FILE
+                                        Output file for the metrics. If not specified, stdout will
+                                        be used. (default: None)
   -of {json,csv}, --output-format {json,csv}
                                         Output format for the metrics (default: json)
 
@@ -380,6 +383,13 @@ For example, to run the tool with the bundled test videos and enable VMAF calcul
 ## Output
 
 This tool supports JSON or CSV output, including individual fields for planes/components/submetrics, and global statistics, as well as frame numbers (`n`).
+By default, the output is written to stdout. If you want to write the output to a file, use the `-o`/`--output-file` option:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m psnr -o output.json
+```
+
+The output file will be in the same format as the JSON output.
 
 ### JSON Output
 

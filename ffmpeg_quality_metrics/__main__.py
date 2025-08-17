@@ -114,6 +114,14 @@ def main() -> None:
     output_opts = parser.add_argument_group("Output options")
 
     output_opts.add_argument(
+        "-o",
+        "--output-file",
+        type=str,
+        default=None,
+        help="Output file for the metrics. If not specified, stdout will be used.",
+    )
+
+    output_opts.add_argument(
         "-of",
         "--output-format",
         type=str,
@@ -205,12 +213,23 @@ def main() -> None:
         return
 
     if cli_args.output_format == "json":
-        print(ffqm.get_results_json())
+        output_data = ffqm.get_results_json()
     elif cli_args.output_format == "csv":
-        print(ffqm.get_results_csv())
+        output_data = ffqm.get_results_csv()
     else:
         logger.error("Wrong output format chosen, use 'json' or 'csv'")
         sys.exit(1)
+
+    if cli_args.output_file:
+        try:
+            with open(cli_args.output_file, "w") as f:
+                f.write(output_data)
+            logger.info(f"Output written to {cli_args.output_file}")
+        except Exception as e:
+            logger.error(f"Could not write to output file: {e}")
+            sys.exit(1)
+    else:
+        print(output_data)
 
 
 if __name__ == "__main__":
