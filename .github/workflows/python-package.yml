@@ -54,4 +54,4 @@ jobs:
         mypy --no-namespace-packages --ignore-missing-imports ffmpeg_quality_metrics
     - name: Test with pytest
       run: |
-        pytest test/test.py
+        pytest
