@@ -33,10 +33,13 @@ jobs:
       run: |
         echo "Downloading ffmpeg ${FFMPEG_VERSION}"
         wget -q https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n${{ env.FFMPEG_VERSION }}-latest-linux64-gpl-${{ env.FFMPEG_VERSION }}.tar.xz -P /opt/ffmpeg
+    - name: Extract and install ffmpeg
+      run: |
         echo "Extracting ffmpeg ${FFMPEG_VERSION}"
-        tar --strip-components 1 -xvf /opt/ffmpeg/ffmpeg-n${{ env.FFMPEG_VERSION }}-latest-linux64-gpl-${{ env.FFMPEG_VERSION }}.tar.xz -C /opt/ffmpeg
+        sudo mkdir -p /opt/ffmpeg/extracted
+        sudo tar --strip-components 1 -xf /opt/ffmpeg/ffmpeg-n${{ env.FFMPEG_VERSION }}-latest-linux64-gpl-${{ env.FFMPEG_VERSION }}.tar.xz -C /opt/ffmpeg/extracted
         echo "Installing ffmpeg ${FFMPEG_VERSION}"
-        sudo cp /opt/ffmpeg/bin/ffmpeg /usr/bin/ffmpeg
+        sudo cp /opt/ffmpeg/extracted/bin/ffmpeg /usr/bin/ffmpeg
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
