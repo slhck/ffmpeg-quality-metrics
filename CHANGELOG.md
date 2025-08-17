@@ -1,6 +1,17 @@
 # Changelog
 
 
+## v3.7.0 (2025-08-17)
+
+* Ci: extract cached ffmpeg (#71)
+
+* Ci: fix pytest command.
+
+* Test: add/rename output file tests.
+
+* Feat: add output-file option.
+
+
 ## v3.6.2 (2025-08-15)
 
 * Improve non-finite value handling in global statistics.
