@@ -3,14 +3,11 @@
 import csv
 import json
 import os
-import sys
 from io import StringIO
 from typing import cast
 
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + "/../"))
-
-from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm  # noqa E402
-from ffmpeg_quality_metrics import VmafOptions  # noqa E402
+from ffmpeg_quality_metrics import FfmpegQualityMetrics as ffqm
+from ffmpeg_quality_metrics import VmafOptions
 
 DIST = os.path.join(os.path.dirname(__file__), "dist-854x480.mkv")
 REF = os.path.join(os.path.dirname(__file__), "ref-1280x720.mkv")
@@ -158,27 +155,44 @@ class TestMetrics:
         headers = rows[0]
 
         # Verify expected columns exist
-        expected_columns = ['n', 'mse_avg', 'mse_y', 'mse_u', 'mse_v',
-                          'psnr_avg', 'psnr_y', 'psnr_u', 'psnr_v',
-                          'ssim_y', 'ssim_u', 'ssim_v', 'ssim_avg',
-                          'input_file_dist', 'input_file_ref']
+        expected_columns = [
+            "n",
+            "mse_avg",
+            "mse_y",
+            "mse_u",
+            "mse_v",
+            "psnr_avg",
+            "psnr_y",
+            "psnr_u",
+            "psnr_v",
+            "ssim_y",
+            "ssim_u",
+            "ssim_v",
+            "ssim_avg",
+            "input_file_dist",
+            "input_file_ref",
+        ]
 
         for col in expected_columns:
-            assert col in headers, f"Expected column '{col}' not found in CSV headers: {headers}"
+            assert (
+                col in headers
+            ), f"Expected column '{col}' not found in CSV headers: {headers}"
 
         # Check that we have data rows (at least 2 rows: header + data)
         assert len(rows) > 1, "CSV should contain header and at least one data row"
 
         # Verify data rows have correct number of columns
         for i, row in enumerate(rows[1:], 1):
-            assert len(row) == len(headers), f"Row {i} has {len(row)} values but expected {len(headers)}"
+            assert len(row) == len(
+                headers
+            ), f"Row {i} has {len(row)} values but expected {len(headers)}"
 
             # Check that frame number (n) is numeric and starts from 1
-            frame_num = int(row[headers.index('n')])
+            frame_num = int(row[headers.index("n")])
             assert frame_num == i, f"Frame number should be {i} but got {frame_num}"
 
             # Verify input file columns contain the correct file paths
-            dist_col_idx = headers.index('input_file_dist')
-            ref_col_idx = headers.index('input_file_ref')
+            dist_col_idx = headers.index("input_file_dist")
+            ref_col_idx = headers.index("input_file_ref")
             assert DIST in row[dist_col_idx], f"Expected distorted file path in row {i}"
             assert REF in row[ref_col_idx], f"Expected reference file path in row {i}"

@@ -152,17 +152,14 @@ def main() -> None:
         "--vmaf-threads",
         type=int,
         default=FfmpegQualityMetrics.DEFAULT_VMAF_THREADS,
-        help="Set the value of libvmaf's n_threads option. "
-        "This determines the number of threads that are used for VMAF calculation. "
-        "Set to 0 for auto.",
+        help="Set the value of libvmaf's n_threads option. This determines the number of threads that are used for VMAF calculation. Set to 0 for auto.",
     )
 
     vmaf_opts.add_argument(
         "--vmaf-subsample",
         type=int,
         default=FfmpegQualityMetrics.DEFAULT_VMAF_SUBSAMPLE,
-        help="Set the value of libvmaf's n_subsample option. "
-        "This is the subsampling interval, so set to 1 for default behavior.",
+        help="Set the value of libvmaf's n_subsample option. This is the subsampling interval, so set to 1 for default behavior.",
     )
 
     vmaf_opts.add_argument(

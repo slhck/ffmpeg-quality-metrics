@@ -3,8 +3,11 @@ import subprocess
 import tempfile
 import json
 
+
 def test_output_file():
-    with tempfile.NamedTemporaryFile(mode="w+", delete=False, suffix=".json") as tmp_file:
+    with tempfile.NamedTemporaryFile(
+        mode="w+", delete=False, suffix=".json"
+    ) as tmp_file:
         output_file = tmp_file.name
 
     try:
@@ -13,8 +16,8 @@ def test_output_file():
                 "python3",
                 "-m",
                 "ffmpeg_quality_metrics",
-                "test/dist-854x480.mkv",
-                "test/ref-1280x720.mkv",
+                "tests/dist-854x480.mkv",
+                "tests/ref-1280x720.mkv",
                 "-m",
                 "psnr",
                 "-o",

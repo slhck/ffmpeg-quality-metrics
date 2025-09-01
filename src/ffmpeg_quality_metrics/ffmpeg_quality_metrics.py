@@ -447,8 +447,7 @@ class FfmpegQualityMetrics:
     def _check_libvmaf_availability(self) -> None:
         if "libvmaf" not in self.available_filters:
             raise FfmpegQualityMetricsError(
-                "Your ffmpeg build does not have support for VMAF. "
-                "Make sure you download or build a version compiled with --enable-libvmaf!"
+                "Your ffmpeg build does not have support for VMAF. Make sure you download or build a version compiled with --enable-libvmaf!"
             )
 
     def _set_vmaf_model_path(self, model_path: Union[str, None] = None) -> None:
@@ -471,8 +470,7 @@ class FfmpegQualityMetrics:
                 )
             else:
                 raise FfmpegQualityMetricsError(
-                    f"Could not find model at {self.vmaf_model_path}. "
-                    "Please set --model-path to a valid VMAF .json model file."
+                    f"Could not find model at {self.vmaf_model_path}. Please set --model-path to a valid VMAF .json model file."
                 )
 
     def _read_vmaf_temp_file(self) -> None:
@@ -689,8 +687,7 @@ class FfmpegQualityMetrics:
 
         if not os.path.isdir(model_path):
             logger.warning(
-                f"{model_path} does not exist. "
-                "Are you sure you have installed the most recent version of libvmaf with Homebrew?"
+                f"{model_path} does not exist. Are you sure you have installed the most recent version of libvmaf with Homebrew?"
             )
             return None
 
@@ -746,7 +743,7 @@ class FfmpegQualityMetrics:
         """
         for metric_name in self.data:
             logger.debug(f"Aggregating stats for {metric_name}")
-            metric_data = cast(SingleMetricData, self.data[metric_name])  # type: ignore
+            metric_data = cast(SingleMetricData, self.data[metric_name])
             if len(metric_data) == 0:
                 continue
             submetric_keys = [k for k in metric_data[0].keys() if k != "n"]
@@ -758,15 +755,17 @@ class FfmpegQualityMetrics:
                 finite = [v for v in values if math.isfinite(v)]
                 # Fallback to [0.0] if all values are non-finite to prevent crashes
                 all_values = finite if finite else [0.0]
-                
+
                 stats[submetric_key] = {
                     "average": round(float(mean(all_values)), 3),
                     "median": round(float(median(all_values)), 3),
-                    "stdev": round(float(pstdev(finite)) if len(finite) > 1 else 0.0, 3),
+                    "stdev": round(
+                        float(pstdev(finite)) if len(finite) > 1 else 0.0, 3
+                    ),
                     "min": round(min(all_values), 3),
                     "max": round(max(all_values), 3),
                 }
-            self.global_stats[metric_name] = stats  # type: ignore
+            self.global_stats[metric_name] = stats
 
         return self.global_stats
 
@@ -791,13 +790,13 @@ class FfmpegQualityMetrics:
                 continue
 
             for frame_info in cast(SingleMetricData, metric_data):
-                frame_num = int(frame_info['n'])
+                frame_num = int(frame_info["n"])
                 if frame_num not in frames_data:
-                    frames_data[frame_num] = {'n': frame_num}
+                    frames_data[frame_num] = {"n": frame_num}
 
                 # Add all metric properties for this frame
                 for key, value in frame_info.items():
-                    if key != 'n':  # Skip frame number as it's already added
+                    if key != "n":  # Skip frame number as it's already added
                         frames_data[frame_num][key] = value
 
         if not frames_data:
@@ -810,10 +809,10 @@ class FfmpegQualityMetrics:
         all_columns: set[str] = set()
         for frame_data in frames_data.values():
             all_columns.update(frame_data.keys())
-        all_columns.discard('n')
+        all_columns.discard("n")
 
         # Create column order: n first, then sorted metric columns, then input files
-        columns = ['n'] + sorted(all_columns) + ['input_file_dist', 'input_file_ref']
+        columns = ["n"] + sorted(all_columns) + ["input_file_dist", "input_file_ref"]
 
         # Generate CSV using StringIO and csv module
         output = StringIO()
@@ -827,13 +826,13 @@ class FfmpegQualityMetrics:
             frame_data = frames_data[frame_num]
             row = []
             for col in columns:
-                if col == 'input_file_dist':
+                if col == "input_file_dist":
                     row.append(self.dist)
-                elif col == 'input_file_ref':
+                elif col == "input_file_ref":
                     row.append(self.ref)
                 else:
                     # Use the frame data value or empty string if not present
-                    row.append(str(frame_data.get(col, '')))
+                    row.append(str(frame_data.get(col, "")))
             writer.writerow(row)
 
         return output.getvalue()
@@ -847,7 +846,7 @@ class FfmpegQualityMetrics:
         """
         ret: Dict = {}
         for key in self.data:
-            metric_data = cast(SingleMetricData, self.data[key])  # type: ignore
+            metric_data = cast(SingleMetricData, self.data[key])
             if len(metric_data) == 0:
                 continue
             ret[key] = metric_data

@@ -1,0 +1,58 @@
+[build-system]
+requires = ["uv_build>=0.8.14,<0.9.0"]
+build-backend = "uv_build"
+
+[project]
+name = "ffmpeg-quality-metrics"
+version = "3.7.0"
+description = "Calculate video quality metrics with FFmpeg (SSIM, PSNR, VMAF)"
+readme = "README.md"
+authors = [
+    { name = "Werner Robitza", email = "werner.robitza@gmail.com" }
+]
+license = "MIT"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.9"
+dependencies = [
+    "tqdm",
+    "ffmpeg-progress-yield>=1.0.1",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Multimedia :: Video",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "https://github.com/slhck/ffmpeg-quality-metrics"
+Repository = "https://github.com/slhck/ffmpeg-quality-metrics"
+
+[project.scripts]
+ffmpeg-quality-metrics = "ffmpeg_quality_metrics.__main__:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.1.1,<9",
+    "ruff>=0.8.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.5.0",
+    "pdoc>=15.0.4",
+]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+exclude = ["build"]
+namespace_packages = false
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true

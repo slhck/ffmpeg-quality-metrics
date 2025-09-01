@@ -14,6 +14,7 @@ IS_WIN = system() in ["Windows", "cli"]
 
 logger = logging.getLogger("ffmpeg-quality-metrics")
 
+
 def win_path_check(path: str) -> str:
     """
     Format a file path correctly for Windows

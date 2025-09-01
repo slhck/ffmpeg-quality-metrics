@@ -54,21 +54,31 @@ What you need:
 - OS: Linux, macOS, Windows
 - Python 3.9 or higher
 - FFmpeg 7.1 or higher:
-    - **Linux:** Download a build matching your platform from [here](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest).
-    - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/) or install via `brew install ffmpeg`.
-    - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
+  - **Linux:** Download a build matching your platform from [here](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest).
+  - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/) or install via `brew install ffmpeg`.
+  - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
 Put the `ffmpeg` executable in your `$PATH`, e.g. `/usr/local/bin/ffmpeg`.
 
 If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model).
 
-Using pip:
+Using [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
 ```bash
-pip3 install ffmpeg-quality-metrics
+uvx ffmpeg-quality-metrics
 ```
 
-Or clone this repository, then run the tool with `python3 -m ffmpeg_quality_metrics`.
+Using [pipx](https://pipx.pypa.io/latest/installation/):
+
+```bash
+pipx install ffmpeg-quality-metrics
+```
+
+Or, using pip:
+
+```bash
+pip3 install --user ffmpeg-quality-metrics
+```
 
 ## Usage
 

@@ -1,3 +1,5 @@
+import importlib.metadata
+
 from .ffmpeg_quality_metrics import (
     FfmpegQualityMetrics,
     FfmpegQualityMetricsError,
@@ -9,7 +11,7 @@ from .ffmpeg_quality_metrics import (
     VmafOptions,
 )
 
-__version__ = "3.7.0"
+__version__ = importlib.metadata.version("ffmpeg-quality-metrics")
 __all__ = [
     "FfmpegQualityMetrics",
     "FfmpegQualityMetricsError",
