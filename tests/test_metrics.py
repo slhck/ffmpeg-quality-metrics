@@ -174,18 +174,18 @@ class TestMetrics:
         ]
 
         for col in expected_columns:
-            assert (
-                col in headers
-            ), f"Expected column '{col}' not found in CSV headers: {headers}"
+            assert col in headers, (
+                f"Expected column '{col}' not found in CSV headers: {headers}"
+            )
 
         # Check that we have data rows (at least 2 rows: header + data)
         assert len(rows) > 1, "CSV should contain header and at least one data row"
 
         # Verify data rows have correct number of columns
         for i, row in enumerate(rows[1:], 1):
-            assert len(row) == len(
-                headers
-            ), f"Row {i} has {len(row)} values but expected {len(headers)}"
+            assert len(row) == len(headers), (
+                f"Row {i} has {len(row)} values but expected {len(headers)}"
+            )
 
             # Check that frame number (n) is numeric and starts from 1
             frame_num = int(row[headers.index("n")])

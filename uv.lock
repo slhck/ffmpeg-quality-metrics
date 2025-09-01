@@ -79,7 +79,7 @@ dev = [
     { name = "pdoc", specifier = ">=15.0.4" },
     { name = "pre-commit", specifier = ">=3.5.0" },
     { name = "pytest", specifier = ">=8.1.1,<9" },
-    { name = "ruff", specifier = ">=0.8.0" },
+    { name = "ruff", specifier = ">=0.12.11" },
 ]
 
 [[package]]

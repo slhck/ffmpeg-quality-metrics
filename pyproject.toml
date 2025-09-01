@@ -40,7 +40,7 @@ ffmpeg-quality-metrics = "ffmpeg_quality_metrics.__main__:main"
 [dependency-groups]
 dev = [
     "pytest>=8.1.1,<9",
-    "ruff>=0.8.0",
+    "ruff>=0.12.11",
     "mypy>=1.0.0",
     "pre-commit>=3.5.0",
     "pdoc>=15.0.4",
