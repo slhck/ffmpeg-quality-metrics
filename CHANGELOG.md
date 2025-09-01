@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v3.7.1 (2025-09-01)
+
+* Bump version to 3.7.1.
+
+* Migrate to uv and modern package structure.
+
+* Remove obsolete VERSION file.
+
+
 ## v3.7.0 (2025-08-17)
 
 * Ci: extract cached ffmpeg (#71)

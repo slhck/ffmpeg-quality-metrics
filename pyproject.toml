@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "ffmpeg-quality-metrics"
-version = "3.7.0"
+version = "3.7.1"
 description = "Calculate video quality metrics with FFmpeg (SSIM, PSNR, VMAF)"
 readme = "README.md"
 authors = [
