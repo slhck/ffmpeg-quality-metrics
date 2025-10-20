@@ -14,7 +14,8 @@ try:
     import click
     import plotly.colors
     import plotly.graph_objects as go
-    from dash import Dash, Input, Output, dash_table, dcc, html
+    from dash import Dash, Input, Output, dcc, html
+    from dash import dash_table
 except ImportError:
     raise ImportError(
         "GUI dependencies not installed. Install with: pip install 'ffmpeg-quality-metrics[gui]'"
@@ -594,10 +595,7 @@ def create_data_table_tab(data: MetricsData) -> html.Div:
             ),
             dcc.Checklist(
                 id="metric-filter",
-                options=[
-                    {"label": metric, "value": metric.lower()}
-                    for metric in available_metrics
-                ],
+                options=[metric.lower() for metric in available_metrics],
                 value=[m.lower() for m in data.metric_names],  # All selected by default
                 inline=True,
                 style={"fontFamily": "sans-serif"},
@@ -631,7 +629,7 @@ def create_data_table_tab(data: MetricsData) -> html.Div:
                 },
             ),
             metric_filter,
-            dash_table.DataTable(
+            dash_table.DataTable(  # type: ignore[attr-defined]
                 id="data-table",
                 columns=all_column_defs,  # Will be filtered by callback
                 data=table_data,
@@ -775,7 +773,7 @@ def create_app(data: MetricsData) -> Dash:
             ),
             dcc.RadioItems(
                 id="x-axis-selector",
-                options=[
+                options=[  # type: ignore[arg-type]
                     {"label": "Frame Number", "value": "frame"},
                     {
                         "label": "Time (seconds)",
@@ -836,7 +834,7 @@ def create_app(data: MetricsData) -> Dash:
         Output("tab-content", "children"),
         [Input("tabs", "value"), Input("x-axis-selector", "value")],
     )
-    def render_content(tab: str, x_axis: str = "frame"):  # type: ignore
+    def render_content(tab: str, x_axis: str = "frame"):
         # Default to frame if x_axis is None (initial render)
         if x_axis is None:
             x_axis = "frame"
@@ -866,7 +864,7 @@ def create_app(data: MetricsData) -> Dash:
         Output("x-axis-container", "style"),
         [Input("tabs", "value")],
     )
-    def toggle_x_axis_selector(tab: str):  # type: ignore
+    def toggle_x_axis_selector(tab: str):
         # Show x-axis selector only for tabs that use time-series data
         base_style = {
             "padding": "15px",
@@ -884,7 +882,7 @@ def create_app(data: MetricsData) -> Dash:
         Output("data-table", "columns"),
         [Input("metric-filter", "value")],
     )
-    def update_table_columns(selected_metrics: Optional[List[str]] = None):  # type: ignore
+    def update_table_columns(selected_metrics: Optional[List[str]] = None):
         # Default to all metrics if None
         if selected_metrics is None:
             selected_metrics = [m.lower() for m in data.metric_names]
