@@ -1,3 +1,16 @@
+## [3.8.0] - 2025-10-20
+
+### 🚀 Features
+
+- Add optional GUI
+
+### 🧪 Testing
+
+- Update tests for ffmpeg 8.0
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 3.8.0
 ## [3.7.2] - 2025-10-17
 
 ### ⚙️ Miscellaneous Tasks
