@@ -22,6 +22,7 @@ It will output:
 
 - the per-frame metrics
 - global statistics (min/max/average/standard deviation)
+- a GUI, if you want to visualize the results interactively in a browser
 
 Author: Werner Robitza <werner.robitza@gmail.com>
 
@@ -41,6 +42,9 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 - [Output](#output)
   - [JSON Output](#json-output)
   - [CSV Output](#csv-output)
+- [GUI Visualization](#gui-visualization)
+  - [Installation](#installation)
+  - [Interactive Dashboard](#interactive-dashboard)
 - [API](#api)
 - [Contributors](#contributors)
 - [License](#license)
@@ -426,6 +430,72 @@ n,adm2,motion2,ms_ssim,psnr,ssim,vif_scale0,vif_scale1,vif_scale2,vif_scale3,vma
 
 As there is no tidy way to represent global data in the same CSV file, you can use other tools to aggregate the data.
 
+## GUI Visualization
+
+This tool includes an optional interactive dashboard powered by Plotly Dash for visualizing quality metrics in the browser.
+
+<img alt="GUI screenshot" src="gui.png" width=500 />
+
+### Installation
+
+To use the GUI features, you need to install the optional `gui` dependencies.
+
+Using [uvx](https://docs.astral.sh/uv/guides/tools/) (recommended, no installation needed), you can run it directly:
+
+```bash
+# Run with GUI after calculation
+uvx 'ffmpeg-quality-metrics[gui]' ffmpeg-quality-metrics dist.mp4 ref.mp4 --gui
+
+# Or use the standalone viewer
+uvx --from 'ffmpeg-quality-metrics[gui]' ffmpeg-quality-metrics-gui output.json
+```
+
+Or, if you've already installed the package as a local dependency, add the GUI extra dependencies:
+
+```bash
+# With uv
+uv add 'ffmpeg-quality-metrics[gui]'
+
+# Or with pip
+pip install 'ffmpeg-quality-metrics[gui]'
+```
+
+### Interactive Dashboard
+
+After calculating metrics, you can launch an interactive dashboard with the `--gui` flag:
+
+```bash
+ffmpeg-quality-metrics dist.mp4 ref.mp4 --gui
+```
+
+This will:
+
+1. Calculate the quality metrics as usual
+2. Save the output (if `--output-file` is specified, otherwise will be kept in memory)
+3. Open an interactive dashboard in your browser at `http://127.0.0.1:8050`
+
+You can customize the host and port if needed:
+
+```bash
+ffmpeg-quality-metrics dist.mp4 ref.mp4 --gui --gui-host 0.0.0.0 --gui-port 8080
+```
+
+The dashboard includes:
+
+- separate line charts for each primary metric (PSNR, SSIM, VMAF) with appropriate scales
+- per-component breakdowns (Y/U/V planes, VIF scales)
+- metric distributions
+- statistics tables
+- sortable table with all per-frame data
+
+You can also visualize previously saved metrics files using the standalone viewer:
+
+```bash
+ffmpeg-quality-metrics-gui output.json
+```
+
+**TODO:** Allow loading multiple files for comparison, or via upload.
+
 ## API
 
 The program exposes an API that you can use yourself:
@@ -487,7 +557,7 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
 
 ## License
 
-ffmpeg-quality-metrics, Copyright (c) 2019-2024 Werner Robitza
+ffmpeg-quality-metrics, Copyright (c) 2019-2025 Werner Robitza
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

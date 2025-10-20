@@ -36,6 +36,13 @@ Repository = "https://github.com/slhck/ffmpeg-quality-metrics"
 
 [project.scripts]
 ffmpeg-quality-metrics = "ffmpeg_quality_metrics.__main__:main"
+ffmpeg-quality-metrics-gui = "ffmpeg_quality_metrics.gui_main:main"
+
+[project.optional-dependencies]
+gui = [
+    "plotly>=5.0.0",
+    "dash>=3.2.0",
+]
 
 [dependency-groups]
 dev = [

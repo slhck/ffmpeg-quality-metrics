@@ -130,6 +130,26 @@ def main() -> None:
         help="Output format for the metrics",
     )
 
+    output_opts.add_argument(
+        "--gui",
+        action="store_true",
+        help="Open interactive GUI dashboard after computing metrics (requires 'gui' extra: pip install 'ffmpeg-quality-metrics[gui]')",
+    )
+
+    output_opts.add_argument(
+        "--gui-host",
+        type=str,
+        default="127.0.0.1",
+        help="Host address for the GUI dashboard",
+    )
+
+    output_opts.add_argument(
+        "--gui-port",
+        type=int,
+        default=8050,
+        help="Port for the GUI dashboard",
+    )
+
     vmaf_opts = parser.add_argument_group("VMAF options")
 
     vmaf_opts.add_argument(
@@ -227,6 +247,42 @@ def main() -> None:
             sys.exit(1)
     else:
         print(output_data)
+
+    # Launch GUI if requested
+    if cli_args.gui:
+        try:
+            from .gui import MetricsData, run_dashboard
+
+            logger.info("Launching interactive dashboard...")
+
+            # Get framerate for time axis
+            ref_framerate, _ = ffqm._get_framerates()
+
+            # Create MetricsData object from results
+            gui_data = MetricsData(
+                metrics=ffqm.data,  # type: ignore
+                global_stats=ffqm.get_global_stats(),  # type: ignore
+                input_file_dist=cli_args.dist,
+                input_file_ref=cli_args.ref,
+                framerate=ref_framerate,
+            )
+
+            run_dashboard(
+                gui_data,
+                host=cli_args.gui_host,
+                port=cli_args.gui_port,
+                debug=cli_args.verbose,
+            )
+        except ImportError:
+            logger.error(
+                "GUI dependencies not installed. Install with: pip install 'ffmpeg-quality-metrics[gui]'"
+            )
+            sys.exit(1)
+        except Exception as e:
+            logger.error(f"Error launching GUI: {e}")
+            if cli_args.verbose:
+                traceback.print_exc()
+            sys.exit(1)
 
 
 if __name__ == "__main__":
