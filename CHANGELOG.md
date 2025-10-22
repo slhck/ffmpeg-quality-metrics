@@ -1,3 +1,16 @@
+## [3.9.0] - 2025-10-22
+
+### 🚀 Features
+
+- Allow multi-clip comparison
+
+### 🐛 Bug Fixes
+
+- Type errors
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 3.9.0
 ## [3.8.0] - 2025-10-20
 
 ### 🚀 Features
