@@ -633,7 +633,7 @@ def create_statistics_tab(
     }
 
     # Collect all metrics across all clips
-    all_metrics = set()
+    all_metrics: set[str] = set()
     for clip in clips_to_show:
         all_metrics.update(clip.global_stats.keys())
 

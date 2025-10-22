@@ -251,7 +251,7 @@ def main() -> None:
     # Launch GUI if requested
     if cli_args.gui:
         try:
-            from .gui import MetricsData, run_dashboard
+            from .gui import MetricsData, MultiClipData, run_dashboard
 
             logger.info("Launching interactive dashboard...")
 
@@ -267,8 +267,11 @@ def main() -> None:
                 framerate=ref_framerate,
             )
 
+            # Wrap in MultiClipData for dashboard
+            multi_clip_data = MultiClipData(clips=[gui_data])
+
             run_dashboard(
-                gui_data,
+                multi_clip_data,
                 host=cli_args.gui_host,
                 port=cli_args.gui_port,
                 debug=cli_args.verbose,
