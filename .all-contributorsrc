@@ -68,6 +68,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "antonkesy",
+      "name": "Anton Kesy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/25124866?v=4",
+      "profile": "https://github.com/antonkesy",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -75,5 +84,6 @@
   "repoType": "github",
   "repoHost": "https://github.com",
   "projectName": "ffmpeg-quality-metrics",
-  "projectOwner": "slhck"
+  "projectOwner": "slhck",
+  "commitType": "docs"
 }

@@ -1,7 +1,7 @@
 # FFmpeg Quality Metrics
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://img.shields.io/pypi/v/ffmpeg-quality-metrics.svg)](https://pypi.org/project/ffmpeg-quality-metrics)
@@ -545,6 +545,9 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/nav9"><img src="https://avatars.githubusercontent.com/u/2093933?v=4?s=100" width="100px;" alt="Nav"/><br /><sub><b>Nav</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/issues?q=author%3Anav9" title="Bug reports">🐛</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/xt99"><img src="https://avatars.githubusercontent.com/u/608600?v=4?s=100" width="100px;" alt="Alexey Slobodiskiy"/><br /><sub><b>Alexey Slobodiskiy</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=xt99" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ls-milkyway"><img src="https://avatars.githubusercontent.com/u/55090624?v=4?s=100" width="100px;" alt="ls-milkyway"/><br /><sub><b>ls-milkyway</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=ls-milkyway" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/antonkesy"><img src="https://avatars.githubusercontent.com/u/25124866?v=4?s=100" width="100px;" alt="Anton Kesy"/><br /><sub><b>Anton Kesy</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=antonkesy" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
