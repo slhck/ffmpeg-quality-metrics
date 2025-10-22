@@ -866,7 +866,7 @@ def create_data_table_tab(
                 },
             ),
             filters,
-            dash_table.DataTable(  # type: ignore[attr-defined]
+            dash_table.DataTable(
                 id="data-table",
                 columns=all_column_defs,  # Will be filtered by callback
                 data=table_data,
@@ -1042,7 +1042,7 @@ def create_app(data: MultiClipData):
             ),
             dcc.RadioItems(
                 id="x-axis-selector",
-                options=[  # type: ignore[arg-type]
+                options=[
                     {"label": "Frame Number", "value": "frame"},
                     {
                         "label": "Time (seconds)",
