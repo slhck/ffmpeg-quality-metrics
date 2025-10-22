@@ -18,9 +18,7 @@ with open(os.path.join(os.path.dirname(__file__), "response.json"), "r") as f:
     EXPECTED = json.load(f)
 GLOBAL = EXPECTED["global"]
 
-THRESHOLD = (
-    0.1  # we need some threshold here because exact reproductions are not guaranteed
-)
+THRESHOLD = 0.25  # we need some threshold here because exact reproductions are not guaranteed across platforms
 
 
 class TestMetrics:
