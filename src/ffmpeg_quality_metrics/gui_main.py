@@ -37,8 +37,9 @@ def main() -> None:
         prog="ffmpeg-quality-metrics-gui",
     )
     parser.add_argument(
-        "input_file",
-        help="Input file (JSON or CSV) containing quality metrics",
+        "input_files",
+        nargs="+",
+        help="Input file(s) (JSON or CSV) containing quality metrics. Multiple files can be provided for comparison.",
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", help="Show verbose output"
@@ -68,11 +69,18 @@ def main() -> None:
 
     try:
         # Import GUI module (may fail if dependencies not installed)
-        from .gui import load_metrics_file, run_dashboard
+        from .gui import load_multiple_metrics_files, run_dashboard
 
-        # Load the metrics file
-        logger.info(f"Loading metrics from {cli_args.input_file}")
-        data = load_metrics_file(cli_args.input_file, framerate=cli_args.framerate)
+        # Load the metrics files
+        if len(cli_args.input_files) == 1:
+            logger.info(f"Loading metrics from {cli_args.input_files[0]}")
+        else:
+            logger.info(
+                f"Loading metrics from {len(cli_args.input_files)} files for comparison"
+            )
+        data = load_multiple_metrics_files(
+            cli_args.input_files, framerate=cli_args.framerate
+        )
 
         # Run the dashboard
         run_dashboard(

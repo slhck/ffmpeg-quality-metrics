@@ -494,7 +494,13 @@ You can also visualize previously saved metrics files using the standalone viewe
 ffmpeg-quality-metrics-gui output.json
 ```
 
-**TODO:** Allow loading multiple files for comparison, or via upload.
+The GUI viewer supports loading multiple metrics files for side-by-side comparison:
+
+```bash
+ffmpeg-quality-metrics-gui file1.json file2.json file3.json
+```
+
+When multiple clips are loaded, the dashboard provides a distinct color for each clip.
 
 ## API
 
