@@ -1,3 +1,27 @@
+## [3.10.0] - 2025-11-01
+
+### 🚀 Features
+
+- Add --start-offset and --num-frames options
+
+### 🐛 Bug Fixes
+
+- Resolve mypy type errors
+- Configure mypy to ignore dash library type issues
+
+### 📚 Documentation
+
+- Add Visual Information Fidelity wiki link (#73)
+- Add antonkesy as a contributor for doc (#74)
+
+### 🧪 Testing
+
+- Increase threshold to account for cross-platform differences
+
+### ⚙️ Miscellaneous Tasks
+
+- Remove gitchangelog files
+- Bump version to 3.10.0
 ## [3.9.0] - 2025-10-22
 
 ### 🚀 Features
