@@ -194,3 +194,66 @@ class TestMetrics:
             ref_col_idx = headers.index("input_file_ref")
             assert DIST in row[dist_col_idx], f"Expected distorted file path in row {i}"
             assert REF in row[ref_col_idx], f"Expected reference file path in row {i}"
+
+    def test_num_frames(self):
+        # Test with 2 frames (less than available)
+        f = ffqm(REF, DIST, num_frames=2)
+        f.calculate(metrics=["ssim", "psnr"])
+
+        # Check that we only have 2 frames
+        assert len(f.data["ssim"]) == 2
+        assert len(f.data["psnr"]) == 2
+
+        # Check that frame numbers are 1-2
+        for i, frame in enumerate(f.data["ssim"], 1):
+            assert frame["n"] == i
+
+        # Test with 1 frame
+        f = ffqm(REF, DIST, num_frames=1)
+        f.calculate(metrics=["psnr"])
+
+        assert len(f.data["psnr"]) == 1
+        assert f.data["psnr"][0]["n"] == 1
+
+        # Test with more frames than available (should return all available frames)
+        f = ffqm(REF, DIST, num_frames=10)
+        f.calculate(metrics=["psnr"])
+
+        # Test videos have 3 frames, so even when asking for 10, we get 3
+        assert len(f.data["psnr"]) == 3
+
+        # Check that all frames are processed when num_frames is not specified
+        f = ffqm(REF, DIST)
+        f.calculate(metrics=["psnr"])
+
+        # The test videos have 3 frames
+        assert len(f.data["psnr"]) == 3
+
+    def test_start_offset_timestamp(self):
+        # Test with timestamp-based seeking (seek to 0.04s, which is frame 2 at 25fps)
+        f = ffqm(REF, DIST, start_offset="0.04")
+        f.calculate(metrics=["psnr"])
+
+        # Should get 2 frames (frames 2 and 3)
+        assert len(f.data["psnr"]) == 2
+
+        # Frame numbers in output should still be sequential starting from 1
+        # (ffmpeg resets frame numbering after seeking)
+        for i, frame in enumerate(f.data["psnr"], 1):
+            assert frame["n"] == i
+
+    def test_start_offset_frame(self):
+        # Test with frame-based seeking (seek to frame 1, which is 0.04s at 25fps)
+        f = ffqm(REF, DIST, start_offset="f:1")
+        f.calculate(metrics=["psnr"])
+
+        # Should get 2 frames (frames 2 and 3 from original)
+        assert len(f.data["psnr"]) == 2
+
+    def test_start_offset_with_num_frames(self):
+        # Test combining start_offset with num_frames
+        f = ffqm(REF, DIST, start_offset="0.04", num_frames=1)
+        f.calculate(metrics=["psnr"])
+
+        # Should get only 1 frame
+        assert len(f.data["psnr"]) == 1

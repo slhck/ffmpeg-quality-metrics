@@ -111,6 +111,20 @@ def main() -> None:
         help="Number of threads to do the calculations",
     )
 
+    ffmpeg_opts.add_argument(
+        "--num-frames",
+        type=int,
+        default=None,
+        help="Number of frames to analyze from the input files (default: all frames)",
+    )
+
+    ffmpeg_opts.add_argument(
+        "--start-offset",
+        type=str,
+        default=None,
+        help="Seek to this position before analyzing. Accepts timestamp (e.g., '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g., 'f:100'). Note: seeking may not be frame-accurate due to keyframe constraints.",
+    )
+
     output_opts = parser.add_argument_group("Output options")
 
     output_opts.add_argument(
@@ -209,6 +223,8 @@ def main() -> None:
         progress=cli_args.progress,
         keep_tmp_files=cli_args.keep_tmp,
         tmp_dir=cli_args.tmp_dir,
+        num_frames=cli_args.num_frames,
+        start_offset=cli_args.start_offset,
     )
 
     metrics = cli_args.metrics

@@ -36,7 +36,6 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 - [Usage](#usage)
   - [Metrics](#metrics)
   - [Extended Options](#extended-options)
-  - [VMAF-specific Settings](#vmaf-specific-settings)
 - [Examples](#examples)
 - [Running with Docker](#running-with-docker)
 - [Output](#output)
@@ -137,7 +136,9 @@ See `ffmpeg-quality-metrics -h`:
 usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [-m {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...]]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
-                              [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS] [-o OUTPUT_FILE] [-of {json,csv}]
+                              [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS]
+                              [--num-frames NUM_FRAMES] [--start-offset START_OFFSET]
+                              [-o OUTPUT_FILE] [-of {json,csv}]
                               [--vmaf-model-path VMAF_MODEL_PATH]
                               [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]]
                               [--vmaf-threads VMAF_THREADS] [--vmaf-subsample VMAF_SUBSAMPLE]
@@ -174,6 +175,12 @@ FFmpeg options:
   --dist-delay DIST_DELAY               Delay the distorted video against the reference by this many
                                         seconds (default: 0.0)
   -t THREADS, --threads THREADS         Number of threads to do the calculations (default: 0)
+  --num-frames NUM_FRAMES               Number of frames to analyze from the input files (default: all
+                                        frames)
+  --start-offset START_OFFSET           Seek to this position before analyzing. Accepts timestamp (e.g.,
+                                        '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g.,
+                                        'f:100'). Note: seeking may not be frame-accurate due to keyframe
+                                        constraints. (default: None)
 
 Output options:
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
@@ -208,6 +215,32 @@ VMAF options:
                                         features like '--vmaf-features cambi:full_ref=true ciede'
                                         (default: None)
 ```
+
+
+#### Seeking and Frame Selection
+
+You can control which portion of the input videos to analyze using the `--start-offset` and `--num-frames` options.
+
+To analyze only a specific number of frames (e.g., for faster processing or testing), use the `--num-frames` option:
+
+```bash
+ffmpeg-quality-metrics distorted.mp4 reference.y4m --num-frames 100
+```
+
+To skip the beginning of the video and start analysis at a specific position, use the `--start-offset` option. This accepts either a timestamp or a frame number:
+
+```bash
+# Seek to 10 seconds
+ffmpeg-quality-metrics distorted.mp4 reference.y4m --start-offset 10
+
+# Or use HH:MM:SS format
+ffmpeg-quality-metrics distorted.mp4 reference.y4m --start-offset 00:00:10
+
+# Seek to frame 100 (prefix with "f:")
+ffmpeg-quality-metrics distorted.mp4 reference.y4m --start-offset f:100
+
+> [!IMPORTANT]
+> **Seeking Accuracy**: When using `--start-offset`, seeking may not be frame-accurate due to keyframe constraints in the video encoding. FFmpeg seeks to the nearest keyframe before the specified position and then decodes from there. For frame-accurate seeking, choose inputs that are all-I-frames like Y4M or FFV1.
 
 ### VMAF-specific Settings
 

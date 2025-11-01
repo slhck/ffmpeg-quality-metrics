@@ -141,6 +141,8 @@ class FfmpegQualityMetrics:
         progress: Union[bool, None] = False,
         keep_tmp_files: Union[bool, None] = False,
         tmp_dir: Union[str, None] = None,
+        num_frames: Union[int, None] = None,
+        start_offset: Union[str, None] = None,
     ):
         """Instantiate a new FfmpegQualityMetrics
 
@@ -156,6 +158,8 @@ class FfmpegQualityMetrics:
             progress (bool, optional): Show a progress bar. Defaults to False.
             keep_tmp_files (bool, optional): Keep temporary files for debugging purposes. Defaults to False.
             tmp_dir (str, optional): Directory to store temporary files. Will use system default if not specified. Defaults to None.
+            num_frames (int, optional): Number of frames to analyze from the input files. Defaults to None (all frames).
+            start_offset (str, optional): Seek to this position before analyzing. Accepts timestamp (e.g., '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g., 'f:100'). Defaults to None.
 
         Raises:
             FfmpegQualityMetricsError: A generic error
@@ -171,6 +175,8 @@ class FfmpegQualityMetrics:
         self.progress = bool(progress)
         self.keep_tmp_files = bool(keep_tmp_files)
         self.tmp_dir = str(tmp_dir) if tmp_dir is not None else tempfile.gettempdir()
+        self.num_frames = int(num_frames) if num_frames is not None else None
+        self.start_offset = str(start_offset) if start_offset is not None else None
 
         if not os.path.isfile(self.ref):
             raise FfmpegQualityMetricsError(f"Reference file not found: {self.ref}")
@@ -288,6 +294,33 @@ class FfmpegQualityMetrics:
 
         return ref_framerate, dist_framerate
 
+    def _parse_start_offset(self, framerate: float) -> Union[str, None]:
+        """
+        Parse the start_offset parameter and convert frame numbers to timestamps if needed.
+
+        Args:
+            framerate (float): The framerate to use for frame-to-timestamp conversion
+
+        Returns:
+            Union[str, None]: The timestamp string for ffmpeg's -ss option, or None if no offset
+        """
+        if self.start_offset is None:
+            return None
+
+        # Check if it's a frame number (format: "f:100" or "f:100.5")
+        if self.start_offset.startswith("f:"):
+            try:
+                frame_num = float(self.start_offset[2:])
+                timestamp = frame_num / framerate
+                return str(timestamp)
+            except ValueError:
+                raise FfmpegQualityMetricsError(
+                    f"Invalid frame number in start_offset: {self.start_offset}"
+                )
+
+        # Otherwise, assume it's a timestamp string (e.g., "00:00:10" or "10.5")
+        return self.start_offset
+
     def _get_filter_opts(self, filter_name: FilterName) -> str:
         """
         Returns:
@@ -350,10 +383,16 @@ class FfmpegQualityMetrics:
 
         # ffmpeg 7.1 or higher: scale2ref filter is deprecated
         # input 0: ref, input 1: dist --> swapped for scale filter
+
+        # Apply select filter if num_frames is specified
+        select_filter = ""
+        if self.num_frames is not None:
+            select_filter = f"select='lt(n\\,{self.num_frames})',"
+
         filter_chains = [
             f"[1][0]scale=rw:rh:flags={self.scaling_algorithm}[dist]",
-            "[dist]settb=AVTB,setpts=PTS-STARTPTS[distpts]",
-            "[0]settb=AVTB,setpts=PTS-STARTPTS[refpts]",
+            f"[dist]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[distpts]",
+            f"[0]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[refpts]",
         ]
 
         # generate split filters depending on the number of models
@@ -588,6 +627,9 @@ class FfmpegQualityMetrics:
             ref_framerate = self.framerate
             dist_framerate = self.framerate
 
+        # Parse start_offset
+        start_offset_timestamp = self._parse_start_offset(ref_framerate)
+
         cmd = [
             "ffmpeg",
             "-nostdin",
@@ -595,23 +637,39 @@ class FfmpegQualityMetrics:
             "-y",
             "-threads",
             str(self.threads),
-            "-r",
-            str(ref_framerate),
-            "-i",
-            self.ref,
-            "-itsoffset",
-            str(self.dist_delay),
-            "-r",
-            str(dist_framerate),
-            "-i",
-            self.dist,
-            "-filter_complex",
-            ";".join(filter_chains),
-            "-an",
-            "-f",
-            "null",
-            NUL,
         ]
+
+        # Add -ss before reference input if start_offset is specified
+        if start_offset_timestamp is not None:
+            cmd.extend(["-ss", start_offset_timestamp])
+
+        # Add -r before -i only if no start_offset (to avoid seeking issues)
+        # When seeking is used, -r before -i can interfere with frame-accurate seeking
+        if start_offset_timestamp is None:
+            cmd.extend(["-r", str(ref_framerate)])
+
+        cmd.extend(["-i", self.ref, "-itsoffset", str(self.dist_delay)])
+
+        # Add -ss before distorted input if start_offset is specified
+        if start_offset_timestamp is not None:
+            cmd.extend(["-ss", start_offset_timestamp])
+
+        # Add -r before -i only if no start_offset
+        if start_offset_timestamp is None:
+            cmd.extend(["-r", str(dist_framerate)])
+
+        cmd.extend(
+            [
+                "-i",
+                self.dist,
+                "-filter_complex",
+                ";".join(filter_chains),
+                "-an",
+                "-f",
+                "null",
+                NUL,
+            ]
+        )
 
         if self.progress:
             logger.debug(quoted_cmd(cmd))
