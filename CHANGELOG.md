@@ -1,3 +1,18 @@
+## [3.11.0] - 2026-01-13
+
+### 🚀 Features
+
+- Add --ffmpeg-path option
+
+### ⚙️ Miscellaneous Tasks
+
+- Update support to python 3.15
+- Test only Python 3.9 and 3.15
+- Bump version to 3.11.0
+
+### ◀️ Revert
+
+- Use Python 3.14 instead of 3.15
 ## [3.10.0] - 2025-11-01
 
 ### 🚀 Features
