@@ -138,6 +138,7 @@ usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                               [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS]
                               [--num-frames NUM_FRAMES] [--start-offset START_OFFSET]
+                              [--ffmpeg-path FFMPEG_PATH]
                               [-o OUTPUT_FILE] [-of {json,csv}]
                               [--vmaf-model-path VMAF_MODEL_PATH]
                               [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]]
@@ -181,6 +182,7 @@ FFmpeg options:
                                         '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g.,
                                         'f:100'). Note: seeking may not be frame-accurate due to keyframe
                                         constraints. (default: None)
+  --ffmpeg-path FFMPEG_PATH             Path to ffmpeg executable (default: ffmpeg)
 
 Output options:
   -o OUTPUT_FILE, --output-file OUTPUT_FILE

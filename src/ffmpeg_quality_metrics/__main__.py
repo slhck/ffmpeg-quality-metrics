@@ -125,6 +125,13 @@ def main() -> None:
         help="Seek to this position before analyzing. Accepts timestamp (e.g., '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g., 'f:100'). Note: seeking may not be frame-accurate due to keyframe constraints.",
     )
 
+    ffmpeg_opts.add_argument(
+        "--ffmpeg-path",
+        type=str,
+        default="ffmpeg",
+        help="Path to ffmpeg executable",
+    )
+
     output_opts = parser.add_argument_group("Output options")
 
     output_opts.add_argument(
@@ -225,6 +232,7 @@ def main() -> None:
         tmp_dir=cli_args.tmp_dir,
         num_frames=cli_args.num_frames,
         start_offset=cli_args.start_offset,
+        ffmpeg_path=cli_args.ffmpeg_path,
     )
 
     metrics = cli_args.metrics

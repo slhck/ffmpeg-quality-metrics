@@ -143,6 +143,7 @@ class FfmpegQualityMetrics:
         tmp_dir: Union[str, None] = None,
         num_frames: Union[int, None] = None,
         start_offset: Union[str, None] = None,
+        ffmpeg_path: str = "ffmpeg",
     ):
         """Instantiate a new FfmpegQualityMetrics
 
@@ -160,6 +161,7 @@ class FfmpegQualityMetrics:
             tmp_dir (str, optional): Directory to store temporary files. Will use system default if not specified. Defaults to None.
             num_frames (int, optional): Number of frames to analyze from the input files. Defaults to None (all frames).
             start_offset (str, optional): Seek to this position before analyzing. Accepts timestamp (e.g., '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g., 'f:100'). Defaults to None.
+            ffmpeg_path (str, optional): Path to ffmpeg executable. Defaults to "ffmpeg".
 
         Raises:
             FfmpegQualityMetricsError: A generic error
@@ -177,6 +179,7 @@ class FfmpegQualityMetrics:
         self.tmp_dir = str(tmp_dir) if tmp_dir is not None else tempfile.gettempdir()
         self.num_frames = int(num_frames) if num_frames is not None else None
         self.start_offset = str(start_offset) if start_offset is not None else None
+        self.ffmpeg_path = ffmpeg_path
 
         if not os.path.isfile(self.ref):
             raise FfmpegQualityMetricsError(f"Reference file not found: {self.ref}")
@@ -232,7 +235,7 @@ class FfmpegQualityMetrics:
         """
         Check which filters are available
         """
-        cmd = ["ffmpeg", "-filters"]
+        cmd = [self.ffmpeg_path, "-filters"]
         stdout, _ = run_command(cmd)
         filter_list = []
         for line in stdout.split("\n"):
@@ -251,11 +254,12 @@ class FfmpegQualityMetrics:
         logger.debug(f"Available filters: {self.available_filters}")
 
     @staticmethod
-    def get_framerate(input_file: str) -> float:
+    def get_framerate(input_file: str, ffmpeg_path: str = "ffmpeg") -> float:
         """Parse the FPS from the input file.
 
         Args:
             input_file (str): Input file path
+            ffmpeg_path (str, optional): Path to ffmpeg executable. Defaults to "ffmpeg".
 
         Raises:
             FfmpegQualityMetricsError: A generic error
@@ -263,7 +267,7 @@ class FfmpegQualityMetrics:
         Returns:
             float: The FPS parsed
         """
-        cmd = ["ffmpeg", "-nostdin", "-y", "-i", input_file]
+        cmd = [ffmpeg_path, "-nostdin", "-y", "-i", input_file]
 
         output = run_command(cmd, allow_error=True)
         pattern = re.compile(r"(\d+(\.\d+)?) fps")
@@ -283,8 +287,8 @@ class FfmpegQualityMetrics:
         Returns:
             Tuple[float, float]: The framerates of the reference and distorted files
         """
-        ref_framerate = FfmpegQualityMetrics.get_framerate(self.ref)
-        dist_framerate = FfmpegQualityMetrics.get_framerate(self.dist)
+        ref_framerate = FfmpegQualityMetrics.get_framerate(self.ref, self.ffmpeg_path)
+        dist_framerate = FfmpegQualityMetrics.get_framerate(self.dist, self.ffmpeg_path)
 
         if ref_framerate != dist_framerate:
             logger.warning(
@@ -631,7 +635,7 @@ class FfmpegQualityMetrics:
         start_offset_timestamp = self._parse_start_offset(ref_framerate)
 
         cmd = [
-            "ffmpeg",
+            self.ffmpeg_path,
             "-nostdin",
             "-nostats",
             "-y",
