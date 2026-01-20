@@ -1,3 +1,12 @@
+## [3.11.1] - 2026-01-20
+
+### 🐛 Bug Fixes
+
+- Drop Python 3.9 support to fix filelock vulnerability
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 3.11.1
 ## [3.11.0] - 2026-01-13
 
 ### 🚀 Features
