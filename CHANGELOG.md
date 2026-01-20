@@ -1,3 +1,12 @@
+## [3.11.2] - 2026-01-20
+
+### 🐛 Bug Fixes
+
+- Update dependencies to address security vulnerabilities
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 3.11.2
 ## [3.11.1] - 2026-01-20
 
 ### 🐛 Bug Fixes
