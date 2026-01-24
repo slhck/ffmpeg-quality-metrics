@@ -240,6 +240,7 @@ ffmpeg-quality-metrics distorted.mp4 reference.y4m --start-offset 00:00:10
 
 # Seek to frame 100 (prefix with "f:")
 ffmpeg-quality-metrics distorted.mp4 reference.y4m --start-offset f:100
+```
 
 > [!IMPORTANT]
 > **Seeking Accuracy**: When using `--start-offset`, seeking may not be frame-accurate due to keyframe constraints in the video encoding. FFmpeg seeks to the nearest keyframe before the specified position and then decodes from there. For frame-accurate seeking, choose inputs that are all-I-frames like Y4M or FFV1.
