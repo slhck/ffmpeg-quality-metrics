@@ -216,12 +216,12 @@ class FfmpegQualityMetrics:
         for filter_name in self.POSSIBLE_FILTERS:
             suffix = "txt" if filter_name != "libvmaf" else "json"
 
-            self.temp_files[cast(FilterName, filter_name)] = os.path.join(
+            self.temp_files[filter_name] = os.path.join(
                 self.tmp_dir,
                 f"ffmpeg_quality_metrics_{filter_name}_{os.path.basename(self.ref)}_{os.path.basename(self.dist)}.{suffix}",
             )
             logger.debug(
-                f"Writing temporary {filter_name.upper()} information to: {self.temp_files[cast(FilterName, filter_name)]}"
+                f"Writing temporary {filter_name.upper()} information to: {self.temp_files[filter_name]}"
             )
 
         if scaling_algorithm not in self.ALLOWED_SCALERS:
@@ -440,10 +440,7 @@ class FfmpegQualityMetrics:
             self._cleanup_temp_files()
 
         # return only those data entries containing values
-        return cast(
-            Dict[MetricName, SingleMetricData],
-            {k: v for k, v in self.data.items() if v},
-        )
+        return {k: v for k, v in self.data.items() if v}
 
     def _get_libvmaf_filter_opts(self) -> str:
         """
@@ -805,7 +802,7 @@ class FfmpegQualityMetrics:
         """
         for metric_name in self.data:
             logger.debug(f"Aggregating stats for {metric_name}")
-            metric_data = cast(SingleMetricData, self.data[metric_name])
+            metric_data = self.data[metric_name]
             if len(metric_data) == 0:
                 continue
             submetric_keys = [k for k in metric_data[0].keys() if k != "n"]
@@ -908,7 +905,7 @@ class FfmpegQualityMetrics:
         """
         ret: Dict = {}
         for key in self.data:
-            metric_data = cast(SingleMetricData, self.data[key])
+            metric_data = self.data[key]
             if len(metric_data) == 0:
                 continue
             ret[key] = metric_data

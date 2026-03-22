@@ -47,23 +47,11 @@ gui = [
 dev = [
     "pytest>=8.1.1,<9",
     "ruff>=0.12.11",
-    "mypy>=1.0.0",
     "pre-commit>=3.5.0",
     "pdoc>=15.0.4",
+    "ty>=0.0.24",
 ]
 
-[tool.mypy]
-python_version = "3.13"
-ignore_missing_imports = true
-exclude = ["build"]
-namespace_packages = false
-no_implicit_optional = true
-check_untyped_defs = true
-warn_return_any = true
-warn_unused_ignores = true
-show_error_codes = true
-
-[[tool.mypy.overrides]]
-module = "ffmpeg_quality_metrics.gui"
-disable_error_code = ["attr-defined", "arg-type"]
+[tool.ty.rules]
+unresolved-import = "warn"
 
