@@ -1,3 +1,18 @@
+## [3.11.3] - 2026-03-30
+
+### 🐛 Bug Fixes
+
+- *(build)* Add missing LICENSE.md
+
+### 📚 Documentation
+
+- Fix syntax
+
+### ⚙️ Miscellaneous Tasks
+
+- Replace mypy with ty for type checking
+- *(build)* Relax uv_build upper bound to <1.0.0
+- Bump version to 3.11.3
 ## [3.11.2] - 2026-01-20
 
 ### 🐛 Bug Fixes
