@@ -204,6 +204,14 @@ def main() -> None:
     )
 
     vmaf_opts.add_argument(
+        "--vmaf-cuda",
+        action="store_true",
+        help="Use CUDA-accelerated VMAF (libvmaf_cuda) with NVDEC decoding. "
+        "Requires an ffmpeg build with CUDA, libvmaf_cuda, and scale_npp. "
+        "Only valid when VMAF is the sole metric.",
+    )
+
+    vmaf_opts.add_argument(
         "--vmaf-features",
         type=str,
         nargs="+",
@@ -233,6 +241,7 @@ def main() -> None:
         num_frames=cli_args.num_frames,
         start_offset=cli_args.start_offset,
         ffmpeg_path=cli_args.ffmpeg_path,
+        vmaf_cuda=cli_args.vmaf_cuda,
     )
 
     metrics = cli_args.metrics
