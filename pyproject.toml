@@ -45,7 +45,7 @@ gui = [
 
 [dependency-groups]
 dev = [
-    "pytest>=8.1.1,<9",
+    "pytest>=8.1.1,<10",
     "ruff>=0.12.11",
     "pre-commit>=3.5.0",
     "pdoc>=15.0.4",
