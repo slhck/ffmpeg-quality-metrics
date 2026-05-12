@@ -279,6 +279,28 @@ ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path vmaf_v0.6.1neg
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
 ```
 
+#### CUDA-Accelerated VMAF
+
+If your ffmpeg build has CUDA support (with `libvmaf_cuda` and `scale_npp`), you can compute VMAF on the GPU using `--vmaf-cuda`:
+
+```bash
+ffmpeg-quality-metrics dist.mp4 ref.mp4 -m vmaf --vmaf-cuda
+```
+
+This decodes both inputs with NVDEC, keeps frames in GPU memory, reformats them to YUV420p via `scale_npp`, and runs `libvmaf_cuda` for the metric calculation, avoiding CPU/GPU memory transfers.
+
+Requirements:
+
+- ffmpeg built with `--enable-cuda-nvcc --enable-libnpp --enable-libvmaf`
+- `libvmaf` itself built with CUDA support
+
+Limitations:
+
+- Only `vmaf` can be computed in this mode — combining it with `psnr`, `ssim`, `vif`, or `msad` is rejected, since those filters do not operate on CUDA frames.
+- Reference and distorted inputs must already have the same resolution (no on-the-fly scaling matching).
+- `--scaling-algorithm` and `--threads` have no effect.
+- If CUDA support is missing, the tool exits with an error explaining what is needed.
+
 #### Specifying VMAF Features
 
 VMAF includes several metrics, each of which correspond to a feature name. By default, only three core features are used. Use the `--vmaf-features` option to enable additional features on top of the core features.

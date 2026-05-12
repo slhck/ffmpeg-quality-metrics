@@ -144,6 +144,7 @@ class FfmpegQualityMetrics:
         num_frames: Union[int, None] = None,
         start_offset: Union[str, None] = None,
         ffmpeg_path: str = "ffmpeg",
+        vmaf_cuda: bool = False,
     ):
         """Instantiate a new FfmpegQualityMetrics
 
@@ -162,6 +163,7 @@ class FfmpegQualityMetrics:
             num_frames (int, optional): Number of frames to analyze from the input files. Defaults to None (all frames).
             start_offset (str, optional): Seek to this position before analyzing. Accepts timestamp (e.g., '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g., 'f:100'). Defaults to None.
             ffmpeg_path (str, optional): Path to ffmpeg executable. Defaults to "ffmpeg".
+            vmaf_cuda (bool, optional): Use CUDA-accelerated VMAF (libvmaf_cuda) with NVDEC decoding. Requires an ffmpeg build with CUDA support, libvmaf_cuda, and scale_npp. When enabled, 'vmaf' must be the only metric. Defaults to False.
 
         Raises:
             FfmpegQualityMetricsError: A generic error
@@ -180,6 +182,7 @@ class FfmpegQualityMetrics:
         self.num_frames = int(num_frames) if num_frames is not None else None
         self.start_offset = str(start_offset) if start_offset is not None else None
         self.ffmpeg_path = ffmpeg_path
+        self.vmaf_cuda = bool(vmaf_cuda)
 
         if not os.path.isfile(self.ref):
             raise FfmpegQualityMetricsError(f"Reference file not found: {self.ref}")
@@ -237,7 +240,7 @@ class FfmpegQualityMetrics:
         """
         cmd = [self.ffmpeg_path, "-filters"]
         stdout, _ = run_command(cmd)
-        filter_list = []
+        self._all_filter_names: List[str] = []
         for line in stdout.split("\n"):
             line = line.strip()
             if line == "":
@@ -245,13 +248,42 @@ class FfmpegQualityMetrics:
             cols = line.split(" ")
             if len(cols) > 1:
                 filter_name = cols[1]
-                filter_list.append(filter_name)
+                self._all_filter_names.append(filter_name)
 
         for key in FfmpegQualityMetrics.POSSIBLE_FILTERS:
-            if key in filter_list:
+            if key in self._all_filter_names:
                 self.available_filters.append(key)
 
         logger.debug(f"Available filters: {self.available_filters}")
+
+    def _check_cuda_availability(self) -> None:
+        """
+        Verify that this ffmpeg build supports CUDA-accelerated VMAF.
+        Checks for the libvmaf_cuda and scale_npp filters, plus the cuda hwaccel.
+
+        Raises:
+            FfmpegQualityMetricsError: if any required component is missing
+        """
+        missing: List[str] = []
+        if "libvmaf_cuda" not in self._all_filter_names:
+            missing.append("libvmaf_cuda filter")
+        if "scale_npp" not in self._all_filter_names:
+            missing.append("scale_npp filter")
+
+        hwaccels_stdout, _ = run_command([self.ffmpeg_path, "-hwaccels"])
+        hwaccels = {
+            line.strip() for line in hwaccels_stdout.splitlines() if line.strip()
+        }
+        if "cuda" not in hwaccels:
+            missing.append("cuda hwaccel")
+
+        if missing:
+            raise FfmpegQualityMetricsError(
+                "Your ffmpeg build does not support CUDA-accelerated VMAF. "
+                f"Missing: {', '.join(missing)}. "
+                "Rebuild ffmpeg with --enable-cuda-nvcc --enable-libnpp --enable-libvmaf "
+                "(and ensure libvmaf is built with CUDA support)."
+            )
 
     @staticmethod
     def get_framerate(input_file: str, ffmpeg_path: str = "ffmpeg") -> float:
@@ -364,6 +396,15 @@ class FfmpegQualityMetrics:
         if not metrics:
             raise FfmpegQualityMetricsError("No metrics specified!")
 
+        if self.vmaf_cuda:
+            if list(metrics) != ["vmaf"]:
+                raise FfmpegQualityMetricsError(
+                    "vmaf_cuda/--vmaf-cuda can only be used when 'vmaf' is the "
+                    "only metric, since GPU frames cannot be consumed by CPU "
+                    "filters (PSNR, SSIM, VIF, MSAD)."
+                )
+            self._check_cuda_availability()
+
         # check available metrics
         for metric_name in metrics:
             filter_name = self.METRIC_TO_FILTER_MAP.get(metric_name, None)
@@ -376,7 +417,8 @@ class FfmpegQualityMetrics:
 
         # set VMAF options specifically
         if "vmaf" in metrics:
-            self._check_libvmaf_availability()
+            if not self.vmaf_cuda:
+                self._check_libvmaf_availability()
             self.vmaf_options = self.DEFAULT_VMAF_OPTIONS
             # override with user-supplied options
             if vmaf_options:
@@ -385,47 +427,56 @@ class FfmpegQualityMetrics:
                         self.vmaf_options[key] = value  # type: ignore
             self._set_vmaf_model_path(self.vmaf_options["model_path"])
 
-        # ffmpeg 7.1 or higher: scale2ref filter is deprecated
-        # input 0: ref, input 1: dist --> swapped for scale filter
-
-        # Apply select filter if num_frames is specified
-        select_filter = ""
-        if self.num_frames is not None:
-            select_filter = f"select='lt(n\\,{self.num_frames})',"
-
-        filter_chains = [
-            f"[1][0]scale=rw:rh:flags={self.scaling_algorithm}[dist]",
-            f"[dist]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[distpts]",
-            f"[0]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[refpts]",
-        ]
-
-        # generate split filters depending on the number of models
-        n_splits = len(metrics)
-        if n_splits > 1:
-            for source in ["dist", "ref"]:
-                suffixes = "".join([f"[{source}{n}]" for n in range(1, n_splits + 1)])
-                filter_chains.extend(
-                    [
-                        f"[{source}pts]split={n_splits}{suffixes}",
-                    ]
-                )
-
-        # special case, only one metric:
-        if n_splits == 1:
-            metric_name = metrics[0]
-            filter_chains.extend(
-                [
-                    f"[distpts][refpts]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
-                ]
-            )
-        # all other cases:
+        if self.vmaf_cuda:
+            filter_chains = [
+                "[0:v]scale_npp=format=yuv420p[ref]",
+                "[1:v]scale_npp=format=yuv420p[dist]",
+                f"[dist][ref]libvmaf_cuda='{self._get_libvmaf_filter_opts()}'",
+            ]
         else:
-            for n, metric_name in zip(range(1, n_splits + 1), metrics):
+            # ffmpeg 7.1 or higher: scale2ref filter is deprecated
+            # input 0: ref, input 1: dist --> swapped for scale filter
+
+            # Apply select filter if num_frames is specified
+            select_filter = ""
+            if self.num_frames is not None:
+                select_filter = f"select='lt(n\\,{self.num_frames})',"
+
+            filter_chains = [
+                f"[1][0]scale=rw:rh:flags={self.scaling_algorithm}[dist]",
+                f"[dist]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[distpts]",
+                f"[0]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[refpts]",
+            ]
+
+            # generate split filters depending on the number of models
+            n_splits = len(metrics)
+            if n_splits > 1:
+                for source in ["dist", "ref"]:
+                    suffixes = "".join(
+                        [f"[{source}{n}]" for n in range(1, n_splits + 1)]
+                    )
+                    filter_chains.extend(
+                        [
+                            f"[{source}pts]split={n_splits}{suffixes}",
+                        ]
+                    )
+
+            # special case, only one metric:
+            if n_splits == 1:
+                metric_name = metrics[0]
                 filter_chains.extend(
                     [
-                        f"[dist{n}][ref{n}]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
+                        f"[distpts][refpts]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
                     ]
                 )
+            # all other cases:
+            else:
+                for n, metric_name in zip(range(1, n_splits + 1), metrics):
+                    filter_chains.extend(
+                        [
+                            f"[dist{n}][ref{n}]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
+                        ]
+                    )
 
         try:
             output = self._run_ffmpeg_command(filter_chains, desc=", ".join(metrics))
@@ -640,9 +691,17 @@ class FfmpegQualityMetrics:
             str(self.threads),
         ]
 
+        hwaccel_opts = (
+            ["-hwaccel", "cuda", "-hwaccel_output_format", "cuda"]
+            if self.vmaf_cuda
+            else []
+        )
+
         # Add -ss before reference input if start_offset is specified
         if start_offset_timestamp is not None:
             cmd.extend(["-ss", start_offset_timestamp])
+
+        cmd.extend(hwaccel_opts)
 
         # Add -r before -i only if no start_offset (to avoid seeking issues)
         # When seeking is used, -r before -i can interfere with frame-accurate seeking
@@ -655,6 +714,8 @@ class FfmpegQualityMetrics:
         if start_offset_timestamp is not None:
             cmd.extend(["-ss", start_offset_timestamp])
 
+        cmd.extend(hwaccel_opts)
+
         # Add -r before -i only if no start_offset
         if start_offset_timestamp is None:
             cmd.extend(["-r", str(dist_framerate)])
@@ -666,11 +727,15 @@ class FfmpegQualityMetrics:
                 "-filter_complex",
                 ";".join(filter_chains),
                 "-an",
-                "-f",
-                "null",
-                NUL,
             ]
         )
+
+        # For CUDA, num_frames is applied at the output level since the select
+        # filter does not operate on hardware frames.
+        if self.vmaf_cuda and self.num_frames is not None:
+            cmd.extend(["-frames:v", str(self.num_frames)])
+
+        cmd.extend(["-f", "null", NUL])
 
         if self.progress:
             logger.debug(quoted_cmd(cmd))
