@@ -1,3 +1,10 @@
+## [3.11.4] - 2026-05-12
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump ffmpeg version
+- Update pytest
+- Bump version to 3.11.4
 ## [3.11.3] - 2026-03-30
 
 ### 🐛 Bug Fixes
