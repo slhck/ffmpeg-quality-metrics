@@ -1,3 +1,12 @@
+## [3.12.0] - 2026-07-10
+
+### 🚀 Features
+
+- Add support for vmaf 1.0
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 3.12.0
 ## [3.11.4] - 2026-05-12
 
 ### ⚙️ Miscellaneous Tasks
