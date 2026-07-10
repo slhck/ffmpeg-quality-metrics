@@ -51,6 +51,12 @@ class VmafOptions(TypedDict):
     Each entry must be a string beginning with name=feature_name, and additional parameters can be specified as
     key=value, separated by colons.
     """
+    ten_bit: bool
+    """
+    Convert both inputs to 10 bit (yuv420p10le) before calculating VMAF.
+    Recommended for VMAF v1 models, which should ideally be applied at 10-bit precision for SDR content.
+    Defaults to False.
+    """
 
 
 MetricName = Literal["psnr", "ssim", "vmaf", "vif", "msad"]
@@ -112,6 +118,7 @@ class FfmpegQualityMetrics:
         "n_threads": DEFAULT_VMAF_THREADS,
         "n_subsample": DEFAULT_VMAF_SUBSAMPLE,
         "features": [],
+        "ten_bit": False,
     }
     POSSIBLE_FILTERS: List[FilterName] = [
         "libvmaf",
@@ -341,6 +348,34 @@ class FfmpegQualityMetrics:
         else:
             raise FfmpegQualityMetricsError(f"Unknown filter {filter_name}!")
 
+    def _get_metric_filter_chains(
+        self, metric_name: MetricName, dist_label: str, ref_label: str
+    ) -> List[str]:
+        """
+        Build the filter chain(s) for a single metric, reading from the given
+        distorted and reference filter graph labels.
+
+        Returns:
+            List[str]: One or more filter chains
+        """
+        chains: List[str] = []
+
+        # convert both inputs to 10 bit if requested, as recommended for VMAF v1 models
+        if metric_name == "vmaf" and self.vmaf_options["ten_bit"]:
+            chains.extend(
+                [
+                    f"[{dist_label}]format=yuv420p10le[{dist_label}10b]",
+                    f"[{ref_label}]format=yuv420p10le[{ref_label}10b]",
+                ]
+            )
+            dist_label += "10b"
+            ref_label += "10b"
+
+        chains.append(
+            f"[{dist_label}][{ref_label}]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
+        )
+        return chains
+
     def calculate(
         self,
         metrics: List[MetricName] = ["ssim", "psnr"],
@@ -377,7 +412,7 @@ class FfmpegQualityMetrics:
         # set VMAF options specifically
         if "vmaf" in metrics:
             self._check_libvmaf_availability()
-            self.vmaf_options = self.DEFAULT_VMAF_OPTIONS
+            self.vmaf_options = self.DEFAULT_VMAF_OPTIONS.copy()
             # override with user-supplied options
             if vmaf_options:
                 for key, value in vmaf_options.items():
@@ -412,19 +447,14 @@ class FfmpegQualityMetrics:
 
         # special case, only one metric:
         if n_splits == 1:
-            metric_name = metrics[0]
             filter_chains.extend(
-                [
-                    f"[distpts][refpts]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
-                ]
+                self._get_metric_filter_chains(metrics[0], "distpts", "refpts")
             )
         # all other cases:
         else:
             for n, metric_name in zip(range(1, n_splits + 1), metrics):
                 filter_chains.extend(
-                    [
-                        f"[dist{n}][ref{n}]{self._get_filter_opts(self.METRIC_TO_FILTER_MAP[metric_name])}"
-                    ]
+                    self._get_metric_filter_chains(metric_name, f"dist{n}", f"ref{n}")
                 )
 
         try:
@@ -434,6 +464,15 @@ class FfmpegQualityMetrics:
                 self._read_ffmpeg_output(output, metrics)
             else:
                 raise FfmpegQualityMetricsError("ffmpeg output is empty!")
+        except RuntimeError as e:
+            if "could not initialize feature extractor" in str(e):
+                raise FfmpegQualityMetricsError(
+                    "Your ffmpeg build is linked against a libvmaf version that does not support "
+                    "one of the features required by the chosen VMAF model. "
+                    "VMAF v1 models (vmaf_v1.0.16 and newer) require a libvmaf version newer than 3.2.0. "
+                    f"Original error:\n{e}"
+                )
+            raise e
         except Exception as e:
             raise e
         finally:
@@ -787,11 +826,11 @@ class FfmpegQualityMetrics:
         Returns:
             List[str]: A list of VMAF model names
         """
-        return [
+        return sorted(
             f
             for f in os.listdir(FfmpegQualityMetrics.DEFAULT_VMAF_MODEL_DIRECTORY)
             if f.endswith(".json")
-        ]
+        )
 
     def get_global_stats(self) -> GlobalStats:
         """

@@ -204,6 +204,13 @@ def main() -> None:
     )
 
     vmaf_opts.add_argument(
+        "--vmaf-10bit",
+        action="store_true",
+        help="Convert both inputs to 10 bit before calculating VMAF. "
+        "This is recommended for VMAF v1 models (vmaf_v1.0.16 and newer), which should ideally be applied at 10-bit precision for SDR content.",
+    )
+
+    vmaf_opts.add_argument(
         "--vmaf-features",
         type=str,
         nargs="+",
@@ -244,6 +251,7 @@ def main() -> None:
             "n_threads": cli_args.vmaf_threads,
             "n_subsample": cli_args.vmaf_subsample,
             "features": cli_args.vmaf_features,
+            "ten_bit": cli_args.vmaf_10bit,
         }
         ffqm.calculate(metrics, vmaf_options=vmaf_options)
     else:

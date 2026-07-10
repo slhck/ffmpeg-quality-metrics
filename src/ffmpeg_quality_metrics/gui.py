@@ -156,8 +156,9 @@ def load_csv_data(file_path: str, clip_name: Optional[str] = None) -> MetricsDat
             continue
         # Determine metric from column name
         for metric in ["psnr", "ssim", "vmaf", "vif", "msad"]:
-            if col.startswith(metric) or col.startswith(
-                metric.replace("vmaf", "integer_")
+            if col.startswith(metric) or (
+                metric == "vmaf"
+                and col.startswith(("integer_", "cambi", "speed_chroma", "VMAF_"))
             ):
                 metric_columns[metric].append(col)
                 break

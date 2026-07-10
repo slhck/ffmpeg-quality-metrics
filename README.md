@@ -63,7 +63,7 @@ What you need:
 
 Put the `ffmpeg` executable in your `$PATH`, e.g. `/usr/local/bin/ffmpeg`.
 
-If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model).
+If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model). Note that the new VMAF v1 models (see [Specifying VMAF Model](#specifying-vmaf-model)) require an ffmpeg build linked against a libvmaf version newer than 3.2.0.
 
 Using [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
@@ -114,7 +114,7 @@ The following metrics are available in this tool:
 | VIF    | [Visual Information Fidelity](https://en.wikipedia.org/wiki/Visual_information_fidelity) | 0-100 (higher is better)                               | `scale_0`<br> `scale_1`<br> `scale_2`<br> `scale_3`                                                                                                                                                                                                                          | No                     |
 | MSAD   | Mean Sum of Absolute Differences                                                         | depends on input video, minimum is 0 (higher is worse) | `msad_y`<br> `msad_u`<br> `msad_v`<br> `msad_avg`                                                                                                                                                                                                                            | No                     |
 
-As shown in the table, every metric can have more than one submetric computed, and they will be printed in the output.
+As shown in the table, every metric can have more than one submetric computed, and they will be printed in the output. The exact set of VMAF submetrics depends on the chosen model and the libvmaf version; the table above shows the output for the default (v0) model. VMAF v1 models output different submetrics (e.g. CAMBI and chroma-related features).
 
 If you want to calculate additional metrics, enable them with the `--metrics` option:
 
@@ -138,15 +138,15 @@ usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                               [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS]
                               [--num-frames NUM_FRAMES] [--start-offset START_OFFSET]
-                              [--ffmpeg-path FFMPEG_PATH]
-                              [-o OUTPUT_FILE] [-of {json,csv}]
+                              [--ffmpeg-path FFMPEG_PATH] [-o OUTPUT_FILE] [-of {json,csv}] [--gui]
+                              [--gui-host GUI_HOST] [--gui-port GUI_PORT]
                               [--vmaf-model-path VMAF_MODEL_PATH]
                               [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]]
                               [--vmaf-threads VMAF_THREADS] [--vmaf-subsample VMAF_SUBSAMPLE]
-                              [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
+                              [--vmaf-10bit] [--vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]]
                               dist ref
 
-ffmpeg-quality-metrics v3.4.2
+ffmpeg-quality-metrics v3.11.4
 
 positional arguments:
   dist                                  input file, distorted
@@ -165,38 +165,46 @@ General options:
                                         default if not specified) (default: None)
 
 Metric options:
-  -m {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...], --metrics {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...]
+  -m, --metrics {vmaf,psnr,ssim,vif,msad} [{vmaf,psnr,ssim,vif,msad} ...]
                                         Metrics to calculate. Specify multiple metrics like '--
                                         metrics ssim vmaf' (default: ['psnr', 'ssim'])
 
 FFmpeg options:
-  -s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
+  -s, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                                         Scaling algorithm for ffmpeg (default: bicubic)
-  -r FRAMERATE, --framerate FRAMERATE   Force an input framerate (default: None)
+  -r, --framerate FRAMERATE             Force an input framerate (default: None)
   --dist-delay DIST_DELAY               Delay the distorted video against the reference by this many
                                         seconds (default: 0.0)
-  -t THREADS, --threads THREADS         Number of threads to do the calculations (default: 0)
-  --num-frames NUM_FRAMES               Number of frames to analyze from the input files (default: all
-                                        frames)
-  --start-offset START_OFFSET           Seek to this position before analyzing. Accepts timestamp (e.g.,
-                                        '00:00:10' or '10.5') or frame number with 'f:' prefix (e.g.,
-                                        'f:100'). Note: seeking may not be frame-accurate due to keyframe
-                                        constraints. (default: None)
+  -t, --threads THREADS                 Number of threads to do the calculations (default: 0)
+  --num-frames NUM_FRAMES               Number of frames to analyze from the input files (default:
+                                        all frames) (default: None)
+  --start-offset START_OFFSET           Seek to this position before analyzing. Accepts timestamp
+                                        (e.g., '00:00:10' or '10.5') or frame number with 'f:'
+                                        prefix (e.g., 'f:100'). Note: seeking may not be frame-
+                                        accurate due to keyframe constraints. (default: None)
   --ffmpeg-path FFMPEG_PATH             Path to ffmpeg executable (default: ffmpeg)
 
 Output options:
-  -o OUTPUT_FILE, --output-file OUTPUT_FILE
-                                        Output file for the metrics. If not specified, stdout will
+  -o, --output-file OUTPUT_FILE         Output file for the metrics. If not specified, stdout will
                                         be used. (default: None)
-  -of {json,csv}, --output-format {json,csv}
-                                        Output format for the metrics (default: json)
+  -of, --output-format {json,csv}       Output format for the metrics (default: json)
+  --gui                                 Open interactive GUI dashboard after computing metrics
+                                        (requires 'gui' extra: pip install 'ffmpeg-quality-
+                                        metrics[gui]') (default: False)
+  --gui-host GUI_HOST                   Host address for the GUI dashboard (default: 127.0.0.1)
+  --gui-port GUI_PORT                   Port for the GUI dashboard (default: 8050)
 
 VMAF options:
   --vmaf-model-path VMAF_MODEL_PATH     Use a specific VMAF model file. If none is chosen, picks a
                                         default model. You can also specify one of the following
-                                        built-in models: ['vmaf_v0.6.1.json', 'vmaf_4k_v0.6.1.json',
-                                        'vmaf_v0.6.1neg.json'] (default: /opt/homebrew/opt/libvmaf/s
-                                        hare/libvmaf/model/vmaf_v0.6.1.json)
+                                        built-in models: ['vmaf_4k_v0.6.1.json', 'vmaf_v0.6.1.json',
+                                        'vmaf_v0.6.1neg.json', 'vmaf_v1.0.16_1d5h_2160.json',
+                                        'vmaf_v1.0.16_3d0h.json', 'vmaf_v1.0.16_3d0h_2160.json',
+                                        'vmaf_v1.0.16_5d0h.json', 'vmaf_v1.0.16_hfr_1d5h_2160.json',
+                                        'vmaf_v1.0.16_hfr_3d0h.json',
+                                        'vmaf_v1.0.16_hfr_3d0h_2160.json',
+                                        'vmaf_v1.0.16_hfr_5d0h.json'] (default: /opt/homebrew/opt/li
+                                        bvmaf/share/libvmaf/model/vmaf_v0.6.1.json)
   --vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]
                                         A list of params to pass to the VMAF model, specified as
                                         key=value. Specify multiple params like '--vmaf-model-params
@@ -208,6 +216,10 @@ VMAF options:
   --vmaf-subsample VMAF_SUBSAMPLE       Set the value of libvmaf's n_subsample option. This is the
                                         subsampling interval, so set to 1 for default behavior.
                                         (default: 1)
+  --vmaf-10bit                          Convert both inputs to 10 bit before calculating VMAF. This
+                                        is recommended for VMAF v1 models (vmaf_v1.0.16 and newer),
+                                        which should ideally be applied at 10-bit precision for SDR
+                                        content. (default: False)
   --vmaf-features VMAF_FEATURES [VMAF_FEATURES ...]
                                         A list of feature to enable. Pass the names of the features
                                         and any optional params. See https://github.com/Netflix/vmaf
@@ -253,15 +265,57 @@ As VMAF is more complex than the other metrics, it has a few more options.
 
 Use the `--vmaf-model-path` option to set the path to a different VMAF model file. The default is `vmaf_v0.6.1.json`.
 
-`libvmaf` version 2.x supports JSON-based model files only. This program has built-in support for the following models:
+This program has built-in support for the following models:
 
 ```
 vmaf_v0.6.1.json
-vmaf_4k_v0.6.1.json
 vmaf_v0.6.1neg.json
+vmaf_4k_v0.6.1.json
+vmaf_v1.0.16_3d0h.json
+vmaf_v1.0.16_5d0h.json
+vmaf_v1.0.16_1d5h_2160.json
+vmaf_v1.0.16_3d0h_2160.json
+vmaf_v1.0.16_hfr_3d0h.json
+vmaf_v1.0.16_hfr_5d0h.json
+vmaf_v1.0.16_hfr_1d5h_2160.json
+vmaf_v1.0.16_hfr_3d0h_2160.json
 ```
 
-Use the `4k` version if you have a 4K reference sample. The `neg` version [is explained here](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30).
+The `vmaf_v0.6.1*` and `vmaf_4k_v0.6.1` files are the previous generation of models (VMAF v0). Use the `4k` version if you have a 4K reference sample. The `neg` version [is explained here](https://netflixtechblog.com/toward-a-better-quality-metric-for-the-video-community-7ed94e752a30).
+
+The `vmaf_v1.0.16*` files are the new generation of models (VMAF v1), released in June 2026, which offer better accuracy than the v0 models. Pick the model based on your viewing scenario:
+
+| Scenario       | Display | Normalized viewing distance | Model file                    | Score range |
+| -------------- | ------- | --------------------------- | ----------------------------- | ----------- |
+| Standard 1080p | 1080p   | 3H                          | `vmaf_v1.0.16_3d0h.json`      | [0, 100]    |
+| Phone          | 1080p   | 5H                          | `vmaf_v1.0.16_5d0h.json`      | [0, 100]    |
+| 4K default     | 2160p   | 1.5H                        | `vmaf_v1.0.16_1d5h_2160.json` | [0, 100]    |
+| 4K consumer TV | 2160p   | 3H                          | `vmaf_v1.0.16_3d0h_2160.json` | [0, 110]    |
+
+For high-frame-rate content (roughly 50/60 fps, e.g. sports), use the corresponding `vmaf_v1.0.16_hfr_*` variant instead.
+
+> [!IMPORTANT]
+> VMAF v1 models require an ffmpeg build linked against a libvmaf version newer than 3.2.0. If your libvmaf is too old, this tool will print an error message. In that case, use the v0 models, or update your ffmpeg/libvmaf installation.
+>
+> As of July 2026, no released libvmaf version supports the v1 models yet, so you need an ffmpeg build that uses libvmaf's git master:
+>
+> - **Linux/Windows:** Download an `ffmpeg-master-latest` build from [BtbN's FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest). These bundle a libvmaf built from git master.
+> - **macOS:** Homebrew's libvmaf 3.2.0 is too old, and the formula has no `--HEAD` option. Since Homebrew's ffmpeg links libvmaf dynamically, you can [build libvmaf from source](https://github.com/Netflix/vmaf/blob/master/libvmaf/README.md) (git master, via meson/ninja) and point ffmpeg at the newer library:
+>
+>   ```bash
+>   git clone https://github.com/Netflix/vmaf.git
+>   meson setup vmaf/libvmaf/build vmaf/libvmaf --buildtype release
+>   ninja -C vmaf/libvmaf/build
+>   DYLD_LIBRARY_PATH=$(pwd)/vmaf/libvmaf/build/src ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path vmaf_v1.0.16_3d0h.json --vmaf-10bit
+>   ```
+>
+> - **Docker:** The [Docker image of this project](#running-with-docker) uses a master build of ffmpeg, which supports the v1 models.
+
+VMAF v1 should ideally be applied at 10-bit precision for SDR content, which helps more accurately capture the presence of banding. Use the `--vmaf-10bit` option to convert both inputs to 10 bit before calculating VMAF, even if they are 8-bit:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path vmaf_v1.0.16_3d0h.json --vmaf-10bit
+```
 
 You can either specify an absolute path to an existing model, e.g.:
 
@@ -269,11 +323,14 @@ You can either specify an absolute path to an existing model, e.g.:
 /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
 ```
 
-Or pass the file name to the built-in model. So all of these work:
+Or pass the file name of a built-in model. So all of these work:
 
 ```bash
-# use a downloaded JSON model for libvmaf 2.x
+# use a built-in VMAF v0 model
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path vmaf_v0.6.1neg.json
+
+# use a built-in VMAF v1 model, measured at 10 bit as recommended
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path vmaf_v1.0.16_3d0h.json --vmaf-10bit
 
 # use a different path for models on your system
 ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path /usr/local/opt/libvmaf/share/model/vmaf_v0.6.1neg.json
@@ -376,6 +433,16 @@ ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-params enable_trans
 > [!NOTE]
 >
 > The `enable_conf_interval` parameter currently does not change the output.
+
+You can also override individual feature options of the model by prefixing the option with the feature name and a dot. This is useful for the CAMBI feature used by VMAF v1 models: if you know the encode-side width, height, and bit depth of the distorted video (i.e., the dimensions and bit depth at which the video was actually encoded, before any rescaling for display), you can pass them along. For example, for a 1280x720 8-bit encoded video that is measured against a 1080p reference:
+
+```bash
+ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf \
+    --vmaf-model-path vmaf_v1.0.16_3d0h.json --vmaf-10bit \
+    --vmaf-model-params cambi.enc_width=1280 cambi.enc_height=720 cambi.enc_bitdepth=8
+```
+
+These overrides are merged into the model's CAMBI feature options. When they are not provided, CAMBI falls back to the input width/height and bit depth.
 
 ## Examples
 
