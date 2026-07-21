@@ -159,7 +159,7 @@ class FfmpegQualityMetrics:
             dist (str): distorted file
             scaling_algorithm (str, optional): A scaling algorithm. Must be one of the following: ["fast_bilinear", "bilinear", "bicubic", "experimental", "neighbor", "area", "bicublin", "gauss", "sinc", "lanczos", "spline"]. Defaults to "bicubic"
             framerate (float, optional): Force a frame rate. Defaults to None.
-            dist_delay (float): Delay the distorted file against the reference by this amount of seconds. Defaults to 0.
+            dist_delay (float): Temporally align the distorted file against the reference by this many seconds, by trimming the leading unmatched frames of one stream before comparison. A positive value means the distorted stream starts this many seconds after the reference (the reference's leading frames are trimmed); a negative value means the distorted stream leads (its leading frames are trimmed). Defaults to 0.
             dry_run (bool, optional): Don't run anything, just print commands. Defaults to False.
             verbose (bool, optional): Show more output. Defaults to False.
             threads (int, optional): Number of ffmpeg threads. Defaults to 0 (auto).
@@ -428,10 +428,23 @@ class FfmpegQualityMetrics:
         if self.num_frames is not None:
             select_filter = f"select='lt(n\\,{self.num_frames})',"
 
+        # Apply dist_delay by trimming the leading, unmatched portion of one
+        # stream so the two streams are temporally aligned before comparison.
+        # libvmaf (and the other metric filters) pair frames sequentially, so a
+        # PTS-only shift (e.g. -itsoffset) is cancelled by the setpts reset below
+        # and has no effect. Trimming happens at decode time - no re-encode.
+        # dist_delay > 0: distorted is delayed against the reference, so the
+        #   reference has extra leading frames -> trim the reference.
+        # dist_delay < 0: the distorted stream leads -> trim the distorted.
+        ref_trim = f"trim=start={self.dist_delay}," if self.dist_delay > 0 else ""
+        dist_trim = (
+            f"trim=start={abs(self.dist_delay)}," if self.dist_delay < 0 else ""
+        )
+
         filter_chains = [
             f"[1][0]scale=rw:rh:flags={self.scaling_algorithm}[dist]",
-            f"[dist]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[distpts]",
-            f"[0]{select_filter}settb=AVTB,setpts=PTS-STARTPTS[refpts]",
+            f"[dist]{dist_trim}{select_filter}settb=AVTB,setpts=PTS-STARTPTS[distpts]",
+            f"[0]{ref_trim}{select_filter}settb=AVTB,setpts=PTS-STARTPTS[refpts]",
         ]
 
         # generate split filters depending on the number of models
@@ -688,7 +701,10 @@ class FfmpegQualityMetrics:
         if start_offset_timestamp is None:
             cmd.extend(["-r", str(ref_framerate)])
 
-        cmd.extend(["-i", self.ref, "-itsoffset", str(self.dist_delay)])
+        # Note: dist_delay is applied via a trim filter in the filter graph (see
+        # calculate), not via -itsoffset. A PTS shift here would be cancelled by
+        # the setpts=PTS-STARTPTS reset and would not align the streams.
+        cmd.extend(["-i", self.ref])
 
         # Add -ss before distorted input if start_offset is specified
         if start_offset_timestamp is not None:

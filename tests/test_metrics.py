@@ -3,6 +3,7 @@
 import csv
 import json
 import os
+import subprocess
 from io import StringIO
 from typing import cast
 
@@ -280,3 +281,86 @@ class TestMetrics:
 
         # Should get only 1 frame
         assert len(f.data["psnr"]) == 1
+
+    def test_dist_delay_aligns_streams(self, misaligned_clips):
+        # The distorted clip is the reference content starting DELAY seconds in,
+        # re-encoded at a lower bitrate. Without alignment the frames are paired
+        # out of order and VMAF is low; with the correct dist_delay the streams
+        # are aligned by trimming the reference's leading frames and VMAF is high.
+        ref, dist, delay = misaligned_clips
+
+        unaligned_vmaf = ffqm(ref, dist, framerate=30, dist_delay=0)
+        unaligned_vmaf.calculate(metrics=["vmaf"])
+        aligned_vmaf = ffqm(ref, dist, framerate=30, dist_delay=delay)
+        aligned_vmaf.calculate(metrics=["vmaf"])
+
+        unaligned_score = unaligned_vmaf.get_global_stats()["vmaf"]["vmaf"][
+            "average"
+        ]
+        aligned_score = aligned_vmaf.get_global_stats()["vmaf"]["vmaf"]["average"]
+
+        # Alignment must raise VMAF substantially (regression guard: a broken
+        # dist_delay leaves the score unchanged).
+        assert aligned_score > unaligned_score + 20, (
+            f"dist_delay did not align streams: unaligned={unaligned_score:.2f}, "
+            f"aligned={aligned_score:.2f}"
+        )
+
+    def test_dist_delay_matches_manual_trim(self, misaligned_clips):
+        # A positive dist_delay must produce the same result as physically
+        # trimming the reference's leading frames by hand.
+        ref, dist, delay = misaligned_clips
+
+        via_param = ffqm(ref, dist, framerate=30, dist_delay=delay)
+        via_param.calculate(metrics=["vmaf"])
+        param_score = via_param.get_global_stats()["vmaf"]["vmaf"]["average"]
+
+        trimmed_ref = os.path.join(os.path.dirname(dist), "ref_trimmed.mp4")
+        subprocess.run(
+            [
+                "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+                "-ss", str(delay), "-i", ref, "-c:v", "libx264", "-qp", "0",
+                "-pix_fmt", "yuv420p", trimmed_ref,
+            ],
+            check=True,
+        )
+        via_trim = ffqm(trimmed_ref, dist, framerate=30)
+        via_trim.calculate(metrics=["vmaf"])
+        trim_score = via_trim.get_global_stats()["vmaf"]["vmaf"]["average"]
+
+        assert via_param.dist_delay == delay
+        assert abs(param_score - trim_score) < 2.0, (
+            f"dist_delay result {param_score:.2f} differs from manual trim "
+            f"{trim_score:.2f}"
+        )
+
+
+@pytest.fixture(scope="module")
+def misaligned_clips(tmp_path_factory):
+    """
+    Build a reference clip and a 'distorted' clip that emulates a capture which
+    started `DELAY` seconds late: it is the reference content from `DELAY`
+    onwards, re-encoded at a lower bitrate. Yields (ref_path, dist_path, delay).
+    """
+    delay = 2.0
+    tmp = tmp_path_factory.mktemp("dist_delay")
+    ref = os.path.join(tmp, "ref.mp4")
+    dist = os.path.join(tmp, "dist.mp4")
+
+    subprocess.run(
+        [
+            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+            "-f", "lavfi", "-i", "testsrc2=size=1280x720:rate=30:duration=6",
+            "-c:v", "libx264", "-qp", "10", "-pix_fmt", "yuv420p", ref,
+        ],
+        check=True,
+    )
+    subprocess.run(
+        [
+            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+            "-ss", str(delay), "-i", ref, "-t", "3",
+            "-c:v", "libx264", "-b:v", "1500k", "-pix_fmt", "yuv420p", dist,
+        ],
+        check=True,
+    )
+    return ref, dist, delay
