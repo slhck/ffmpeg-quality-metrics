@@ -77,6 +77,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "RogueKernel",
+      "name": "Rogue Kernel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/263956334?v=4",
+      "profile": "https://roguekernel.com/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

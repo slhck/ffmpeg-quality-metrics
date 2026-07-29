@@ -1,7 +1,7 @@
 # FFmpeg Quality Metrics
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![PyPI version](https://img.shields.io/pypi/v/ffmpeg-quality-metrics.svg)](https://pypi.org/project/ffmpeg-quality-metrics)
@@ -666,6 +666,7 @@ For more usage please read [the docs](https://htmlpreview.github.io/?https://git
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/antonkesy"><img src="https://avatars.githubusercontent.com/u/25124866?v=4?s=100" width="100px;" alt="Anton Kesy"/><br /><sub><b>Anton Kesy</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=antonkesy" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://roguekernel.com/"><img src="https://avatars.githubusercontent.com/u/263956334?v=4?s=100" width="100px;" alt="Rogue Kernel"/><br /><sub><b>Rogue Kernel</b></sub></a><br /><a href="https://github.com/slhck/ffmpeg-quality-metrics/commits?author=RogueKernel" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
