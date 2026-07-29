@@ -93,7 +93,21 @@ ffmpeg-quality-metrics distorted.mp4 reference.y4m
 
 The distorted file will be automatically scaled to the resolution of the reference, and the default metrics (PSNR, SSIM) will be computed.
 
-Note that if your distorted file is not in time sync with the reference, you can use the `--dist-delay` option to delay the distorted file by a certain amount of seconds (positive or negative).
+If your distorted file is not in time sync with the reference, use
+`--dist-delay` to trim the unmatched lead-in before comparison. A positive
+value means the distorted file starts that many seconds later than the
+reference, so the reference lead-in is trimmed. A negative value means the
+distorted file starts earlier, so its lead-in is trimmed:
+
+```bash
+# distorted.mp4 begins with reference content from 12.5 seconds onward
+ffmpeg-quality-metrics distorted.mp4 reference.mp4 \
+  --metrics vmaf --dist-delay 12.5
+```
+
+The files are decoded and trimmed in the filtergraph; neither input is
+re-encoded. Metrics stop at the end of the shorter aligned stream, so trailing
+content from the longer file is not compared against a repeated final frame.
 
 > [!NOTE]
 > Raw YUV files cannot be read with this tool. We should all be using lossless containers like Y4M or FFV1. If you have a raw YUV file, you can use FFmpeg to convert it to a format that this tool can read. Adjust the options as needed.
@@ -173,8 +187,9 @@ FFmpeg options:
   -s, --scaling-algorithm {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}
                                         Scaling algorithm for ffmpeg (default: bicubic)
   -r, --framerate FRAMERATE             Force an input framerate (default: None)
-  --dist-delay DIST_DELAY               Delay the distorted video against the reference by this many
-                                        seconds (default: 0.0)
+  --dist-delay DIST_DELAY               Temporally align the inputs by trimming unmatched leading
+                                        frames. Positive trims the reference; negative trims the
+                                        distorted input. (default: 0.0)
   -t, --threads THREADS                 Number of threads to do the calculations (default: 0)
   --num-frames NUM_FRAMES               Number of frames to analyze from the input files (default:
                                         all frames) (default: None)

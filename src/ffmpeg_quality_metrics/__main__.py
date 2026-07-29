@@ -100,7 +100,12 @@ def main() -> None:
         "--dist-delay",
         type=float,
         default=0.0,
-        help="Delay the distorted video against the reference by this many seconds",
+        help=(
+            "Temporally align the inputs by trimming unmatched leading frames. "
+            "Positive means the distorted video starts later, so trim the "
+            "reference; negative means the distorted video starts earlier, so "
+            "trim the distorted input."
+        ),
     )
 
     ffmpeg_opts.add_argument(

@@ -441,10 +441,17 @@ class FfmpegQualityMetrics:
             f"trim=start={abs(self.dist_delay)}," if self.dist_delay < 0 else ""
         )
 
+        # Align both streams before the reference is split between the scale
+        # filter and the metric filter. Feeding the untrimmed reference directly
+        # to scale while separately trimming it for the metric makes ffmpeg
+        # buffer the entire skipped lead-in on large positive delays. Real
+        # captures can start tens of seconds into a source, which previously
+        # grew memory into gigabytes and could be OOM-killed.
         filter_chains = [
-            f"[1][0]scale=rw:rh:flags={self.scaling_algorithm}[dist]",
-            f"[dist]{dist_trim}{select_filter}settb=AVTB,setpts=PTS-STARTPTS[distpts]",
-            f"[0]{ref_trim}{select_filter}settb=AVTB,setpts=PTS-STARTPTS[refpts]",
+            f"[0]{ref_trim}{select_filter}settb=AVTB,setpts=PTS-STARTPTS[refaligned]",
+            "[refaligned]split=2[refscale][refpts]",
+            f"[1]{dist_trim}{select_filter}settb=AVTB,setpts=PTS-STARTPTS[distaligned]",
+            f"[distaligned][refscale]scale=rw:rh:flags={self.scaling_algorithm}[distpts]",
         ]
 
         # generate split filters depending on the number of models
@@ -520,6 +527,16 @@ class FfmpegQualityMetrics:
             "log_fmt": "json",
             "n_threads": str(self.vmaf_options["n_threads"]),
             "n_subsample": str(self.vmaf_options["n_subsample"]),
+            # Terminate at the shorter of the two aligned streams. libvmaf is a
+            # framesync filter whose default (shortest=0, repeatlast=1) repeats
+            # the last frame of the shorter stream until the longer one ends.
+            # After dist_delay trims the leading frames to align the starts, the
+            # reference is typically still longer than the distorted clip (e.g. a
+            # full-length source vs a short recording); without shortest=1 those
+            # trailing reference frames are compared against a frozen distorted
+            # frame, cratering the pooled score. Compare only the overlap.
+            "shortest": "1",
+            "repeatlast": "0",
         }
 
         if self.vmaf_options["features"]:

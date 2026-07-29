@@ -299,6 +299,11 @@ class TestMetrics:
         ]
         aligned_score = aligned_vmaf.get_global_stats()["vmaf"]["vmaf"]["average"]
 
+        # The aligned reference still contains one second more content than the
+        # distorted clip. libvmaf must stop at the end of the shorter stream
+        # rather than repeat the distorted clip's final frame against that tail.
+        assert len(aligned_vmaf.data["vmaf"]) == 90
+
         # Alignment must raise VMAF substantially (regression guard: a broken
         # dist_delay leaves the score unchanged).
         assert aligned_score > unaligned_score + 20, (
