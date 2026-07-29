@@ -1,3 +1,15 @@
+## [3.12.1] - 2026-07-29
+
+### 🐛 Bug Fixes
+
+- Apply dist_delay via trim filter so temporal alignment works
+- Correct delayed alignment and bound metric overlap
+- Bound all metrics to aligned overlap
+
+### ⚙️ Miscellaneous Tasks
+
+- Add contributor
+- Bump version to 3.12.1
 ## [3.12.0] - 2026-07-10
 
 ### 🚀 Features
