@@ -294,9 +294,7 @@ class TestMetrics:
         aligned_vmaf = ffqm(ref, dist, framerate=30, dist_delay=delay)
         aligned_vmaf.calculate(metrics=["vmaf"])
 
-        unaligned_score = unaligned_vmaf.get_global_stats()["vmaf"]["vmaf"][
-            "average"
-        ]
+        unaligned_score = unaligned_vmaf.get_global_stats()["vmaf"]["vmaf"]["average"]
         aligned_score = aligned_vmaf.get_global_stats()["vmaf"]["vmaf"]["average"]
 
         # The aligned reference still contains one second more content than the
@@ -323,9 +321,22 @@ class TestMetrics:
         trimmed_ref = os.path.join(os.path.dirname(dist), "ref_trimmed.mp4")
         subprocess.run(
             [
-                "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-                "-ss", str(delay), "-i", ref, "-c:v", "libx264", "-qp", "0",
-                "-pix_fmt", "yuv420p", trimmed_ref,
+                "ffmpeg",
+                "-y",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-ss",
+                str(delay),
+                "-i",
+                ref,
+                "-c:v",
+                "libx264",
+                "-qp",
+                "0",
+                "-pix_fmt",
+                "yuv420p",
+                trimmed_ref,
             ],
             check=True,
         )
@@ -338,6 +349,15 @@ class TestMetrics:
             f"dist_delay result {param_score:.2f} differs from manual trim "
             f"{trim_score:.2f}"
         )
+
+    @pytest.mark.parametrize("metric", ["psnr", "ssim", "vif", "msad"])
+    def test_dist_delay_bounds_non_vmaf_metrics(self, misaligned_clips, metric):
+        ref, dist, delay = misaligned_clips
+
+        aligned = ffqm(ref, dist, framerate=30, dist_delay=delay)
+        aligned.calculate(metrics=[metric])
+
+        assert len(aligned.data[metric]) == 90
 
 
 @pytest.fixture(scope="module")
@@ -354,17 +374,45 @@ def misaligned_clips(tmp_path_factory):
 
     subprocess.run(
         [
-            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-            "-f", "lavfi", "-i", "testsrc2=size=1280x720:rate=30:duration=6",
-            "-c:v", "libx264", "-qp", "10", "-pix_fmt", "yuv420p", ref,
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "testsrc2=size=1280x720:rate=30:duration=6",
+            "-c:v",
+            "libx264",
+            "-qp",
+            "10",
+            "-pix_fmt",
+            "yuv420p",
+            ref,
         ],
         check=True,
     )
     subprocess.run(
         [
-            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-            "-ss", str(delay), "-i", ref, "-t", "3",
-            "-c:v", "libx264", "-b:v", "1500k", "-pix_fmt", "yuv420p", dist,
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-ss",
+            str(delay),
+            "-i",
+            ref,
+            "-t",
+            "3",
+            "-c:v",
+            "libx264",
+            "-b:v",
+            "1500k",
+            "-pix_fmt",
+            "yuv420p",
+            dist,
         ],
         check=True,
     )

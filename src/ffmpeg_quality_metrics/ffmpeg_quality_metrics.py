@@ -337,14 +337,19 @@ class FfmpegQualityMetrics:
         Returns:
             str: Specific ffmpeg filter options for a chosen metric filter.
         """
+        framesync_opts = "shortest=1:repeatlast=0"
+
         if filter_name in ["ssim", "psnr"]:
-            return f"{filter_name}='{win_path_check(self.temp_files[filter_name])}'"
+            return (
+                f"{filter_name}='{win_path_check(self.temp_files[filter_name])}'"
+                f":{framesync_opts}"
+            )
         elif filter_name == "libvmaf":
             return f"libvmaf='{self._get_libvmaf_filter_opts()}'"
         elif filter_name == "vif":
-            return "vif,metadata=mode=print"
+            return f"vif={framesync_opts},metadata=mode=print"
         elif filter_name == "msad":
-            return "msad,metadata=mode=print"
+            return f"msad={framesync_opts},metadata=mode=print"
         else:
             raise FfmpegQualityMetricsError(f"Unknown filter {filter_name}!")
 
@@ -437,9 +442,7 @@ class FfmpegQualityMetrics:
         #   reference has extra leading frames -> trim the reference.
         # dist_delay < 0: the distorted stream leads -> trim the distorted.
         ref_trim = f"trim=start={self.dist_delay}," if self.dist_delay > 0 else ""
-        dist_trim = (
-            f"trim=start={abs(self.dist_delay)}," if self.dist_delay < 0 else ""
-        )
+        dist_trim = f"trim=start={abs(self.dist_delay)}," if self.dist_delay < 0 else ""
 
         # Align both streams before the reference is split between the scale
         # filter and the metric filter. Feeding the untrimmed reference directly
