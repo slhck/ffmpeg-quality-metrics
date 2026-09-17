@@ -10,6 +10,7 @@ import os
 import re
 import tempfile
 import csv
+from fractions import Fraction
 from typing import Dict, List, Literal, Tuple, TypedDict, Union, cast
 from os import devnull as NUL
 
@@ -264,6 +265,12 @@ class FfmpegQualityMetrics:
     def get_framerate(input_file: str, ffmpeg_path: str = "ffmpeg") -> float:
         """Parse the FPS from the input file.
 
+        First parse it from the ffmpeg banner ("<n> fps"). Some container/codec
+        combinations (e.g. FFV1 in a .nut) do not print an fps token in the
+        banner (only "tbr"/"tbn"), so fall back to querying ffprobe for the
+        exact rational frame rate. ffprobe ships with ffmpeg, so this adds no
+        new dependency.
+
         Args:
             input_file (str): Input file path
             ffmpeg_path (str, optional): Path to ffmpeg executable. Defaults to "ffmpeg".
@@ -284,6 +291,44 @@ class FfmpegQualityMetrics:
                 return float(match)
         except Exception:
             pass
+
+        # Fallback: the ffmpeg banner did not contain an "<n> fps" token (this
+        # happens for some container/codec combinations, e.g. FFV1 in .nut,
+        # which only report "tbr"/"tbn"). Query ffprobe for the exact rational
+        # frame rate instead of failing. Prefer r_frame_rate, then
+        # avg_frame_rate; skip missing/"0/0" values.
+        ffprobe_dir = os.path.dirname(ffmpeg_path)
+        ffprobe_path = (
+            os.path.join(ffprobe_dir, "ffprobe") if ffprobe_dir else "ffprobe"
+        )
+        for field in ("r_frame_rate", "avg_frame_rate"):
+            try:
+                stdout, _ = run_command(
+                    [
+                        ffprobe_path,
+                        "-loglevel",
+                        "error",
+                        "-select_streams",
+                        "v:0",
+                        "-show_entries",
+                        f"stream={field}",
+                        "-of",
+                        "csv=p=0",
+                        input_file,
+                    ],
+                    allow_error=True,
+                )
+            except Exception:
+                continue
+            value = stdout.strip().splitlines()[0].strip() if stdout.strip() else ""
+            if not value or value == "0/0":
+                continue
+            try:
+                frac = Fraction(value)
+            except (ValueError, ZeroDivisionError):
+                continue
+            if frac > 0:
+                return float(frac)
 
         raise FfmpegQualityMetricsError(f"could not parse FPS from file {input_file}!")
 
