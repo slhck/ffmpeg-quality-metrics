@@ -62,6 +62,7 @@ What you need:
   - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
 Put the `ffmpeg` executable in your `$PATH`, e.g. `/usr/local/bin/ffmpeg`.
+If you have `ffprobe`, also put it next to it. It may be used as a fallback for FPS detection.
 
 If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model). Note that the new VMAF v1 models (see [Specifying VMAF Model](#specifying-vmaf-model)) require an ffmpeg build linked against a libvmaf version newer than 3.2.0.
 
