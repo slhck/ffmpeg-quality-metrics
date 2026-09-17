@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### 🐛 Bug Fixes
+
+- Fall back to ffprobe in `get_framerate` when the ffmpeg banner has no "fps" token (e.g. FFV1 in .nut), instead of raising
+
 ## [3.12.1] - 2026-07-29
 
 ### 🐛 Bug Fixes
