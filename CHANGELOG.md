@@ -1,3 +1,20 @@
+## [3.12.3] - 2026-10-08
+
+### 🐛 Bug Fixes
+
+- Align VIF/MSAD frame numbers with other metrics (#90)
+
+### 📚 Documentation
+
+- *(readme)* Add centered project icon
+
+### 🧪 Testing
+
+- Check VIF/MSAD frame numbers match PSNR
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 3.12.3
 ## [3.12.2] - 2026-09-17
 
 ### 🐛 Bug Fixes
