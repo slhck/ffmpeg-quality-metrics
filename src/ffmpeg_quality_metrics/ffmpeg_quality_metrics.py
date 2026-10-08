@@ -696,7 +696,8 @@ class FfmpegQualityMetrics:
                     self.data[metric_name].append(frame_data)
 
                 # get the frame number and reset the frame data
-                current_frame = int(fields[3].split(":")[1])
+                # the metadata filter counts from 0, all other metrics count from 1
+                current_frame = int(fields[3].split(":")[1]) + 1
                 frame_data = {"n": current_frame}
                 continue
 
