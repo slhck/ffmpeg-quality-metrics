@@ -136,6 +136,22 @@ class TestMetrics:
         run_ret = ffqm(REF, DIST).calculate(["vif"])["vif"]
         self._test_frame_by_frame(EXPECTED["vif"], run_ret)
 
+    @pytest.mark.parametrize(
+        "metric,column", [("vif", "scale_0"), ("msad", "msad_avg")]
+    )
+    def test_metadata_frame_numbers_match_other_metrics(self, metric, column):
+        f = ffqm(REF, DIST)
+        data = f.calculate(["psnr", metric])
+
+        assert [fr["n"] for fr in data[metric]] == [fr["n"] for fr in data["psnr"]]
+
+        # CSV rows must merge all metrics into the same frames, starting at 1
+        rows = list(csv.DictReader(StringIO(f.get_results_csv())))
+        assert [int(row["n"]) for row in rows] == [1, 2, 3]
+        for row in rows:
+            assert row["psnr_avg"] != ""
+            assert row[column] != ""
+
     def _test_frame_by_frame(self, expected, run_ret):
         for expected_frame, actual_frame in zip(expected, run_ret):
             # only compare keys present in both, as the exact set of VMAF submetrics
