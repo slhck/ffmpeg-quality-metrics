@@ -282,6 +282,17 @@ class TestMetrics:
         for i, frame in enumerate(f.data["psnr"], 1):
             assert frame["n"] == i
 
+    @pytest.mark.parametrize("progress", [False, True])
+    def test_dry_run(self, capsys, progress):
+        ret = ffqm(REF, DIST, dry_run=True, progress=progress).calculate(
+            metrics=["ssim", "psnr"]
+        )
+
+        assert ret == {}
+        out = capsys.readouterr().out
+        assert out.startswith("ffmpeg ")
+        assert "-filter_complex" in out
+
     def test_start_offset_frame(self):
         # Test with frame-based seeking (seek to frame 1, which is 0.04s at 25fps)
         f = ffqm(REF, DIST, start_offset="f:1")

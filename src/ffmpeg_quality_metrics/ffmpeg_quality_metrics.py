@@ -527,6 +527,8 @@ class FfmpegQualityMetrics:
 
         try:
             output = self._run_ffmpeg_command(filter_chains, desc=", ".join(metrics))
+            if self.dry_run:
+                return {}
             self._read_temp_files(metrics)
             if output:
                 self._read_ffmpeg_output(output, metrics)
@@ -792,6 +794,10 @@ class FfmpegQualityMetrics:
                 NUL,
             ]
         )
+
+        if self.dry_run:
+            print(quoted_cmd(cmd))
+            return ""
 
         if self.progress:
             logger.debug(quoted_cmd(cmd))
