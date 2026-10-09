@@ -1,3 +1,13 @@
+## [3.12.4] - 2026-10-09
+
+### 🐛 Bug Fixes
+
+- Print ffmpeg command in dry-run mode
+
+### ⚙️ Miscellaneous Tasks
+
+- Add code contribution for @antonkesy
+- Bump version to 3.12.4
 ## [3.12.3] - 2026-10-08
 
 ### 🐛 Bug Fixes
