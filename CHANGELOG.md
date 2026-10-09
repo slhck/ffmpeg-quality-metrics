@@ -1,3 +1,12 @@
+## [3.12.5] - 2026-10-09
+
+### 🐛 Bug Fixes
+
+- Reset metric data on repeated calculate() calls
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 3.12.5
 ## [3.12.4] - 2026-10-09
 
 ### 🐛 Bug Fixes
