@@ -223,7 +223,7 @@ provides-extras = ["gui"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pdoc", specifier = ">=15.0.4" },
+    { name = "pdoc", specifier = ">=16.0.0" },
     { name = "pre-commit", specifier = ">=3.5.0" },
     { name = "pytest", specifier = ">=9.0.3,<10" },
     { name = "ruff", specifier = ">=0.12.11" },
@@ -314,6 +314,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
+]
+
+[[package]]
+name = "markdown2"
+version = "2.5.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/ae/07d4a5fcaa5509221287d289323d75ac8eda5a5a4ac9de2accf7bbcc2b88/markdown2-2.5.5.tar.gz", hash = "sha256:001547e68f6e7fcf0f1cb83f7e82f48aa7d48b2c6a321f0cd20a853a8a2d1664", size = 157249, upload-time = "2026-03-02T20:46:53.411Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/43/af/4b3891eb0a49d6cfd5cbf3e9bf514c943afc2b0f13e2c57cc57cd88ecc21/markdown2-2.5.5-py3-none-any.whl", hash = "sha256:be798587e09d1f52d2e4d96a649c4b82a778c75f9929aad52a2c95747fa26941", size = 56250, upload-time = "2026-03-02T20:46:52.032Z" },
 ]
 
 [[package]]
@@ -412,16 +421,17 @@ wheels = [
 
 [[package]]
 name = "pdoc"
-version = "15.0.4"
+version = "16.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
+    { name = "markdown2" },
     { name = "markupsafe" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/91/5c/e94c1ab4aa2f8a9cc29d81e1c513c6216946cb3a90957ef7115b12e9363d/pdoc-15.0.4.tar.gz", hash = "sha256:cf9680f10f5b4863381f44ef084b1903f8f356acb0d4cc6b64576ba9fb712c82", size = 155678, upload-time = "2025-06-04T17:05:49.639Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/fe/ab3f34a5fb08c6b698439a2c2643caf8fef0d61a86dd3fdcd5501c670ab8/pdoc-16.0.0.tar.gz", hash = "sha256:fdadc40cc717ec53919e3cd720390d4e3bcd40405cb51c4918c119447f913514", size = 111890, upload-time = "2025-10-27T16:02:16.345Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fd/2c/87250ac73ca8730b2c4e0185b573585f0b42e09562132e6c29d00b3a9bb9/pdoc-15.0.4-py3-none-any.whl", hash = "sha256:f9028e85e7bb8475b054e69bde1f6d26fc4693d25d9fa1b1ce9009bec7f7a5c4", size = 145978, upload-time = "2025-06-04T17:05:48.473Z" },
+    { url = "https://files.pythonhosted.org/packages/16/a1/56a17b7f9e18c2bb8df73f3833345d97083b344708b97bab148fdd7e0b82/pdoc-16.0.0-py3-none-any.whl", hash = "sha256:070b51de2743b9b1a4e0ab193a06c9e6c12cf4151cf9137656eebb16e8556628", size = 100014, upload-time = "2025-10-27T16:02:15.007Z" },
 ]
 
 [[package]]
