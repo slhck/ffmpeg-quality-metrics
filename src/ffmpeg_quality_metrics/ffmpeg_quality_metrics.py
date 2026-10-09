@@ -525,6 +525,12 @@ class FfmpegQualityMetrics:
                     self._get_metric_filter_chains(metric_name, f"dist{n}", f"ref{n}")
                 )
 
+        # drop results of earlier calls to avoid accumulate metrics
+        # rebind (instead of clearing) so previously returned results stay intact
+        for metric_name in metrics:
+            self.data[metric_name] = []
+        self.global_stats = {}
+
         try:
             output = self._run_ffmpeg_command(filter_chains, desc=", ".join(metrics))
             if self.dry_run:

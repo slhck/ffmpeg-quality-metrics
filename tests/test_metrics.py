@@ -309,6 +309,33 @@ class TestMetrics:
         # Should get only 1 frame
         assert len(f.data["psnr"]) == 1
 
+    def test_repeated_calculate_does_not_accumulate(self):
+        f = ffqm(REF, DIST)
+        first = f.calculate(["psnr"])
+        first_stats = f.get_global_stats()
+        second = f.calculate(["psnr"])
+
+        n_frames = len(EXPECTED["psnr"])
+        assert len(second["psnr"]) == n_frames
+        assert len(f.data["psnr"]) == n_frames
+        assert [frame["n"] for frame in second["psnr"]] == list(range(1, n_frames + 1))
+        assert f.get_global_stats() == first_stats
+
+        # results returned by an earlier call stay intact
+        assert len(first["psnr"]) == n_frames
+
+    def test_repeated_calculate_keeps_other_metrics(self):
+        # computing another metric on the same instance keeps earlier results
+        f = ffqm(REF, DIST)
+        f.calculate(["psnr"])
+        ret = f.calculate(["ssim"])
+
+        n_frames = len(EXPECTED["psnr"])
+        assert set(ret) == {"psnr", "ssim"}
+        assert len(ret["psnr"]) == n_frames
+        assert len(ret["ssim"]) == n_frames
+        assert set(f.get_global_stats()) == {"psnr", "ssim"}
+
     def test_dist_delay_aligns_streams(self, misaligned_clips):
         # The distorted clip is the reference content starting DELAY seconds in,
         # re-encoded at a lower bitrate. Without alignment the frames are paired
