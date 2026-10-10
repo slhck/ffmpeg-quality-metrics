@@ -428,7 +428,7 @@ class FfmpegQualityMetrics:
 
     def calculate(
         self,
-        metrics: List[MetricName] = ["ssim", "psnr"],
+        metrics: Union[List[MetricName], None] = None,
         vmaf_options: Union[VmafOptions, None] = None,
     ) -> Dict[MetricName, SingleMetricData]:
         """Calculate one or more metrics.
@@ -446,6 +446,8 @@ class FfmpegQualityMetrics:
         Returns:
             dict: A dictionary of per-frame info, with the key being the metric name and the value being a dict of frame numbers ('n') and metric values.
         """
+        if metrics is None:
+            metrics = ["ssim", "psnr"]
         if not metrics:
             raise FfmpegQualityMetricsError("No metrics specified!")
 
@@ -650,7 +652,9 @@ class FfmpegQualityMetrics:
                 frame_data["metrics"]["n"] = int(frame_data["frameNum"]) + 1
                 self.data["vmaf"].append(frame_data["metrics"])
 
-    def _read_ffmpeg_output(self, ffmpeg_output: str, metrics=[]) -> None:
+    def _read_ffmpeg_output(
+        self, ffmpeg_output: str, metrics: List[MetricName]
+    ) -> None:
         """
         Read the metric values from ffmpeg's stderr, for those that don't output
         to a file.
@@ -724,7 +728,7 @@ class FfmpegQualityMetrics:
         if frame_data:
             self.data[metric_name].append(frame_data)
 
-    def _read_temp_files(self, metrics=[]):
+    def _read_temp_files(self, metrics: List[MetricName]) -> None:
         """
         Read the data from multiple temp files
         """
@@ -738,7 +742,7 @@ class FfmpegQualityMetrics:
             self._read_psnr_temp_file()
 
     def _run_ffmpeg_command(
-        self, filter_chains: List[str] = [], desc: str = ""
+        self, filter_chains: List[str], desc: str = ""
     ) -> Union[str, None]:
         """
         Run the ffmpeg command to get the quality metrics.
