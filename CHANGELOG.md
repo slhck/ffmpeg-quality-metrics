@@ -1,3 +1,13 @@
+## [3.12.7] - 2026-10-11
+
+### 🐛 Bug Fixes
+
+- *(deps)* Update dependencies with known vulnerabilities
+
+### ⚙️ Miscellaneous Tasks
+
+- Require Python 3.10 and support Python 3.15
+- Bump version to 3.12.7
 ## [3.12.6] - 2026-10-11
 
 ### 🐛 Bug Fixes
