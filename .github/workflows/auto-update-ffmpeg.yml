@@ -1,0 +1,79 @@
+name: Auto Update FFmpeg
+
+on:
+  schedule:
+    # Run daily at 10:00 UTC
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for new FFmpeg release branch
+        id: check_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Current release branch (major.minor) from the Dockerfile
+          CURRENT_VERSION=$(grep -oP '(?<=^ARG FFMPEG_VERSION=)[0-9]+\.[0-9]+' Dockerfile)
+          echo "Current version: ${CURRENT_VERSION}"
+          echo "current_version=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
+
+          # Newest release branch with BtbN builds for both linux64 and linuxarm64
+          ASSETS=$(gh release view latest -R BtbN/FFmpeg-Builds --json assets -q '.assets[].name')
+          LATEST_VERSION=$(echo "$ASSETS" | \
+            grep -oP '^ffmpeg-n\K[0-9]+\.[0-9]+(?=-latest-linux64-gpl-[0-9.]+\.tar\.xz$)' | \
+            while read -r v; do
+              echo "$ASSETS" | grep -qx "ffmpeg-n${v}-latest-linuxarm64-gpl-${v}.tar.xz" && echo "$v"
+            done | sort -V | tail -1)
+          echo "Latest version: ${LATEST_VERSION}"
+          echo "latest_version=${LATEST_VERSION}" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$CURRENT_VERSION" ] || [ -z "$LATEST_VERSION" ]; then
+            echo "Could not determine versions"
+            exit 1
+          fi
+
+          if [ "$(printf '%s\n%s\n' "$CURRENT_VERSION" "$LATEST_VERSION" | sort -V | tail -1)" != "$CURRENT_VERSION" ]; then
+            echo "New version available: ${LATEST_VERSION}"
+            echo "update_available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Already up to date"
+            echo "update_available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update FFmpeg version
+        if: steps.check_version.outputs.update_available == 'true'
+        run: |
+          VERSION=${{ steps.check_version.outputs.latest_version }}
+          sed -i -E "s/^ARG FFMPEG_VERSION=.*/ARG FFMPEG_VERSION=${VERSION}/" Dockerfile
+          sed -i -E "s/^(  FFMPEG_VERSION: )\"[0-9.]+\"/\1\"${VERSION}\"/" .github/workflows/python-package.yml
+          git diff
+
+      - name: Create Pull Request
+        if: steps.check_version.outputs.update_available == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(deps): update ffmpeg to ${{ steps.check_version.outputs.latest_version }}"
+          title: "chore(deps): update ffmpeg to ${{ steps.check_version.outputs.latest_version }}"
+          body: |
+            Updates the FFmpeg release branch used in Docker and CI from `${{ steps.check_version.outputs.current_version }}` to `${{ steps.check_version.outputs.latest_version }}`.
+
+            Builds come from [BtbN/FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest). See the [FFmpeg news](https://ffmpeg.org/index.html#news) for release notes.
+
+            This PR was created by the Auto Update FFmpeg workflow.
+          branch: auto-update-ffmpeg-${{ steps.check_version.outputs.latest_version }}
+          delete-branch: true
