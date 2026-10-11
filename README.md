@@ -59,7 +59,7 @@ Author: Werner Robitza <werner.robitza@gmail.com>
 What you need:
 
 - OS: Linux, macOS, Windows
-- Python 3.9 or higher
+- Python 3.10 or higher
 - FFmpeg 7.1 or higher:
   - **Linux:** Download a build matching your platform from [here](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest).
   - **macOS:** Download the *snapshot* build from [here](https://evermeet.cx/ffmpeg/) or install via `brew install ffmpeg`.
