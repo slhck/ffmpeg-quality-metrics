@@ -547,7 +547,7 @@ class FfmpegQualityMetrics:
                 raise FfmpegQualityMetricsError(
                     "Your ffmpeg build is linked against a libvmaf version that does not support "
                     "one of the features required by the chosen VMAF model. "
-                    "VMAF v1 models (vmaf_v1.0.16 and newer) require a libvmaf version newer than 3.2.0. "
+                    "VMAF v1 models (vmaf_v1.0.16 and newer) require libvmaf 3.2.1 or newer. "
                     f"Original error:\n{e}"
                 )
             raise e

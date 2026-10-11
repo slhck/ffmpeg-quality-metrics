@@ -68,7 +68,7 @@ What you need:
 Put the `ffmpeg` executable in your `$PATH`, e.g. `/usr/local/bin/ffmpeg`.
 If you have `ffprobe`, also put it next to it. It may be used as a fallback for FPS detection.
 
-If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model). Note that the new VMAF v1 models (see [Specifying VMAF Model](#specifying-vmaf-model)) require an ffmpeg build linked against a libvmaf version newer than 3.2.0.
+If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model). Note that the new VMAF v1 models (see [Specifying VMAF Model](#specifying-vmaf-model)) require an ffmpeg build linked against libvmaf 3.2.1 or newer.
 
 Using [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
@@ -315,21 +315,13 @@ The `vmaf_v1.0.16*` files are the new generation of models (VMAF v1), released i
 For high-frame-rate content (roughly 50/60 fps, e.g. sports), use the corresponding `vmaf_v1.0.16_hfr_*` variant instead.
 
 > [!IMPORTANT]
-> VMAF v1 models require an ffmpeg build linked against a libvmaf version newer than 3.2.0. If your libvmaf is too old, this tool will print an error message. In that case, use the v0 models, or update your ffmpeg/libvmaf installation.
+> VMAF v1 models require an ffmpeg build linked against libvmaf 3.2.1 or newer. If your libvmaf is too old, this tool will print an error message. In that case, use the v0 models, or update your ffmpeg/libvmaf installation.
 >
-> As of July 2026, no released libvmaf version supports the v1 models yet, so you need an ffmpeg build that uses libvmaf's git master:
+> Recent ffmpeg builds include a supported libvmaf version:
 >
-> - **Linux/Windows:** Download an `ffmpeg-master-latest` build from [BtbN's FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest). These bundle a libvmaf built from git master.
-> - **macOS:** Homebrew's libvmaf 3.2.0 is too old, and the formula has no `--HEAD` option. Since Homebrew's ffmpeg links libvmaf dynamically, you can [build libvmaf from source](https://github.com/Netflix/vmaf/blob/master/libvmaf/README.md) (git master, via meson/ninja) and point ffmpeg at the newer library:
->
->   ```bash
->   git clone https://github.com/Netflix/vmaf.git
->   meson setup vmaf/libvmaf/build vmaf/libvmaf --buildtype release
->   ninja -C vmaf/libvmaf/build
->   DYLD_LIBRARY_PATH=$(pwd)/vmaf/libvmaf/build/src ffmpeg-quality-metrics dist.mkv ref.mkv -m vmaf --vmaf-model-path vmaf_v1.0.16_3d0h.json --vmaf-10bit
->   ```
->
-> - **Docker:** The [Docker image of this project](#running-with-docker) uses a master build of ffmpeg, which supports the v1 models.
+> - **Linux/Windows:** Download a release (or `master`) build from [BtbN's FFmpeg-Builds](https://github.com/BtbN/FFmpeg-Builds/releases/tag/latest).
+> - **macOS:** Run `brew upgrade ffmpeg libvmaf` to get libvmaf 3.2.1 or newer.
+> - **Docker:** The [Docker image of this project](#running-with-docker) uses the latest ffmpeg release build from BtbN, which includes libvmaf 3.2.1 and supports the v1 models.
 
 VMAF v1 should ideally be applied at 10-bit precision for SDR content, which helps more accurately capture the presence of banding. Use the `--vmaf-10bit` option to convert both inputs to 10 bit before calculating VMAF, even if they are 8-bit:
 

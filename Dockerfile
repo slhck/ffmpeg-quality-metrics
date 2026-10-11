@@ -7,6 +7,9 @@ WORKDIR /ffmpeg
 # Install wget and xz-utils for downloading and extracting FFmpeg
 RUN apt-get update && apt-get install -y wget xz-utils && rm -rf /var/lib/apt/lists/*
 
+# FFmpeg release branch to download (BtbN builds include libvmaf 3.2.1)
+ARG FFMPEG_VERSION=9.0
+
 # Detect architecture and download appropriate FFmpeg build
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
@@ -16,8 +19,8 @@ RUN ARCH=$(uname -m) && \
     else \
         echo "Unsupported architecture: $ARCH" && exit 1; \
     fi && \
-    wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-${FFMPEG_ARCH}-gpl.tar.xz && \
-    tar -xf ffmpeg-master-latest-${FFMPEG_ARCH}-gpl.tar.xz -C /ffmpeg --strip-components=1
+    wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n${FFMPEG_VERSION}-latest-${FFMPEG_ARCH}-gpl-${FFMPEG_VERSION}.tar.xz && \
+    tar -xf ffmpeg-n${FFMPEG_VERSION}-latest-${FFMPEG_ARCH}-gpl-${FFMPEG_VERSION}.tar.xz -C /ffmpeg --strip-components=1
 
 FROM base
 COPY --from=builder /ffmpeg/bin/ffmpeg /usr/local/bin

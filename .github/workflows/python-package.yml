@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 env:
-  FFMPEG_VERSION: "8.1"
+  FFMPEG_VERSION: "9.0"
 
 jobs:
   build:
@@ -27,7 +27,7 @@ jobs:
       id: cache-ffmpeg
       with:
         path: /opt/ffmpeg/ffmpeg-n${{ env.FFMPEG_VERSION }}-latest-linux64-gpl-${{ env.FFMPEG_VERSION }}.tar.xz
-        key: ${{ runner.os }}-ffmpeg
+        key: ${{ runner.os }}-ffmpeg-${{ env.FFMPEG_VERSION }}
     - name: Download ffmpeg if not cached
       if: steps.cache-ffmpeg.outputs.cache-hit != 'true'
       run: |
