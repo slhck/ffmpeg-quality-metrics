@@ -1,3 +1,13 @@
+## [3.12.6] - 2026-10-11
+
+### 🐛 Bug Fixes
+
+- Avoid mutable default arguments
+
+### ⚙️ Miscellaneous Tasks
+
+- Add workflow to auto-update ffmpeg
+- Bump version to 3.12.6
 ## [3.12.5] - 2026-10-09
 
 ### 🐛 Bug Fixes
