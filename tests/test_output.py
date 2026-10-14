@@ -74,3 +74,23 @@ def test_no_summary():
 
     assert "Summary" not in result.stderr
     json.loads(result.stdout)
+
+
+def test_invalid_ffmpeg_path():
+    result = subprocess.run(
+        [
+            "python3",
+            "-m",
+            "ffmpeg_quality_metrics",
+            "tests/dist-854x480.mkv",
+            "tests/ref-1280x720.mkv",
+            "--ffmpeg-path",
+            "/nonexistent/ffmpeg",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr
+    assert len(result.stderr.strip().splitlines()) == 1
+    assert "Could not run ffmpeg at '/nonexistent/ffmpeg'" in result.stderr

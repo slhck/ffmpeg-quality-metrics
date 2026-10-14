@@ -173,6 +173,10 @@ class TestMetrics:
             {"n": 2, "msad_avg": 1.5},
         ]
 
+    def test_invalid_ffmpeg_path(self):
+        with pytest.raises(FfmpegQualityMetricsError, match="Could not run ffmpeg"):
+            ffqm(REF, DIST, ffmpeg_path="/nonexistent/ffmpeg")
+
     @pytest.mark.parametrize(
         "metric,column", [("vif", "scale_0"), ("msad", "msad_avg")]
     )

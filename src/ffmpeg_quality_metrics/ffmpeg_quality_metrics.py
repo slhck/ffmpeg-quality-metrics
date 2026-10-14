@@ -276,7 +276,13 @@ class FfmpegQualityMetrics:
         Check which filters are available
         """
         cmd = [self.ffmpeg_path, "-filters"]
-        stdout, _ = run_command(cmd)
+        try:
+            stdout, _ = run_command(cmd)
+        except OSError as e:
+            raise FfmpegQualityMetricsError(
+                f"Could not run ffmpeg at '{self.ffmpeg_path}': {e.strerror}. "
+                "Check the path to ffmpeg (--ffmpeg-path)."
+            ) from e
         filter_list = []
         for line in stdout.split("\n"):
             line = line.strip()
