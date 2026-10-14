@@ -135,6 +135,14 @@ class FfmpegQualityMetrics:
         "vif": "vif",
         "msad": "msad",
     }
+    SUMMARY_SUBMETRICS: Dict[MetricName, List[str]] = {
+        "psnr": ["psnr_avg"],
+        "ssim": ["ssim_avg"],
+        "vmaf": ["vmaf"],
+        "vif": ["scale_0", "scale_1", "scale_2", "scale_3"],
+        "msad": ["msad_avg"],
+    }
+    """Main submetrics of each metric, shown in the summary from `get_summary()`."""
 
     def __init__(
         self,
@@ -962,6 +970,46 @@ class FfmpegQualityMetrics:
             self.global_stats[metric_name] = stats
 
         return self.global_stats
+
+    def get_summary(self) -> str:
+        """
+        Return a short, human-readable table of the global stats (average, min, max)
+        for the main submetric of each calculated metric.
+
+        The main submetrics are defined in `SUMMARY_SUBMETRICS`. If a metric has none of them,
+        all of its submetrics are listed.
+
+        Returns:
+            str: The summary table, or an empty string if no data was calculated
+        """
+        global_stats = self.get_global_stats()
+        if not global_stats:
+            return ""
+
+        rows: List[Tuple[str, GlobalStatsData]] = []
+        for metric_name, metric_stats in global_stats.items():
+            main_keys = [
+                k
+                for k in self.SUMMARY_SUBMETRICS.get(metric_name, [])
+                if k in metric_stats
+            ]
+            for key in main_keys or list(metric_stats.keys()):
+                label = key if key.startswith(metric_name) else f"{metric_name}_{key}"
+                rows.append((label, metric_stats[key]))
+
+        n_frames = max(len(frames) for frames in self.data.values())
+        label_width = max(len("metric"), *(len(label) for label, _ in rows))
+
+        lines = [
+            f"Summary over {n_frames} frame{'s' if n_frames != 1 else ''}:",
+            f"  {'metric':<{label_width}} {'average':>10} {'min':>10} {'max':>10}",
+        ]
+        for label, stats in rows:
+            lines.append(
+                f"  {label:<{label_width}} {stats['average']:>10.3f}"
+                f" {stats['min']:>10.3f} {stats['max']:>10.3f}"
+            )
+        return "\n".join(lines)
 
     def get_results_csv(self) -> str:
         """

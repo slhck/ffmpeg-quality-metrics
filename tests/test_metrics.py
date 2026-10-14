@@ -177,6 +177,34 @@ class TestMetrics:
                         < THRESHOLD
                     )
 
+    def test_summary(self):
+        f = ffqm(REF, DIST)
+        f.calculate(metrics=["psnr", "ssim", "vif"])
+        summary = f.get_summary()
+        lines = summary.splitlines()
+
+        assert lines[0] == "Summary over 3 frames:"
+        assert lines[1].split() == ["metric", "average", "min", "max"]
+
+        rows = {line.split()[0]: line.split()[1:] for line in lines[2:]}
+        # only the main submetrics are listed
+        assert set(rows) == {
+            "psnr_avg",
+            "ssim_avg",
+            "vif_scale_0",
+            "vif_scale_1",
+            "vif_scale_2",
+            "vif_scale_3",
+        }
+
+        stats = f.get_global_stats()
+        assert rows["psnr_avg"] == [
+            f"{stats['psnr']['psnr_avg'][key]:.3f}" for key in ["average", "min", "max"]
+        ]
+
+    def test_summary_empty(self):
+        assert ffqm(REF, DIST).get_summary() == ""
+
     def test_csv_output(self):
         f = ffqm(REF, DIST)
         f.calculate(metrics=["ssim", "psnr"])

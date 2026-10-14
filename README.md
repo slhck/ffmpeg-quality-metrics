@@ -157,8 +157,8 @@ usage: ffmpeg-quality-metrics [-h] [-n] [-v] [-p] [-k] [--tmp-dir TMP_DIR]
                               [-s {fast_bilinear,bilinear,bicubic,experimental,neighbor,area,bicublin,gauss,sinc,lanczos,spline}]
                               [-r FRAMERATE] [--dist-delay DIST_DELAY] [-t THREADS]
                               [--num-frames NUM_FRAMES] [--start-offset START_OFFSET]
-                              [--ffmpeg-path FFMPEG_PATH] [-o OUTPUT_FILE] [-of {json,csv}] [--gui]
-                              [--gui-host GUI_HOST] [--gui-port GUI_PORT]
+                              [--ffmpeg-path FFMPEG_PATH] [-o OUTPUT_FILE] [-of {json,csv}]
+                              [--no-summary] [--gui] [--gui-host GUI_HOST] [--gui-port GUI_PORT]
                               [--vmaf-model-path VMAF_MODEL_PATH]
                               [--vmaf-model-params VMAF_MODEL_PARAMS [VMAF_MODEL_PARAMS ...]]
                               [--vmaf-threads VMAF_THREADS] [--vmaf-subsample VMAF_SUBSAMPLE]
@@ -208,6 +208,8 @@ Output options:
   -o, --output-file OUTPUT_FILE         Output file for the metrics. If not specified, stdout will
                                         be used. (default: None)
   -of, --output-format {json,csv}       Output format for the metrics (default: json)
+  --no-summary                          Do not print a summary of the global stats to stderr after
+                                        the calculation (default: False)
   --gui                                 Open interactive GUI dashboard after computing metrics
                                         (requires 'gui' extra: pip install 'ffmpeg-quality-
                                         metrics[gui]') (default: False)
@@ -520,6 +522,18 @@ ffmpeg-quality-metrics dist.mkv ref.mkv -m psnr -o output.json
 
 The output file will be in the same format as the JSON output.
 
+After the calculation, a summary of the global stats (average, minimum, and maximum) of the main submetrics is printed to stderr, so it does not interfere with the JSON or CSV output on stdout:
+
+```
+INFO - Summary over 3 frames:
+  metric         average        min        max
+  vmaf            14.258     14.055     14.464
+  psnr_avg        20.840     20.830     20.850
+  ssim_avg         0.945      0.945      0.946
+```
+
+Use `--no-summary` to disable it.
+
 ### JSON Output
 
 The JSON output will include a key for each metric, and the value will be a list of values for each frame. Each frame is a dictionary with individual metrics per frame.
@@ -641,6 +655,9 @@ print(sum([frame["ssim_y"] for frame in metrics["ssim"]]) / len(metrics["ssim"])
 
 # or just get the global stats
 print(ffqm.get_global_stats()["ssim"]["ssim_y"]["average"])
+
+# print a short summary table of the main submetrics
+print(ffqm.get_summary())
 ```
 
 For more usage please read [the docs](https://htmlpreview.github.io/?https://github.com/slhck/ffmpeg-quality-metrics/blob/master/docs/ffmpeg_quality_metrics.html).

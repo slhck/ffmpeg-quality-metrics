@@ -157,6 +157,12 @@ def main() -> None:
     )
 
     output_opts.add_argument(
+        "--no-summary",
+        action="store_true",
+        help="Do not print a summary of the global stats to stderr after the calculation",
+    )
+
+    output_opts.add_argument(
         "--gui",
         action="store_true",
         help="Open interactive GUI dashboard after computing metrics (requires 'gui' extra: pip install 'ffmpeg-quality-metrics[gui]')",
@@ -284,6 +290,9 @@ def main() -> None:
             sys.exit(1)
     else:
         print(output_data)
+
+    if not cli_args.no_summary:
+        logger.info(ffqm.get_summary())
 
     # Launch GUI if requested
     if cli_args.gui:

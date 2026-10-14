@@ -35,3 +35,42 @@ def test_output_file():
     finally:
         if os.path.exists(output_file):
             os.remove(output_file)
+
+
+def _run_cli(*args):
+    return subprocess.run(
+        [
+            "python3",
+            "-m",
+            "ffmpeg_quality_metrics",
+            "tests/dist-854x480.mkv",
+            "tests/ref-1280x720.mkv",
+            "-m",
+            "psnr",
+            "ssim",
+            *args,
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+
+def test_summary_on_stderr():
+    result = _run_cli()
+
+    # stdout contains only the JSON output
+    data = json.loads(result.stdout)
+    assert "psnr" in data
+
+    assert "Summary over 3 frames" in result.stderr
+    assert "psnr_avg" in result.stderr
+    assert "ssim_avg" in result.stderr
+    assert "Summary" not in result.stdout
+
+
+def test_no_summary():
+    result = _run_cli("--no-summary")
+
+    assert "Summary" not in result.stderr
+    json.loads(result.stdout)
