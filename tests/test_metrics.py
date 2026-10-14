@@ -136,6 +136,43 @@ class TestMetrics:
         run_ret = ffqm(REF, DIST).calculate(["vif"])["vif"]
         self._test_frame_by_frame(EXPECTED["vif"], run_ret)
 
+    def test_vif_and_msad(self):
+        f = ffqm(REF, DIST)
+        data = f.calculate(["vif", "msad"])
+
+        assert [fr["n"] for fr in data["vif"]] == [1, 2, 3]
+        assert [fr["n"] for fr in data["msad"]] == [1, 2, 3]
+        for frame in data["vif"]:
+            assert set(frame) == {"n", "scale_0", "scale_1", "scale_2", "scale_3"}
+        for frame in data["msad"]:
+            assert set(frame) == {"n", "msad_y", "msad_u", "msad_v", "msad_avg"}
+
+        stats = f.get_global_stats()
+        assert set(stats) == {"vif", "msad"}
+        self._test_frame_by_frame(EXPECTED["vif"], data["vif"])
+
+    def test_parse_interleaved_metadata_output(self):
+        output = "\n".join(
+            [
+                "[Parsed_metadata_4 @ 0x1] frame:0    pts:0       pts_time:0",
+                "[Parsed_metadata_4 @ 0x1] lavfi.vif.scale.0=0.25",
+                "[Parsed_metadata_6 @ 0x2] frame:0    pts:0       pts_time:0",
+                "[Parsed_metadata_6 @ 0x2] lavfi.msad.msad_avg=0.5",
+                "[Parsed_metadata_4 @ 0x1] frame:1    pts:40      pts_time:0.04",
+                "[Parsed_metadata_4 @ 0x1] lavfi.vif.scale.0=0.75",
+                "[Parsed_metadata_6 @ 0x2] frame:1    pts:40      pts_time:0.04",
+                "[Parsed_metadata_6 @ 0x2] lavfi.msad.msad_avg=1.5",
+            ]
+        )
+        f = ffqm(REF, DIST)
+        f._read_ffmpeg_output(output, ["vif", "msad"])
+
+        assert f.data["vif"] == [{"n": 1, "scale_0": 0.25}, {"n": 2, "scale_0": 0.75}]
+        assert f.data["msad"] == [
+            {"n": 1, "msad_avg": 0.5},
+            {"n": 2, "msad_avg": 1.5},
+        ]
+
     @pytest.mark.parametrize(
         "metric,column", [("vif", "scale_0"), ("msad", "msad_avg")]
     )

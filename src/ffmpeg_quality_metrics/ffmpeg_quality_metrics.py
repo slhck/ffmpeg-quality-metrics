@@ -932,42 +932,46 @@ class FfmpegQualityMetrics:
         # [Parsed_metadata_6 @ 0x10ad04ea0] lavfi.msad.msad.V=0.026455
         # [Parsed_metadata_6 @ 0x10ad04ea0] lavfi.msad.msad_avg=0.025318
 
-        lines = [line.strip() for line in ffmpeg_output.split("\n")]
-        current_frame = None
-        frame_data: Dict[str, float] = {}
+        # Each metadata filter instance (e.g. "[Parsed_metadata_4") prints its own
+        # "frame:" lines, and the output of several instances is interleaved.
+        # Collect the frames per instance, then keep only the instances that
+        # printed values for this metric.
+        frames_by_instance: Dict[str, List[Dict[str, float]]] = {}
+        metric_instances: List[str] = []
+        metric_prefix = f"lavfi.{metric_name}."
 
-        for line in lines:
+        for line in ffmpeg_output.split("\n"):
+            line = line.strip()
             if not line.startswith("[Parsed_metadata"):
                 continue
 
             fields = line.split(" ")
+            if len(fields) < 4:
+                continue
+            instance, entry = fields[0], fields[3]
 
             # a new frame appears
-            if fields[3].startswith("frame"):
-                # if we have data already
-                if frame_data:
-                    self.data[metric_name].append(frame_data)
-
-                # get the frame number and reset the frame data
+            if entry.startswith("frame:"):
                 # the metadata filter counts from 0, all other metrics count from 1
-                current_frame = int(fields[3].split(":")[1]) + 1
-                frame_data = {"n": current_frame}
+                frame_data: Dict[str, float] = {"n": int(entry.split(":")[1]) + 1}
+                frames_by_instance.setdefault(instance, []).append(frame_data)
                 continue
 
-            # no frame was set, or no VIF info present
-            if current_frame is None or not fields[3].startswith(
-                f"lavfi.{metric_name}"
+            # no frame was set, or no info for this metric
+            if instance not in frames_by_instance or not entry.startswith(
+                metric_prefix
             ):
                 continue
 
-            # we have a frame
-            key, value = fields[3].split("=")
-            key = key.replace(f"lavfi.{metric_name}.", "").replace(".", "_").lower()
-            frame_data[key] = round(float(value), 3)
+            if instance not in metric_instances:
+                metric_instances.append(instance)
 
-        # append final frame data
-        if frame_data:
-            self.data[metric_name].append(frame_data)
+            key, value = entry.split("=")
+            key = key.replace(metric_prefix, "").replace(".", "_").lower()
+            frames_by_instance[instance][-1][key] = round(float(value), 3)
+
+        for instance in metric_instances:
+            self.data[metric_name].extend(frames_by_instance[instance])
 
     def _read_temp_files(self, metrics: List[MetricName]) -> None:
         """
