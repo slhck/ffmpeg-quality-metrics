@@ -549,10 +549,8 @@ class FfmpegQualityMetrics:
                     "one of the features required by the chosen VMAF model. "
                     "VMAF v1 models (vmaf_v1.0.16 and newer) require libvmaf 3.2.1 or newer. "
                     f"Original error:\n{e}"
-                )
-            raise e
-        except Exception as e:
-            raise e
+                ) from e
+            raise
         finally:
             self._cleanup_temp_files()
 
