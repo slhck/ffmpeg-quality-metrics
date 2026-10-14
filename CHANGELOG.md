@@ -1,3 +1,24 @@
+## [3.13.0] - 2026-10-14
+
+### 🚀 Features
+
+- *(cli)* Print global stats summary to stderr
+- *(input)* Check inputs before calculation
+
+### 🐛 Bug Fixes
+
+- *(vif)* Keep VIF and MSAD metadata output apart
+- *(cli)* Report an invalid ffmpeg path clearly
+
+### 🚜 Refactor
+
+- *(log)* Build level formatters once (#93)
+- *(calculate)* Drop redundant re-raise (#94)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update pre-commit config
+- Bump version to 3.13.0
 ## [3.12.7] - 2026-10-11
 
 ### 🐛 Bug Fixes

@@ -290,7 +290,7 @@ wheels = [
 
 [[package]]
 name = "ffmpeg-quality-metrics"
-version = "3.12.7"
+version = "3.13.0"
 source = { editable = "." }
 dependencies = [
     { name = "ffmpeg-progress-yield" },
