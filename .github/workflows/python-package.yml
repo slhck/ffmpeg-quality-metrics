@@ -41,7 +41,7 @@ jobs:
         sudo mkdir -p /opt/ffmpeg/extracted
         sudo tar --strip-components 1 -xf /opt/ffmpeg/ffmpeg-n${{ env.FFMPEG_VERSION }}-latest-linux64-gpl-${{ env.FFMPEG_VERSION }}.tar.xz -C /opt/ffmpeg/extracted
         echo "Installing ffmpeg ${FFMPEG_VERSION}"
-        sudo cp /opt/ffmpeg/extracted/bin/ffmpeg /usr/bin/ffmpeg
+        sudo cp /opt/ffmpeg/extracted/bin/ffmpeg /opt/ffmpeg/extracted/bin/ffprobe /usr/bin/
     - name: Install dependencies
       run: |
         uv sync --group dev

@@ -10,7 +10,11 @@ import sys
 import traceback
 
 from .__init__ import __version__ as version
-from .ffmpeg_quality_metrics import FfmpegQualityMetrics, VmafOptions
+from .ffmpeg_quality_metrics import (
+    FfmpegQualityMetrics,
+    FfmpegQualityMetricsError,
+    VmafOptions,
+)
 from .log import CustomLogFormatter
 
 logger = logging.getLogger("ffmpeg-quality-metrics")
@@ -236,37 +240,41 @@ def main() -> None:
 
     setup_logger(logging.DEBUG if cli_args.verbose else logging.INFO)
 
-    ffqm = FfmpegQualityMetrics(
-        ref=cli_args.ref,
-        dist=cli_args.dist,
-        scaling_algorithm=cli_args.scaling_algorithm,
-        framerate=cli_args.framerate,
-        dist_delay=cli_args.dist_delay,
-        dry_run=cli_args.dry_run,
-        verbose=cli_args.verbose,
-        threads=cli_args.threads,
-        progress=cli_args.progress,
-        keep_tmp_files=cli_args.keep_tmp,
-        tmp_dir=cli_args.tmp_dir,
-        num_frames=cli_args.num_frames,
-        start_offset=cli_args.start_offset,
-        ffmpeg_path=cli_args.ffmpeg_path,
-    )
+    try:
+        ffqm = FfmpegQualityMetrics(
+            ref=cli_args.ref,
+            dist=cli_args.dist,
+            scaling_algorithm=cli_args.scaling_algorithm,
+            framerate=cli_args.framerate,
+            dist_delay=cli_args.dist_delay,
+            dry_run=cli_args.dry_run,
+            verbose=cli_args.verbose,
+            threads=cli_args.threads,
+            progress=cli_args.progress,
+            keep_tmp_files=cli_args.keep_tmp,
+            tmp_dir=cli_args.tmp_dir,
+            num_frames=cli_args.num_frames,
+            start_offset=cli_args.start_offset,
+            ffmpeg_path=cli_args.ffmpeg_path,
+        )
 
-    metrics = cli_args.metrics
+        metrics = cli_args.metrics
 
-    if "vmaf" in metrics:
-        vmaf_options: VmafOptions = {
-            "model_path": cli_args.vmaf_model_path,
-            "model_params": cli_args.vmaf_model_params,
-            "n_threads": cli_args.vmaf_threads,
-            "n_subsample": cli_args.vmaf_subsample,
-            "features": cli_args.vmaf_features,
-            "ten_bit": cli_args.vmaf_10bit,
-        }
-        ffqm.calculate(metrics, vmaf_options=vmaf_options)
-    else:
-        ffqm.calculate(metrics)
+        if "vmaf" in metrics:
+            vmaf_options: VmafOptions = {
+                "model_path": cli_args.vmaf_model_path,
+                "model_params": cli_args.vmaf_model_params,
+                "n_threads": cli_args.vmaf_threads,
+                "n_subsample": cli_args.vmaf_subsample,
+                "features": cli_args.vmaf_features,
+                "ten_bit": cli_args.vmaf_10bit,
+            }
+            ffqm.calculate(metrics, vmaf_options=vmaf_options)
+        else:
+            ffqm.calculate(metrics)
+    except FfmpegQualityMetricsError as e:
+        logger.error(str(e))
+        sys.exit(1)
 
     if cli_args.dry_run:
         logger.warning("Dry run specified, exiting without computing stats")

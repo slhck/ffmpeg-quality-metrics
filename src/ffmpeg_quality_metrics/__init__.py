@@ -5,6 +5,7 @@ from .ffmpeg_quality_metrics import (
     FfmpegQualityMetricsError,
     GlobalStats,
     GlobalStatsData,
+    InputInfo,
     MetricData,
     MetricName,
     SingleMetricData,
@@ -21,5 +22,6 @@ __all__ = [
     "GlobalStatsData",
     "GlobalStats",
     "MetricData",
+    "InputInfo",
     "__version__",
 ]

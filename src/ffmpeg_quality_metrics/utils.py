@@ -69,6 +69,20 @@ def ffmpeg_is_from_brew() -> bool:
     return os.path.islink(ffmpeg_path) and "Cellar/ffmpeg" in os.readlink(ffmpeg_path)
 
 
+def get_ffprobe_path(ffmpeg_path: str = "ffmpeg") -> str:
+    """
+    Return the path to ffprobe, located next to the given ffmpeg executable.
+
+    Args:
+        ffmpeg_path (str): Path to the ffmpeg executable
+
+    Returns:
+        str: Path to ffprobe, or "ffprobe" if ffmpeg_path has no directory
+    """
+    ffprobe_dir = os.path.dirname(ffmpeg_path)
+    return os.path.join(ffprobe_dir, "ffprobe") if ffprobe_dir else "ffprobe"
+
+
 def quoted_cmd(cmd: List[str]) -> str:
     """
     Quote a command for printing.

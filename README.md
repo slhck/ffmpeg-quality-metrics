@@ -66,7 +66,7 @@ What you need:
   - **Windows:** Download an FFmpeg binary from [here](https://www.gyan.dev/ffmpeg/builds/). The `git essentials` build will suffice.
 
 Put the `ffmpeg` executable in your `$PATH`, e.g. `/usr/local/bin/ffmpeg`.
-If you have `ffprobe`, also put it next to it. It may be used as a fallback for FPS detection.
+If you have `ffprobe`, also put it next to it. It is used to check the inputs before the calculation (see [Input Checks](#input-checks)) and as a fallback for FPS detection.
 
 If you want to calculate VMAF, your ffmpeg build should include `libvmaf`. You also need the VMAF model files, which we bundle with this package, or you can download them from the [VMAF GitHub](https://github.com/Netflix/vmaf/tree/master/model). Note that the new VMAF v1 models (see [Specifying VMAF Model](#specifying-vmaf-model)) require an ffmpeg build linked against libvmaf 3.2.1 or newer.
 
@@ -120,6 +120,17 @@ content from the longer file is not compared against a repeated final frame.
 > ```bash
 > ffmpeg -framerate 24 -video_size 1920x1080 -pix_fmt yuv420p -i input.yuv output.y4m
 > ```
+
+### Input Checks
+
+Before calculating the metrics, the tool probes both inputs with `ffprobe` and compares their resolution, frame rate, and duration (or frame count). If they differ, it prints a warning that explains the consequence, for example:
+
+```
+WARNING - Resolutions differ: distorted 854x480, reference 1280x720. The distorted video will be scaled to 1280x720 (bicubic) before comparison, which affects the metric values.
+WARNING - Durations differ: distorted 3.000 s, reference 2.000 s. Only the first 2.000 s are compared; the rest of the distorted video is ignored.
+```
+
+The tool stops with an error if an input cannot be read or has no video stream. `ffprobe` is expected next to the `ffmpeg` executable (see `--ffmpeg-path`) or in your `PATH`. If it is not found, the checks are skipped.
 
 ### Metrics
 
@@ -640,6 +651,10 @@ from ffmpeg_quality_metrics import FfmpegQualityMetrics
 
 ffqm = FfmpegQualityMetrics("path/to/reference-video.mp4", "path/to/distorted-video.mp4")
 
+# compare the inputs and log warnings if they differ (calculate() also runs this)
+# returns (ref_info, dist_info), or None if ffprobe is not available
+input_info = ffqm.check_inputs()
+
 metrics = ffqm.calculate(["ssim", "psnr"])
 
 # check the available metrics
@@ -658,6 +673,10 @@ print(ffqm.get_global_stats()["ssim"]["ssim_y"]["average"])
 
 # print a short summary table of the main submetrics
 print(ffqm.get_summary())
+
+# probe a single file
+print(FfmpegQualityMetrics.probe_input("path/to/reference-video.mp4"))
+# {'path': 'path/to/reference-video.mp4', 'width': 1280, 'height': 720, 'framerate': 25.0, 'duration': 10.0, 'nb_frames': 250}
 ```
 
 For more usage please read [the docs](https://htmlpreview.github.io/?https://github.com/slhck/ffmpeg-quality-metrics/blob/master/docs/ffmpeg_quality_metrics.html).

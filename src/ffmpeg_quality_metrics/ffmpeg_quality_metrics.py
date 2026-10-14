@@ -20,6 +20,7 @@ from statistics import median, pstdev, mean
 
 from .utils import (
     ffmpeg_is_from_brew,
+    get_ffprobe_path,
     has_brew,
     quoted_cmd,
     run_command,
@@ -77,6 +78,25 @@ GlobalStats = Dict[MetricName, Dict[str, GlobalStatsData]]
 
 MetricData = Dict[MetricName, SingleMetricData]
 """A dict of per-frame metric values for all metrics."""
+
+
+class InputInfo(TypedDict):
+    """
+    Properties of the first video stream of an input file, as reported by ffprobe.
+    """
+
+    path: str
+    """Path to the input file."""
+    width: int
+    """Width in pixels."""
+    height: int
+    """Height in pixels."""
+    framerate: Union[float, None]
+    """Frame rate in frames per second, or None if unknown."""
+    duration: Union[float, None]
+    """Duration in seconds, or None if unknown."""
+    nb_frames: Union[int, None]
+    """Number of frames from the container metadata, or None if unknown."""
 
 
 # =====================================================================================================================
@@ -224,6 +244,10 @@ class FfmpegQualityMetrics:
 
         self.global_stats: GlobalStats = {}
 
+        self.input_info: Union[Tuple[InputInfo, InputInfo], None] = None
+        """Properties of the reference and distorted file, set by `check_inputs()`."""
+        self._inputs_checked = False
+
         if not os.path.isdir(self.tmp_dir):
             logger.debug(f"Creating temporary directory: {self.tmp_dir}")
             os.makedirs(self.tmp_dir)
@@ -305,10 +329,7 @@ class FfmpegQualityMetrics:
         # which only report "tbr"/"tbn"). Query ffprobe for the exact rational
         # frame rate instead of failing. Prefer r_frame_rate, then
         # avg_frame_rate; skip missing/"0/0" values.
-        ffprobe_dir = os.path.dirname(ffmpeg_path)
-        ffprobe_path = (
-            os.path.join(ffprobe_dir, "ffprobe") if ffprobe_dir else "ffprobe"
-        )
+        ffprobe_path = get_ffprobe_path(ffmpeg_path)
         for field in ("r_frame_rate", "avg_frame_rate"):
             try:
                 stdout, _ = run_command(
@@ -350,13 +371,222 @@ class FfmpegQualityMetrics:
         ref_framerate = FfmpegQualityMetrics.get_framerate(self.ref, self.ffmpeg_path)
         dist_framerate = FfmpegQualityMetrics.get_framerate(self.dist, self.ffmpeg_path)
 
-        if ref_framerate != dist_framerate:
+        # check_inputs() already warns about differing frame rates
+        if ref_framerate != dist_framerate and self.input_info is None:
             logger.warning(
                 f"ref, dist framerates differ: {ref_framerate}, {dist_framerate}. "
                 "This may result in inaccurate quality metrics. Force an input framerate via the -r option."
             )
 
         return ref_framerate, dist_framerate
+
+    @staticmethod
+    def probe_input(input_file: str, ffmpeg_path: str = "ffmpeg") -> InputInfo:
+        """Read the properties of the first video stream of a file with ffprobe.
+
+        ffprobe is expected next to the ffmpeg executable, or in the PATH.
+
+        Args:
+            input_file (str): Input file path
+            ffmpeg_path (str, optional): Path to ffmpeg executable. Defaults to "ffmpeg".
+
+        Raises:
+            FfmpegQualityMetricsError: If the file does not exist, cannot be read, or has no video stream
+            FileNotFoundError: If ffprobe cannot be found
+
+        Returns:
+            InputInfo: The video stream properties
+        """
+        if not os.path.isfile(input_file):
+            raise FfmpegQualityMetricsError(f"File not found: {input_file}")
+
+        cmd = [
+            get_ffprobe_path(ffmpeg_path),
+            "-loglevel",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height,r_frame_rate,avg_frame_rate,duration,nb_frames"
+            ":format=duration",
+            "-of",
+            "json",
+            input_file,
+        ]
+        try:
+            stdout, _ = run_command(cmd)
+            probe_data = json.loads(stdout)
+        except (RuntimeError, ValueError) as e:
+            # the last line of ffprobe's error output names the problem
+            detail = str(e).strip().splitlines()[-1] if str(e).strip() else ""
+            raise FfmpegQualityMetricsError(
+                f"Could not read file {input_file} with ffprobe: {detail}"
+            ) from e
+
+        streams = probe_data.get("streams") or []
+        if not streams:
+            raise FfmpegQualityMetricsError(f"No video stream found in {input_file}")
+        stream = streams[0]
+
+        framerate = None
+        for field in ("r_frame_rate", "avg_frame_rate"):
+            try:
+                frac = Fraction(stream.get(field, ""))
+            except (ValueError, ZeroDivisionError):
+                continue
+            if frac > 0:
+                framerate = float(frac)
+                break
+
+        duration = None
+        for value in (
+            stream.get("duration"),
+            probe_data.get("format", {}).get("duration"),
+        ):
+            try:
+                duration = float(value)
+                break
+            except (TypeError, ValueError):
+                continue
+
+        try:
+            nb_frames = int(stream["nb_frames"])
+        except (KeyError, TypeError, ValueError):
+            nb_frames = None
+
+        return {
+            "path": input_file,
+            "width": int(stream.get("width", 0)),
+            "height": int(stream.get("height", 0)),
+            "framerate": framerate,
+            "duration": duration,
+            "nb_frames": nb_frames,
+        }
+
+    def check_inputs(self) -> Union[Tuple[InputInfo, InputInfo], None]:
+        """Probe both input files and log a warning for each property that differs.
+
+        Compares resolution, frame rate, and duration (or frame count). This is run
+        automatically before the first calculation.
+
+        Raises:
+            FfmpegQualityMetricsError: If an input cannot be read or has no video stream
+
+        Returns:
+            Tuple[InputInfo, InputInfo] or None: The properties of the reference and distorted file,
+                or None if ffprobe is not available
+        """
+        try:
+            ref_info = FfmpegQualityMetrics.probe_input(self.ref, self.ffmpeg_path)
+            dist_info = FfmpegQualityMetrics.probe_input(self.dist, self.ffmpeg_path)
+        except FileNotFoundError:
+            logger.warning(
+                f"ffprobe not found at {get_ffprobe_path(self.ffmpeg_path)}, skipping input checks"
+            )
+            return None
+
+        logger.debug(f"Reference input: {ref_info}")
+        logger.debug(f"Distorted input: {dist_info}")
+
+        self._check_resolution(ref_info, dist_info)
+        self._check_framerate(ref_info, dist_info)
+        self._check_duration(ref_info, dist_info)
+
+        self.input_info = (ref_info, dist_info)
+        return self.input_info
+
+    def _check_resolution(self, ref_info: InputInfo, dist_info: InputInfo) -> None:
+        """
+        Warn if the resolutions differ.
+        """
+        ref_res = f"{ref_info['width']}x{ref_info['height']}"
+        dist_res = f"{dist_info['width']}x{dist_info['height']}"
+        if ref_res != dist_res:
+            logger.warning(
+                f"Resolutions differ: distorted {dist_res}, reference {ref_res}. "
+                f"The distorted video will be scaled to {ref_res} "
+                f"({self.scaling_algorithm}) before comparison, "
+                "which affects the metric values."
+            )
+
+    def _check_framerate(self, ref_info: InputInfo, dist_info: InputInfo) -> None:
+        """
+        Warn if the frame rates differ and no frame rate is forced.
+        """
+        ref_fps = ref_info["framerate"]
+        dist_fps = dist_info["framerate"]
+        if ref_fps is None or dist_fps is None or self.framerate is not None:
+            return
+        if not math.isclose(ref_fps, dist_fps, abs_tol=1e-3):
+            logger.warning(
+                f"Frame rates differ: distorted {dist_fps:g} fps, reference {ref_fps:g} fps. "
+                "Frames will not line up in time, so the metrics will be inaccurate. "
+                "Convert both inputs to the same frame rate, or force one with the -r option."
+            )
+
+    def _check_duration(self, ref_info: InputInfo, dist_info: InputInfo) -> None:
+        """
+        Warn if the inputs differ in length, after applying dist_delay.
+        Skipped if num_frames is set.
+        """
+        if self.num_frames is not None:
+            return
+
+        ref_frames = ref_info["nb_frames"]
+        dist_frames = dist_info["nb_frames"]
+        ref_fps = ref_info["framerate"]
+        dist_fps = dist_info["framerate"]
+        # frame counts are only comparable if frames are paired one by one
+        same_framerate = self.framerate is not None or (
+            ref_fps is not None
+            and dist_fps is not None
+            and math.isclose(ref_fps, dist_fps, abs_tol=1e-3)
+        )
+        if (
+            self.dist_delay == 0
+            and same_framerate
+            and ref_frames is not None
+            and dist_frames is not None
+        ):
+            if ref_frames != dist_frames:
+                longer = "reference" if ref_frames > dist_frames else "distorted"
+                logger.warning(
+                    f"Frame counts differ: distorted {dist_frames}, reference {ref_frames}. "
+                    f"Only the first {min(ref_frames, dist_frames)} frames are compared; "
+                    f"the remaining frames of the {longer} video are ignored."
+                )
+            return
+
+        ref_duration = ref_info["duration"]
+        dist_duration = dist_info["duration"]
+        if ref_duration is None or dist_duration is None:
+            return
+
+        # dist_delay trims the start of one of the inputs
+        ref_duration = max(ref_duration - max(self.dist_delay, 0), 0)
+        dist_duration = max(dist_duration - max(-self.dist_delay, 0), 0)
+
+        # tolerate a difference of one frame
+        known_fps = [
+            fps
+            for fps in (self.framerate, ref_info["framerate"], dist_info["framerate"])
+            if fps
+        ]
+        tolerance = 1 / min(known_fps) if known_fps else 0.05
+
+        if abs(ref_duration - dist_duration) > tolerance + 1e-6:
+            longer = "reference" if ref_duration > dist_duration else "distorted"
+            delay_note = (
+                f" (after trimming {abs(self.dist_delay):g} s for the distortion delay)"
+                if self.dist_delay != 0
+                else ""
+            )
+            logger.warning(
+                f"Durations differ{delay_note}: distorted {dist_duration:.3f} s, "
+                f"reference {ref_duration:.3f} s. "
+                f"Only the first {min(ref_duration, dist_duration):.3f} s are compared; "
+                f"the rest of the {longer} video is ignored."
+            )
 
     def _parse_start_offset(self, framerate: float) -> Union[str, None]:
         """
@@ -468,6 +698,11 @@ class FfmpegQualityMetrics:
                 raise FfmpegQualityMetricsError(
                     f"Your ffmpeg version does not have the filter '{filter_name}'"
                 )
+
+        # probe the inputs once, before running ffmpeg
+        if not self._inputs_checked:
+            self.check_inputs()
+            self._inputs_checked = True
 
         # set VMAF options specifically
         if "vmaf" in metrics:
